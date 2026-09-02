@@ -1,0 +1,217 @@
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { PawPrint, Car, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/auth")({
+  head: () => ({
+    meta: [
+      { title: "Entrar ou criar conta | PatinhasGo" },
+      {
+        name: "description",
+        content:
+          "Acesse a PatinhasGo como tutor para pedir transporte do seu pet em São Paulo ou como motorista parceiro para aceitar corridas.",
+      },
+      { property: "og:title", content: "Entrar ou criar conta | PatinhasGo" },
+      {
+        property: "og:description",
+        content: "Conta de tutor ou motorista parceiro no transporte de pets em São Paulo.",
+      },
+    ],
+  }),
+  component: AuthPage,
+});
+
+function AuthPage() {
+  const navigate = useNavigate();
+  const { user, profile, loading } = useAuth();
+  const [role, setRole] = useState<"tutor" | "driver">("tutor");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) {
+      void navigate({ to: profile?.role === "driver" ? "/motorista" : "/solicitar" });
+    }
+  }, [loading, user, profile, navigate]);
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { full_name: fullName, phone, role },
+      },
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Conta criada! Confirme o e-mail que enviamos para começar.");
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setBusy(false);
+    if (error) {
+      toast.error("Não foi possível entrar. Verifique e-mail e senha.");
+      return;
+    }
+    toast.success("Bem-vindo de volta!");
+  };
+
+  const handleGoogle = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      toast.error("Não foi possível entrar com o Google.");
+      return;
+    }
+  };
+
+  return (
+    <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-10">
+      <div className="text-center">
+        <h1 className="text-3xl font-semibold">Vamos cuidar do seu pet</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Transporte seguro de animais em toda São Paulo, com motoristas treinados.
+        </p>
+      </div>
+
+      <Card className="shadow-soft">
+        <CardHeader>
+          <CardTitle>Acesse a PatinhasGo</CardTitle>
+          <CardDescription>Escolha como você quer usar a plataforma.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="signup">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signup">Criar conta</TabsTrigger>
+              <TabsTrigger value="signin">Entrar</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="signup" className="mt-5">
+              <form className="space-y-4" onSubmit={handleSignUp}>
+                <div className="grid grid-cols-2 gap-3">
+                  {(
+                    [
+                      { value: "tutor", label: "Sou tutor", icon: PawPrint },
+                      { value: "driver", label: "Sou motorista", icon: Car },
+                    ] as const
+                  ).map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setRole(opt.value)}
+                      className={cn(
+                        "flex flex-col items-center gap-2 rounded-xl border p-4 text-sm font-medium transition-colors",
+                        role === opt.value
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:bg-secondary",
+                      )}
+                    >
+                      <opt.icon className="size-5" />
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome completo</Label>
+                  <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">WhatsApp</Label>
+                  <Input
+                    id="phone"
+                    placeholder="(11) 90000-0000"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">E-mail</Label>
+                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Senha</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={busy}>
+                  {busy && <Loader2 className="mr-2 size-4 animate-spin" />} Criar conta
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signin" className="mt-5">
+              <form className="space-y-4" onSubmit={handleSignIn}>
+                <div className="space-y-2">
+                  <Label htmlFor="email-in">E-mail</Label>
+                  <Input
+                    id="email-in"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password-in">Senha</Label>
+                  <Input
+                    id="password-in"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={busy}>
+                  {busy && <Loader2 className="mr-2 size-4 animate-spin" />} Entrar
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+
+          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-border" /> ou <span className="h-px flex-1 bg-border" />
+          </div>
+          <Button variant="outline" className="w-full" onClick={handleGoogle}>
+            Continuar com Google
+          </Button>
+        </CardContent>
+      </Card>
+
+      <p className="text-center text-xs text-muted-foreground">
+        Ao continuar você concorda com nossos termos de uso.{" "}
+        <Link to="/" className="underline">
+          Voltar ao início
+        </Link>
+      </p>
+    </div>
+  );
+}
