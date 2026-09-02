@@ -15,7 +15,7 @@ import { getStripeEnvironment, splitRideAmount } from "@/lib/stripe";
 import { syncRidePayment } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/pagamento/$rideId")({
-  validateSearch: (search: Record<string, unknown>): { session_id?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { session_id?: string | undefined } => ({
     session_id: typeof search["session_id"] === "string" ? search["session_id"] : undefined,
   }),
   head: () => ({

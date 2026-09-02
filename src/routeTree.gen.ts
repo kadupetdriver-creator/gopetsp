@@ -16,6 +16,7 @@ import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
+import { Route as PagamentoRideIdRouteImport } from './routes/pagamento.$rideId'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -53,6 +54,11 @@ const AcompanharTokenRoute = AcompanharTokenRouteImport.update({
   path: '/acompanhar/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PagamentoRideIdRoute = PagamentoRideIdRouteImport.update({
+  id: '/pagamento/$rideId',
+  path: '/pagamento/$rideId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   id: '/api/public/stripe-webhook',
   path: '/api/public/stripe-webhook',
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/pagamento/$rideId'
     | '/api/public/stripe-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/pagamento/$rideId'
     | '/api/public/stripe-webhook'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/pagamento/$rideId'
     | '/api/public/stripe-webhook'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   SolicitarRoute: typeof SolicitarRoute
   AcompanharTokenRoute: typeof AcompanharTokenRoute
+  PagamentoRideIdRoute: typeof PagamentoRideIdRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AcompanharTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pagamento/$rideId': {
+      id: '/pagamento/$rideId'
+      path: '/pagamento/$rideId'
+      fullPath: '/pagamento/$rideId'
+      preLoaderRoute: typeof PagamentoRideIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/stripe-webhook': {
       id: '/api/public/stripe-webhook'
       path: '/api/public/stripe-webhook'
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   SolicitarRoute: SolicitarRoute,
   AcompanharTokenRoute: AcompanharTokenRoute,
+  PagamentoRideIdRoute: PagamentoRideIdRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
