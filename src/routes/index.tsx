@@ -46,9 +46,6 @@ function Home() {
             <Button asChild size="lg" className="rounded-full">
               <Link to="/solicitar">Solicitar corrida</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="rounded-full">
-              <Link to="/auth">Quero dirigir</Link>
-            </Button>
           </div>
           <dl className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-border pt-6">
             <div>
