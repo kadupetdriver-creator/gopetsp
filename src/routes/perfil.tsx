@@ -174,8 +174,24 @@ function PerfilPage() {
               <Input id="nome" value={fullName} onChange={(e) => setFullName(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tel">WhatsApp</Label>
-              <Input id="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <PhoneVerification
+                phone={phone}
+                verified={!!profile?.phone_verified}
+                onPhoneChange={setPhone}
+                onVerified={() => void refreshProfile()}
+              />
             </div>
             {isDriver && (
               <>
