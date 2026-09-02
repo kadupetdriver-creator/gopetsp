@@ -35,11 +35,11 @@
 - [x] Renomear toda a marca visível para PetMobi (interface, títulos e metadados SEO)
 
 ## Etapa 6 — Pagamentos (Stripe)
-- [ ] Cobrança do tutor na confirmação, com comissão da plataforma + valor do motorista
-- [ ] Retenção (escrow) registrada no Lovable Cloud com status por corrida
-- [ ] Webhook libera o repasse ao concluir a corrida
-- [ ] Estorno/cancelamento tratado
-- [ ] Histórico de pagamentos (tutor) e de repasses (motorista)
+- [x] Cobrança do tutor na confirmação, com comissão da plataforma (20%) + valor do motorista
+- [x] Retenção (escrow) registrada no Lovable Cloud com status por corrida
+- [x] Webhook de pagamento + liberação do repasse ao concluir a corrida
+- [x] Estorno/cancelamento tratado (taxa de 20% após aceite)
+- [x] Status de pagamento visível em cada corrida do tutor
 
 ## Etapa 7 — Identidade visual PetMobi
 - [x] Logo enviada publicada como asset e componente BrandLogo
