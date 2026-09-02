@@ -16,31 +16,52 @@ export type Database = {
     Tables: {
       pets: {
         Row: {
+          breed: string | null
           created_at: string
+          health_notes: string | null
           id: string
           name: string
           notes: string | null
           owner_id: string
+          photo_url: string | null
           size: string
           species: string
+          temperament: string | null
+          transport_items: string[]
+          updated_at: string
+          weight_kg: number | null
         }
         Insert: {
+          breed?: string | null
           created_at?: string
+          health_notes?: string | null
           id?: string
           name: string
           notes?: string | null
           owner_id: string
+          photo_url?: string | null
           size?: string
           species?: string
+          temperament?: string | null
+          transport_items?: string[]
+          updated_at?: string
+          weight_kg?: number | null
         }
         Update: {
+          breed?: string | null
           created_at?: string
+          health_notes?: string | null
           id?: string
           name?: string
           notes?: string | null
           owner_id?: string
+          photo_url?: string | null
           size?: string
           species?: string
+          temperament?: string | null
+          transport_items?: string[]
+          updated_at?: string
+          weight_kg?: number | null
         }
         Relationships: []
       }
@@ -83,16 +104,93 @@ export type Database = {
         }
         Relationships: []
       }
+      ride_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          ride_id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          ride_id: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          ride_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_messages_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ride_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+          ride_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+          ride_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          reviewee_id?: string
+          reviewer_id?: string
+          ride_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_reviews_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rides: {
         Row: {
           created_at: string
           destination_address: string
+          destination_lat: number | null
+          destination_lng: number | null
           destination_neighborhood: string | null
           distance_km: number
           driver_id: string | null
+          driver_lat: number | null
+          driver_lng: number | null
           id: string
+          location_updated_at: string | null
           notes: string | null
           origin_address: string
+          origin_lat: number | null
+          origin_lng: number | null
           origin_neighborhood: string | null
           pet_id: string | null
           pet_name: string
@@ -100,6 +198,7 @@ export type Database = {
           price_cents: number
           scheduled_at: string
           service_type: string
+          share_token: string
           status: Database["public"]["Enums"]["ride_status"]
           tutor_id: string
           updated_at: string
@@ -107,12 +206,19 @@ export type Database = {
         Insert: {
           created_at?: string
           destination_address: string
+          destination_lat?: number | null
+          destination_lng?: number | null
           destination_neighborhood?: string | null
           distance_km?: number
           driver_id?: string | null
+          driver_lat?: number | null
+          driver_lng?: number | null
           id?: string
+          location_updated_at?: string | null
           notes?: string | null
           origin_address: string
+          origin_lat?: number | null
+          origin_lng?: number | null
           origin_neighborhood?: string | null
           pet_id?: string | null
           pet_name: string
@@ -120,6 +226,7 @@ export type Database = {
           price_cents?: number
           scheduled_at?: string
           service_type?: string
+          share_token?: string
           status?: Database["public"]["Enums"]["ride_status"]
           tutor_id: string
           updated_at?: string
@@ -127,12 +234,19 @@ export type Database = {
         Update: {
           created_at?: string
           destination_address?: string
+          destination_lat?: number | null
+          destination_lng?: number | null
           destination_neighborhood?: string | null
           distance_km?: number
           driver_id?: string | null
+          driver_lat?: number | null
+          driver_lng?: number | null
           id?: string
+          location_updated_at?: string | null
           notes?: string | null
           origin_address?: string
+          origin_lat?: number | null
+          origin_lng?: number | null
           origin_neighborhood?: string | null
           pet_id?: string | null
           pet_name?: string
@@ -140,6 +254,7 @@ export type Database = {
           price_cents?: number
           scheduled_at?: string
           service_type?: string
+          share_token?: string
           status?: Database["public"]["Enums"]["ride_status"]
           tutor_id?: string
           updated_at?: string
@@ -160,6 +275,10 @@ export type Database = {
     }
     Functions: {
       is_driver: { Args: { _user_id: string }; Returns: boolean }
+      is_ride_participant: {
+        Args: { _ride_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "tutor" | "driver"
