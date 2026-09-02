@@ -40,3 +40,9 @@
 - [ ] Webhook libera o repasse ao concluir a corrida
 - [ ] Estorno/cancelamento tratado
 - [ ] Histórico de pagamentos (tutor) e de repasses (motorista)
+
+## Etapa 7 — Identidade visual PetMobi
+- [x] Logo enviada publicada como asset e componente BrandLogo
+- [x] Paleta preto/amarelo aplicada nos tokens globais (claro e escuro)
+- [x] Logo no cabeçalho, landing, autenticação e favicon
+- [x] Revisar contraste e cores fixas em todas as telas (token text-primary-ink)

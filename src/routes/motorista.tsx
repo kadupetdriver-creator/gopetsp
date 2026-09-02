@@ -192,7 +192,7 @@ function StatCard({
   return (
     <Card className="shadow-soft">
       <CardContent className="flex items-center gap-3 py-5">
-        <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary-ink">
           <Icon className="size-5" />
         </span>
         <div>
@@ -237,7 +237,7 @@ function RideCard({ ride, children }: { ride: Ride; children?: React.ReactNode }
 
         <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
           <p className="flex items-start gap-2">
-            <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
+            <MapPin className="mt-0.5 size-4 shrink-0 text-primary-ink" />
             <span>
               <strong className="font-medium text-foreground">Embarque:</strong>{" "}
               {ride.origin_address}
@@ -253,7 +253,7 @@ function RideCard({ ride, children }: { ride: Ride; children?: React.ReactNode }
             </span>
           </p>
           <p className="flex items-center gap-2">
-            <CalendarClock className="size-4 shrink-0 text-primary" />
+            <CalendarClock className="size-4 shrink-0 text-primary-ink" />
             {formatDateTime(ride.scheduled_at)}
           </p>
           <p className="font-semibold text-foreground">

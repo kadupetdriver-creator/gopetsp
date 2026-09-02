@@ -229,7 +229,7 @@ function PerfilPage() {
                   className="flex items-center justify-between rounded-xl border border-border px-4 py-3"
                 >
                   <span className="flex items-center gap-2 text-sm font-medium">
-                    <PawPrint className="size-4 text-primary" />
+                    <PawPrint className="size-4 text-primary-ink" />
                     {pet.name}
                     <span className="font-normal text-muted-foreground">
                       · {petSizes.find((s) => s.value === pet.size)?.label ?? pet.size}

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PawPrint, ShieldCheck, MapPinned, Clock, Star, MessageCircle } from "lucide-react";
 import heroImg from "@/assets/hero-pet-transporte.jpg";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { spSubprefeituras } from "@/lib/rides";
@@ -30,8 +31,9 @@ function Home() {
     <div>
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 lg:grid-cols-2 lg:py-20">
         <div>
+          <BrandLogo size={96} withWordmark={false} className="mb-5" />
           <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
-            <PawPrint className="size-3.5 text-primary" /> Só em São Paulo, com carinho
+            <PawPrint className="size-3.5 text-primary-ink" /> Só em São Paulo, com carinho
           </span>
           <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
             O transporte do seu pet, com gente que entende de bicho
@@ -55,7 +57,7 @@ function Home() {
               { k: "24/7", v: "chamadas na cidade" },
             ].map((s) => (
               <div key={s.k}>
-                <dt className="text-2xl font-semibold text-primary">{s.k}</dt>
+                <dt className="text-2xl font-semibold text-primary-ink">{s.k}</dt>
                 <dd className="text-xs text-muted-foreground">{s.v}</dd>
               </div>
             ))}
@@ -69,6 +71,9 @@ function Home() {
             alt="Motorista parceiro acomodando um cachorro em caixa de transporte em uma rua de São Paulo"
             className="w-full rounded-3xl object-cover shadow-soft"
           />
+          <div className="absolute -bottom-6 left-6 hidden rounded-2xl bg-brand-canvas p-2 shadow-soft ring-1 ring-border sm:block">
+            <BrandLogo size={72} withWordmark={false} />
+          </div>
         </div>
       </section>
 
@@ -95,7 +100,7 @@ function Home() {
             ].map((s) => (
               <Card key={s.title} className="shadow-soft">
                 <CardContent className="space-y-3 py-6">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary-ink">
                     <s.icon className="size-5" />
                   </span>
                   <h3 className="text-lg font-semibold">{s.title}</h3>

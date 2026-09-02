@@ -33,7 +33,7 @@ export function PetDetails({ pet }: { pet: PetInfo }) {
           className="size-16 shrink-0 rounded-xl object-cover"
         />
       ) : (
-        <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-ink">
           <PawPrint className="size-6" />
         </span>
       )}

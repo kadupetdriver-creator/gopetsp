@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PawPrint, Car, Loader2 } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -90,7 +91,8 @@ function AuthPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-10">
-      <div className="text-center">
+      <div className="flex flex-col items-center text-center">
+        <BrandLogo size={104} withWordmark={false} className="mb-4" />
         <h1 className="text-3xl font-semibold">Vamos cuidar do seu pet</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Transporte seguro de animais em toda São Paulo, com motoristas treinados.
@@ -125,7 +127,7 @@ function AuthPage() {
                       className={cn(
                         "flex flex-col items-center gap-2 rounded-xl border p-4 text-sm font-medium transition-colors",
                         role === opt.value
-                          ? "border-primary bg-primary/10 text-primary"
+                          ? "border-primary bg-primary/10 text-primary-ink"
                           : "border-border text-muted-foreground hover:bg-secondary",
                       )}
                     >

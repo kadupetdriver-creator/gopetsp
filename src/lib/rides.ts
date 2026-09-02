@@ -17,8 +17,8 @@ export const statusLabels: Record<RideStatus, string> = {
 
 export const statusStyles: Record<RideStatus, string> = {
   pending: "bg-warning/20 text-warning-foreground",
-  accepted: "bg-primary/15 text-primary",
-  en_route: "bg-primary/25 text-primary",
+  accepted: "bg-primary/15 text-primary-ink",
+  en_route: "bg-primary/25 text-primary-ink",
   in_progress: "bg-accent/25 text-accent-foreground",
   completed: "bg-success/20 text-success",
   cancelled: "bg-destructive/15 text-destructive",

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { PawPrint, LogOut, Menu } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { useState } from "react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -29,14 +30,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-2xl bg-gradient-warm text-primary-foreground">
-            <PawPrint className="size-5" />
-          </span>
-          <span className="text-lg font-semibold tracking-tight">
-            Pet<span className="text-primary">Mobi</span>
-          </span>
-        </Link>
+        <BrandLogo asLink size={40} />
 
         <nav className="hidden items-center gap-1 md:flex">
           {links.map((l) => (
