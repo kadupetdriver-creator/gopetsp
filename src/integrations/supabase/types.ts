@@ -285,6 +285,7 @@ export type Database = {
       ride_status:
         | "pending"
         | "accepted"
+        | "en_route"
         | "in_progress"
         | "completed"
         | "cancelled"
@@ -419,6 +420,7 @@ export const Constants = {
       ride_status: [
         "pending",
         "accepted",
+        "en_route",
         "in_progress",
         "completed",
         "cancelled",
