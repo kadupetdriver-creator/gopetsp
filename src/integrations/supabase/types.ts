@@ -14,16 +14,161 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      pets: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          owner_id: string
+          size: string
+          species: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          owner_id: string
+          size?: string
+          species?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          size?: string
+          species?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          city: string
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          vehicle_model: string | null
+          vehicle_plate: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          city?: string
+          created_at?: string
+          full_name?: string
+          id: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          city?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+        }
+        Relationships: []
+      }
+      rides: {
+        Row: {
+          created_at: string
+          destination_address: string
+          destination_neighborhood: string | null
+          distance_km: number
+          driver_id: string | null
+          id: string
+          notes: string | null
+          origin_address: string
+          origin_neighborhood: string | null
+          pet_id: string | null
+          pet_name: string
+          pet_size: string
+          price_cents: number
+          scheduled_at: string
+          service_type: string
+          status: Database["public"]["Enums"]["ride_status"]
+          tutor_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          destination_address: string
+          destination_neighborhood?: string | null
+          distance_km?: number
+          driver_id?: string | null
+          id?: string
+          notes?: string | null
+          origin_address: string
+          origin_neighborhood?: string | null
+          pet_id?: string | null
+          pet_name: string
+          pet_size?: string
+          price_cents?: number
+          scheduled_at?: string
+          service_type?: string
+          status?: Database["public"]["Enums"]["ride_status"]
+          tutor_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          destination_address?: string
+          destination_neighborhood?: string | null
+          distance_km?: number
+          driver_id?: string | null
+          id?: string
+          notes?: string | null
+          origin_address?: string
+          origin_neighborhood?: string | null
+          pet_id?: string | null
+          pet_name?: string
+          pet_size?: string
+          price_cents?: number
+          scheduled_at?: string
+          service_type?: string
+          status?: Database["public"]["Enums"]["ride_status"]
+          tutor_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rides_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_driver: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "tutor" | "driver"
+      ride_status:
+        | "pending"
+        | "accepted"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +295,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["tutor", "driver"],
+      ride_status: [
+        "pending",
+        "accepted",
+        "in_progress",
+        "completed",
+        "cancelled",
+      ],
+    },
   },
 } as const
