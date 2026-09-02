@@ -127,7 +127,7 @@ function AuthPage() {
                       className={cn(
                         "flex flex-col items-center gap-2 rounded-xl border p-4 text-sm font-medium transition-colors",
                         role === opt.value
-                          ? "border-primary bg-primary/10 text-primary"
+                          ? "border-primary bg-primary/10 text-primary-ink"
                           : "border-border text-muted-foreground hover:bg-secondary",
                       )}
                     >

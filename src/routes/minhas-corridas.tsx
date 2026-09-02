@@ -122,7 +122,7 @@ function MinhasCorridas() {
         {!isLoading && rides?.length === 0 && (
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <PawPrint className="size-8 text-primary" />
+              <PawPrint className="size-8 text-primary-ink" />
               <p className="font-medium">Nenhuma corrida por aqui ainda</p>
               <p className="max-w-sm text-sm text-muted-foreground">
                 Solicite o primeiro transporte e acompanhe o motorista parceiro em tempo real.
@@ -156,7 +156,7 @@ function MinhasCorridas() {
 
               <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
                 <p className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <MapPin className="mt-0.5 size-4 shrink-0 text-primary-ink" />
                   <span>
                     <strong className="font-medium text-foreground">Embarque:</strong>{" "}
                     {ride.origin_address}
@@ -172,7 +172,7 @@ function MinhasCorridas() {
                   </span>
                 </p>
                 <p className="flex items-center gap-2">
-                  <CalendarClock className="size-4 shrink-0 text-primary" />
+                  <CalendarClock className="size-4 shrink-0 text-primary-ink" />
                   {formatDateTime(ride.scheduled_at)}
                 </p>
                 <p className="font-semibold text-foreground">

@@ -282,13 +282,13 @@ function SolicitarPage() {
                 </p>
               </div>
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
+                <MapPin className="mt-0.5 size-4 shrink-0 text-primary-ink" />
                 <span>
                   {originNeighborhood} → {destinationNeighborhood}
                 </span>
               </div>
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+                <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary-ink" />
                 <span>Motoristas com curso de manejo animal e veículo higienizado.</span>
               </div>
               <Button type="submit" className="w-full" disabled={create.isPending}>

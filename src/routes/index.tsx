@@ -33,7 +33,7 @@ function Home() {
         <div>
           <BrandLogo size={96} withWordmark={false} className="mb-5" />
           <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
-            <PawPrint className="size-3.5 text-primary" /> Só em São Paulo, com carinho
+            <PawPrint className="size-3.5 text-primary-ink" /> Só em São Paulo, com carinho
           </span>
           <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
             O transporte do seu pet, com gente que entende de bicho
@@ -57,7 +57,7 @@ function Home() {
               { k: "24/7", v: "chamadas na cidade" },
             ].map((s) => (
               <div key={s.k}>
-                <dt className="text-2xl font-semibold text-primary">{s.k}</dt>
+                <dt className="text-2xl font-semibold text-primary-ink">{s.k}</dt>
                 <dd className="text-xs text-muted-foreground">{s.v}</dd>
               </div>
             ))}
@@ -100,7 +100,7 @@ function Home() {
             ].map((s) => (
               <Card key={s.title} className="shadow-soft">
                 <CardContent className="space-y-3 py-6">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary-ink">
                     <s.icon className="size-5" />
                   </span>
                   <h3 className="text-lg font-semibold">{s.title}</h3>

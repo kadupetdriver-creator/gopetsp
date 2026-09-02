@@ -41,7 +41,7 @@ export function BrandLogo({
       {mark}
       {withWordmark ? (
         <span className="text-lg font-semibold tracking-tight">
-          Pet<span className="text-primary">Mobi</span>
+          Pet<span className="text-primary-ink">Mobi</span>
         </span>
       ) : null}
     </span>
