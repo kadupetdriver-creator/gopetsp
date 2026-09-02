@@ -397,7 +397,6 @@ export type Database = {
     }
     Functions: {
       is_driver: { Args: { _user_id: string }; Returns: boolean }
-      is_ride_paid: { Args: { _ride_id: string }; Returns: boolean }
       is_ride_participant: {
         Args: { _ride_id: string; _user_id: string }
         Returns: boolean
