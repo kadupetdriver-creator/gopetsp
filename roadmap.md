@@ -1,4 +1,4 @@
-# Roadmap — PatinhasGo
+# Roadmap — PetMobi
 
 ## Etapa 1 — Base do marketplace
 - [x] Lovable Cloud + tabelas de perfis, pets e corridas com regras de acesso

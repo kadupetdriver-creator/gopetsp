@@ -23,16 +23,16 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/motorista")({
   head: () => ({
     meta: [
-      { title: "Painel do motorista parceiro | PatinhasGo" },
+      { title: "Painel do motorista parceiro | PetMobi" },
       {
         name: "description",
         content:
           "Veja chamadas abertas de transporte de pets em São Paulo, aceite corridas e atualize o status da viagem em tempo real.",
       },
-      { property: "og:title", content: "Painel do motorista parceiro | PatinhasGo" },
+      { property: "og:title", content: "Painel do motorista parceiro | PetMobi" },
       {
         property: "og:description",
-        content: "Chamadas abertas e corridas aceitas para motoristas parceiros PatinhasGo.",
+        content: "Chamadas abertas e corridas aceitas para motoristas parceiros PetMobi.",
       },
     ],
   }),

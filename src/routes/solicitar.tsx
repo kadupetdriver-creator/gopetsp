@@ -29,13 +29,13 @@ import {
 export const Route = createFileRoute("/solicitar")({
   head: () => ({
     meta: [
-      { title: "Solicitar transporte do pet em São Paulo | PatinhasGo" },
+      { title: "Solicitar transporte do pet em São Paulo | PetMobi" },
       {
         name: "description",
         content:
           "Peça uma corrida para levar seu pet ao veterinário, banho e tosa, creche ou aeroporto em São Paulo com preço estimado na hora.",
       },
-      { property: "og:title", content: "Solicitar transporte do pet | PatinhasGo" },
+      { property: "og:title", content: "Solicitar transporte do pet | PetMobi" },
       {
         property: "og:description",
         content: "Corrida pet em São Paulo com motoristas parceiros verificados.",
