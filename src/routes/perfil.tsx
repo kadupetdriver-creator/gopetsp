@@ -17,9 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { petSizes, petSpecies, labelOf } from "@/lib/rides";
-import { PhoneVerification } from "@/components/PhoneVerification";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+const phonePattern = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -90,10 +90,14 @@ function PerfilPage() {
       if (!emailPattern.test(email.trim())) {
         throw new Error("Informe um e-mail válido.");
       }
+      if (phone.trim() && !phonePattern.test(phone.trim())) {
+        throw new Error("Informe um celular válido com DDD, ex.: (11) 90000-0000.");
+      }
       const { error } = await supabase
         .from("profiles")
         .update({
           full_name: fullName,
+          phone: phone.trim() || null,
           vehicle_model: vehicleModel || null,
           vehicle_plate: vehiclePlate || null,
         })
@@ -185,12 +189,15 @@ function PerfilPage() {
                 required
               />
             </div>
-            <div className="sm:col-span-2">
-              <PhoneVerification
-                phone={phone}
-                verified={!!profile?.phone_verified}
-                onPhoneChange={setPhone}
-                onVerified={() => void refreshProfile()}
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="tel">Celular (WhatsApp)</Label>
+              <Input
+                id="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="(11) 90000-0000"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
               />
             </div>
             {isDriver && (
