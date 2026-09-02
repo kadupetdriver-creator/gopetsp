@@ -113,29 +113,7 @@ function AuthPage() {
 
             <TabsContent value="signup" className="mt-5">
               <form className="space-y-4" onSubmit={handleSignUp}>
-                <div className="grid grid-cols-2 gap-3">
-                  {(
-                    [
-                      { value: "tutor", label: "Sou tutor", icon: PawPrint },
-                      { value: "driver", label: "Sou motorista", icon: Car },
-                    ] as const
-                  ).map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setRole(opt.value)}
-                      className={cn(
-                        "flex flex-col items-center gap-2 rounded-xl border p-4 text-sm font-medium transition-colors",
-                        role === opt.value
-                          ? "border-primary bg-primary/10 text-primary-ink"
-                          : "border-border text-muted-foreground hover:bg-secondary",
-                      )}
-                    >
-                      <opt.icon className="size-5" />
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome completo</Label>
                   <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
