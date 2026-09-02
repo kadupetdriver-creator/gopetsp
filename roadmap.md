@@ -30,3 +30,13 @@
 - [ ] Seleção do pet ao solicitar corrida
 - [ ] Motorista vê as informações relevantes do pet na chamada
 - [ ] Armazenamento de fotos e regras de acesso por tutor
+
+## Etapa 5 — Marca
+- [x] Renomear toda a marca visível para PetMobi (interface, títulos e metadados SEO)
+
+## Etapa 6 — Pagamentos (Stripe)
+- [ ] Cobrança do tutor na confirmação, com comissão da plataforma + valor do motorista
+- [ ] Retenção (escrow) registrada no Lovable Cloud com status por corrida
+- [ ] Webhook libera o repasse ao concluir a corrida
+- [ ] Estorno/cancelamento tratado
+- [ ] Histórico de pagamentos (tutor) e de repasses (motorista)
