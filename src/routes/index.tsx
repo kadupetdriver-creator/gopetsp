@@ -171,6 +171,23 @@ function Home() {
           </div>
         </div>
       </section>
+
+      <section className="border-y border-border/70 bg-card/60 py-14">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 text-center md:flex-row md:justify-between md:text-left">
+          <div>
+            <h2 className="text-2xl font-semibold sm:text-3xl">Fale com a PetMobi</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Tire dúvidas, faça seu cadastro ou acompanhe seu pet pelo WhatsApp.
+            </p>
+          </div>
+          <Button asChild size="lg" className="gap-2 rounded-full">
+            <a href="https://wa.me/5511985125238" target="_blank" rel="noopener noreferrer">
+              <Phone className="size-5" />
+              (11) 98512-5238
+            </a>
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }
