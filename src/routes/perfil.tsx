@@ -245,6 +245,18 @@ function PerfilPage() {
                 onChange={(e) => setPetName(e.target.value)}
                 required
               />
+              <Select value={petSpeciesValue} onValueChange={setPetSpeciesValue} required>
+                <SelectTrigger className="sm:w-48" aria-label="Espécie do pet">
+                  <SelectValue placeholder="Espécie (obrigatório)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {petSpecies.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Select value={petSize} onValueChange={setPetSize}>
                 <SelectTrigger className="sm:w-56">
                   <SelectValue />
