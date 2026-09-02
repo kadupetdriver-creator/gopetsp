@@ -19,6 +19,7 @@ import {
   type RideStatus,
 } from "@/lib/rides";
 import { cn } from "@/lib/utils";
+import { PetDetails, type PetInfo } from "@/components/PetDetails";
 
 export const Route = createFileRoute("/motorista")({
   head: () => ({
@@ -54,10 +55,11 @@ type Ride = {
   distance_km: number;
   status: RideStatus;
   driver_id: string | null;
+  ride_pets: { pets: PetInfo | null }[] | null;
 };
 
 const selectCols =
-  "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id";
+  "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
 function MotoristaPage() {
   const { user, profile, loading } = useAuth();
@@ -78,7 +80,7 @@ function MotoristaPage() {
         .select(selectCols)
         .order("scheduled_at", { ascending: true });
       if (error) throw error;
-      return data as Ride[];
+      return data as unknown as Ride[];
     },
   });
 
@@ -261,6 +263,25 @@ function RideCard({ ride, children }: { ride: Ride; children?: React.ReactNode }
             <span className="font-normal text-muted-foreground">· {ride.distance_km} km</span>
           </p>
         </div>
+
+        {(() => {
+          const pets = (ride.ride_pets ?? [])
+            .map((rp) => rp.pets)
+            .filter((p): p is PetInfo => !!p);
+          if (pets.length === 0) return null;
+          return (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">
+                {pets.length > 1 ? `${pets.length} pets nesta corrida` : "Pet desta corrida"}
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {pets.map((pet) => (
+                  <PetDetails key={pet.name} pet={pet} />
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {ride.notes && (
           <p className="rounded-xl bg-secondary p-3 text-sm text-secondary-foreground">

@@ -207,6 +207,42 @@ export type Database = {
           },
         ]
       }
+      ride_pets: {
+        Row: {
+          created_at: string
+          id: string
+          pet_id: string
+          ride_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pet_id: string
+          ride_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pet_id?: string
+          ride_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_pets_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ride_pets_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_reviews: {
         Row: {
           comment: string | null

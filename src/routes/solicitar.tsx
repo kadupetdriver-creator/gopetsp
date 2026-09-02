@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, MapPin, ShieldCheck } from "lucide-react";
+import { Loader2, MapPin, PawPrint, Plus, ShieldCheck, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,6 +53,7 @@ function SolicitarPage() {
 
   const [petName, setPetName] = useState("");
   const [petSize, setPetSize] = useState("medio");
+  const [selectedPetIds, setSelectedPetIds] = useState<string[]>([]);
   const [serviceType, setServiceType] = useState("veterinario");
   const [originAddress, setOriginAddress] = useState("");
   const [origin, setOrigin] = useState<SelectedPlace | null>(null);
@@ -72,12 +73,39 @@ function SolicitarPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pets")
-        .select("id, name, size")
+        .select("id, name, size, species, breed, photo_url")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
   });
+
+  const selectedPets = (pets ?? []).filter((p) => selectedPetIds.includes(p.id));
+  const maxPets = 3;
+  const sizeRank = ["pequeno", "medio", "grande"];
+  const groupSize =
+    selectedPets.length > 0
+      ? selectedPets.reduce(
+          (acc, p) => (sizeRank.indexOf(p.size) > sizeRank.indexOf(acc) ? p.size : acc),
+          "pequeno",
+        )
+      : petSize;
+  const petCount = Math.max(1, selectedPets.length);
+  const rideTitle =
+    selectedPets.length > 0
+      ? selectedPets.map((p) => p.name).join(", ")
+      : petName;
+
+  const togglePet = (id: string) => {
+    setSelectedPetIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= maxPets) {
+        toast.error(`Máximo de ${maxPets} pets por corrida.`);
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
 
   const originPoint: [number, number] | null = origin ? [origin.lat, origin.lng] : null;
   const destinationPoint: [number, number] | null = destination
@@ -89,16 +117,22 @@ function SolicitarPage() {
       ? Math.max(1, Math.round(distanceKmBetween(originPoint, destinationPoint) * 1.35 * 10) / 10)
       : 0;
   const routeReady = !!originPoint && !!destinationPoint;
-  const price = estimatePriceCents(distance, petSize);
+  // Cada pet adicional acrescenta 15% ao valor estimado.
+  const price = Math.round(estimatePriceCents(distance, groupSize) * (1 + 0.15 * (petCount - 1)));
 
   const create = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Sessão expirada");
       if (!origin || !destination) throw new Error("Selecione origem e destino nas sugestões");
-      const { error } = await supabase.from("rides").insert({
+      if (selectedPets.length === 0 && !petName.trim())
+        throw new Error("Selecione ao menos um pet");
+      const { data: ride, error } = await supabase
+        .from("rides")
+        .insert({
         tutor_id: user.id,
-        pet_name: petName,
-        pet_size: petSize,
+        pet_id: selectedPets[0]?.id ?? null,
+        pet_name: rideTitle,
+        pet_size: groupSize,
         service_type: serviceType,
         origin_address: origin.address,
         origin_neighborhood: origin.neighborhood,
@@ -112,8 +146,16 @@ function SolicitarPage() {
         notes: notes || null,
         distance_km: distance,
         price_cents: price,
-      });
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+      if (selectedPets.length > 0) {
+        const { error: linkError } = await supabase
+          .from("ride_pets")
+          .insert(selectedPets.map((p) => ({ ride_id: ride.id, pet_id: p.id })));
+        if (linkError) throw linkError;
+      }
     },
     onSuccess: () => {
       toast.success("Chamada enviada! Estamos procurando um motorista parceiro.");
@@ -145,35 +187,119 @@ function SolicitarPage() {
               <CardDescription>Usaremos essas informações para preparar o veículo.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="petName">Nome do pet</Label>
-                <Input
-                  id="petName"
-                  value={petName}
-                  onChange={(e) => setPetName(e.target.value)}
-                  placeholder="Nina"
-                  required
-                  list="pets-salvos"
-                />
-                <datalist id="pets-salvos">
-                  {pets?.map((p) => <option key={p.id} value={p.name} />)}
-                </datalist>
-              </div>
-              <div className="space-y-2">
-                <Label>Porte</Label>
-                <Select value={petSize} onValueChange={setPetSize}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {petSizes.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
-                      </SelectItem>
+              <div className="space-y-3 sm:col-span-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Label>Pets desta corrida</Label>
+                  <span
+                    className={`text-xs font-medium ${
+                      selectedPetIds.length >= maxPets ? "text-primary-ink" : "text-muted-foreground"
+                    }`}
+                  >
+                    {selectedPetIds.length} de {maxPets} selecionados
+                  </span>
+                </div>
+                {pets && pets.length > 0 ? (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {pets.map((p) => {
+                      const active = selectedPetIds.includes(p.id);
+                      const blocked = !active && selectedPetIds.length >= maxPets;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          aria-pressed={active}
+                          disabled={blocked}
+                          onClick={() => togglePet(p.id)}
+                          className={`flex items-center gap-3 rounded-xl border p-3 text-left transition ${
+                            active
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:bg-muted"
+                          } ${blocked ? "cursor-not-allowed opacity-50" : ""}`}
+                        >
+                          {p.photo_url ? (
+                            <img
+                              src={p.photo_url}
+                              alt={`Foto de ${p.name}`}
+                              className="size-10 shrink-0 rounded-lg object-cover"
+                            />
+                          ) : (
+                            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                              <PawPrint className="size-4 text-primary-ink" />
+                            </span>
+                          )}
+                          <span className="min-w-0">
+                            <span className="block truncate font-medium">{p.name}</span>
+                            <span className="block truncate text-xs text-muted-foreground">
+                              {[p.breed, petSizes.find((s) => s.value === p.size)?.label]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </span>
+                          </span>
+                          {active ? (
+                            <X className="ml-auto size-4 text-muted-foreground" />
+                          ) : (
+                            <Plus className="ml-auto size-4 text-muted-foreground" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Você ainda não cadastrou pets. Informe o nome e o porte abaixo, ou cadastre
+                    perfis completos no seu perfil.
+                  </p>
+                )}
+                {selectedPets.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedPets.map((p) => (
+                      <span
+                        key={p.id}
+                        className="flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground"
+                      >
+                        {p.name}
+                        <button
+                          type="button"
+                          aria-label={`Remover ${p.name} da corrida`}
+                          onClick={() => togglePet(p.id)}
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </span>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                )}
               </div>
+
+              {selectedPets.length === 0 && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="petName">Nome do pet</Label>
+                    <Input
+                      id="petName"
+                      value={petName}
+                      onChange={(e) => setPetName(e.target.value)}
+                      placeholder="Nina"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Porte</Label>
+                    <Select value={petSize} onValueChange={setPetSize}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {petSizes.map((s) => (
+                          <SelectItem key={s.value} value={s.value}>
+                            {s.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
               <div className="space-y-2 sm:col-span-2">
                 <Label>Motivo da viagem</Label>
                 <Select value={serviceType} onValueChange={setServiceType}>
@@ -274,7 +400,9 @@ function SolicitarPage() {
                 <p className="text-xs uppercase tracking-wide opacity-80">Estimativa</p>
                 <p className="mt-1 text-3xl font-semibold">{formatBRL(price)}</p>
                 <p className="mt-1 text-xs opacity-90">
-                  {routeReady ? `${distance} km` : "— km"} · {petSizes.find((s) => s.value === petSize)?.label}
+                  {routeReady ? `${distance} km` : "— km"} ·{" "}
+                  {petSizes.find((s) => s.value === groupSize)?.label} · {petCount}{" "}
+                  {petCount > 1 ? "pets" : "pet"}
                 </p>
               </div>
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
