@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as MinhasCorridasRouteImport } from './routes/minhas-corridas'
 import { Route as MotoristaRouteImport } from './routes/motorista'
+import { Route as PagamentosRouteImport } from './routes/pagamentos'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
@@ -37,6 +38,11 @@ const MinhasCorridasRoute = MinhasCorridasRouteImport.update({
 const MotoristaRoute = MotoristaRouteImport.update({
   id: '/motorista',
   path: '/motorista',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PagamentosRoute = PagamentosRouteImport.update({
+  id: '/pagamentos',
+  path: '/pagamentos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilRoute = PerfilRouteImport.update({
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/minhas-corridas': typeof MinhasCorridasRoute
   '/motorista': typeof MotoristaRoute
+  '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/minhas-corridas': typeof MinhasCorridasRoute
   '/motorista': typeof MotoristaRoute
+  '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/minhas-corridas': typeof MinhasCorridasRoute
   '/motorista': typeof MotoristaRoute
+  '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/minhas-corridas'
     | '/motorista'
+    | '/pagamentos'
     | '/perfil'
     | '/solicitar'
     | '/acompanhar/$token'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/minhas-corridas'
     | '/motorista'
+    | '/pagamentos'
     | '/perfil'
     | '/solicitar'
     | '/acompanhar/$token'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/minhas-corridas'
     | '/motorista'
+    | '/pagamentos'
     | '/perfil'
     | '/solicitar'
     | '/acompanhar/$token'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   MinhasCorridasRoute: typeof MinhasCorridasRoute
   MotoristaRoute: typeof MotoristaRoute
+  PagamentosRoute: typeof PagamentosRoute
   PerfilRoute: typeof PerfilRoute
   SolicitarRoute: typeof SolicitarRoute
   AcompanharTokenRoute: typeof AcompanharTokenRoute
@@ -176,6 +189,13 @@ declare module '@tanstack/react-router' {
       path: '/motorista'
       fullPath: '/motorista'
       preLoaderRoute: typeof MotoristaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pagamentos': {
+      id: '/pagamentos'
+      path: '/pagamentos'
+      fullPath: '/pagamentos'
+      preLoaderRoute: typeof PagamentosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil': {
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   MinhasCorridasRoute: MinhasCorridasRoute,
   MotoristaRoute: MotoristaRoute,
+  PagamentosRoute: PagamentosRoute,
   PerfilRoute: PerfilRoute,
   SolicitarRoute: SolicitarRoute,
   AcompanharTokenRoute: AcompanharTokenRoute,
