@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PawPrint, ShieldCheck, MapPinned, Clock, Star, MessageCircle } from "lucide-react";
 import heroImg from "@/assets/hero-pet-transporte.jpg";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { spSubprefeituras } from "@/lib/rides";
@@ -30,6 +31,7 @@ function Home() {
     <div>
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 lg:grid-cols-2 lg:py-20">
         <div>
+          <BrandLogo size={96} withWordmark={false} className="mb-5" />
           <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
             <PawPrint className="size-3.5 text-primary" /> Só em São Paulo, com carinho
           </span>
@@ -69,6 +71,9 @@ function Home() {
             alt="Motorista parceiro acomodando um cachorro em caixa de transporte em uma rua de São Paulo"
             className="w-full rounded-3xl object-cover shadow-soft"
           />
+          <div className="absolute -bottom-6 left-6 hidden rounded-2xl bg-brand-canvas p-2 shadow-soft ring-1 ring-border sm:block">
+            <BrandLogo size={72} withWordmark={false} />
+          </div>
         </div>
       </section>
 
