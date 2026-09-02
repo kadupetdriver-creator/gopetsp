@@ -50,17 +50,19 @@ function Home() {
               <Link to="/auth">Quero dirigir</Link>
             </Button>
           </div>
-          <dl className="mt-9 grid grid-cols-3 gap-4 border-t border-border pt-6">
-            {[
-              { k: "12 min", v: "tempo médio de aceite" },
-              { k: "4,9", v: "nota média dos parceiros" },
-              { k: "24/7", v: "chamadas na cidade" },
-            ].map((s) => (
-              <div key={s.k}>
-                <dt className="text-2xl font-semibold text-primary-ink">{s.k}</dt>
-                <dd className="text-xs text-muted-foreground">{s.v}</dd>
-              </div>
-            ))}
+          <dl className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-border pt-6">
+            <div>
+              <dt className="text-2xl font-semibold text-primary-ink">24/7</dt>
+              <dd className="text-xs text-muted-foreground">chamadas na cidade</dd>
+            </div>
+            <div>
+              <dt className="text-2xl font-semibold text-primary-ink">SP inteira</dt>
+              <dd className="text-xs text-muted-foreground">todos os bairros de São Paulo</dd>
+            </div>
+            <div>
+              <dt className="text-2xl font-semibold text-primary-ink">Tempo real</dt>
+              <dd className="text-xs text-muted-foreground">mapa e chat durante a corrida</dd>
+            </div>
           </dl>
         </div>
         <div className="relative">
