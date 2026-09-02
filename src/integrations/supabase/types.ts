@@ -136,6 +136,77 @@ export type Database = {
           },
         ]
       }
+      ride_payments: {
+        Row: {
+          amount_cents: number
+          cancellation_fee_cents: number
+          created_at: string
+          driver_amount_cents: number
+          driver_id: string | null
+          environment: string
+          id: string
+          paid_at: string | null
+          platform_fee_cents: number
+          refunded_at: string | null
+          refunded_cents: number
+          released_at: string | null
+          ride_id: string
+          status: Database["public"]["Enums"]["payment_status"]
+          stripe_payment_intent: string | null
+          stripe_session_id: string | null
+          tutor_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          cancellation_fee_cents?: number
+          created_at?: string
+          driver_amount_cents: number
+          driver_id?: string | null
+          environment?: string
+          id?: string
+          paid_at?: string | null
+          platform_fee_cents: number
+          refunded_at?: string | null
+          refunded_cents?: number
+          released_at?: string | null
+          ride_id: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          tutor_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          cancellation_fee_cents?: number
+          created_at?: string
+          driver_amount_cents?: number
+          driver_id?: string | null
+          environment?: string
+          id?: string
+          paid_at?: string | null
+          platform_fee_cents?: number
+          refunded_at?: string | null
+          refunded_cents?: number
+          released_at?: string | null
+          ride_id?: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          tutor_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_payments_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: true
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_reviews: {
         Row: {
           comment: string | null
@@ -282,6 +353,13 @@ export type Database = {
     }
     Enums: {
       app_role: "tutor" | "driver"
+      payment_status:
+        | "pending"
+        | "held"
+        | "released"
+        | "refunded"
+        | "cancelled"
+        | "failed"
       ride_status:
         | "pending"
         | "accepted"
@@ -417,6 +495,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["tutor", "driver"],
+      payment_status: [
+        "pending",
+        "held",
+        "released",
+        "refunded",
+        "cancelled",
+        "failed",
+      ],
       ride_status: [
         "pending",
         "accepted",
