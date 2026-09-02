@@ -90,10 +90,14 @@ function PerfilPage() {
       if (!emailPattern.test(email.trim())) {
         throw new Error("Informe um e-mail válido.");
       }
+      if (phone.trim() && !phonePattern.test(phone.trim())) {
+        throw new Error("Informe um celular válido com DDD, ex.: (11) 90000-0000.");
+      }
       const { error } = await supabase
         .from("profiles")
         .update({
           full_name: fullName,
+          phone: phone.trim() || null,
           vehicle_model: vehicleModel || null,
           vehicle_plate: vehiclePlate || null,
         })
