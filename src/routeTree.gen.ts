@@ -15,6 +15,7 @@ import { Route as MinhasCorridasRouteImport } from './routes/minhas-corridas'
 import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
+import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const SolicitarRoute = SolicitarRouteImport.update({
   path: '/solicitar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AcompanharTokenRoute = AcompanharTokenRouteImport.update({
+  id: '/acompanhar/$token',
+  path: '/acompanhar/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/motorista': typeof MotoristaRoute
   '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
+  '/acompanhar/$token': typeof AcompanharTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/motorista': typeof MotoristaRoute
   '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
+  '/acompanhar/$token': typeof AcompanharTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,14 +79,27 @@ export interface FileRoutesById {
   '/motorista': typeof MotoristaRoute
   '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
+  '/acompanhar/$token': typeof AcompanharTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/minhas-corridas' | '/motorista' | '/perfil' | '/solicitar'
+    | '/'
+    | '/auth'
+    | '/minhas-corridas'
+    | '/motorista'
+    | '/perfil'
+    | '/solicitar'
+    | '/acompanhar/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/auth' | '/minhas-corridas' | '/motorista' | '/perfil' | '/solicitar'
+    | '/'
+    | '/auth'
+    | '/minhas-corridas'
+    | '/motorista'
+    | '/perfil'
+    | '/solicitar'
+    | '/acompanhar/$token'
   id:
     | '__root__'
     | '/'
@@ -87,6 +108,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/perfil'
     | '/solicitar'
+    | '/acompanhar/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -96,6 +118,7 @@ export interface RootRouteChildren {
   MotoristaRoute: typeof MotoristaRoute
   PerfilRoute: typeof PerfilRoute
   SolicitarRoute: typeof SolicitarRoute
+  AcompanharTokenRoute: typeof AcompanharTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -142,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SolicitarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/acompanhar/$token': {
+      id: '/acompanhar/$token'
+      path: '/acompanhar/$token'
+      fullPath: '/acompanhar/$token'
+      preLoaderRoute: typeof AcompanharTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -152,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   MotoristaRoute: MotoristaRoute,
   PerfilRoute: PerfilRoute,
   SolicitarRoute: SolicitarRoute,
+  AcompanharTokenRoute: AcompanharTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
