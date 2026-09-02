@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PawPrint, ShieldCheck, MapPinned, Clock, Star, MessageCircle } from "lucide-react";
-import heroImg from "@/assets/hero-pet-transporte.jpg";
+import { PawPrint, ShieldCheck, MapPinned, Clock, Star, MessageCircle, Phone } from "lucide-react";
+import bannerAsset from "@/assets/petmobi-banner.jpg.asset.json";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -67,10 +67,10 @@ function Home() {
         </div>
         <div className="relative">
           <img
-            src={heroImg}
-            width={1600}
-            height={1104}
-            alt="Motorista parceiro acomodando um cachorro em caixa de transporte em uma rua de São Paulo"
+            src={bannerAsset.url}
+            width={1080}
+            height={1080}
+            alt="PetMobi — transporte de pet em São Paulo: cão e gato em pose de super-heróis com a cidade ao fundo"
             className="w-full rounded-3xl object-cover shadow-soft"
           />
           <div className="absolute -bottom-6 left-6 hidden rounded-2xl bg-brand-canvas p-2 shadow-soft ring-1 ring-border sm:block">
@@ -153,7 +153,7 @@ function Home() {
               Atendemos a cidade inteira
             </h2>
             <p className="mt-2 text-sm opacity-90">
-              Bairros com maior volume de chamadas hoje em São Paulo.
+              Bairros com maior volume de chamadas em São Paulo.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               {spSubprefeituras.map((b) => (
@@ -169,6 +169,23 @@ function Home() {
               <Link to="/auth">Criar minha conta</Link>
             </Button>
           </div>
+        </div>
+      </section>
+
+      <section className="border-y border-border/70 bg-card/60 py-14">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 text-center md:flex-row md:justify-between md:text-left">
+          <div>
+            <h2 className="text-2xl font-semibold sm:text-3xl">Fale com a PetMobi</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Tire dúvidas, faça seu cadastro ou acompanhe seu pet pelo WhatsApp.
+            </p>
+          </div>
+          <Button asChild size="lg" className="gap-2 rounded-full">
+            <a href="https://wa.me/5511985125238" target="_blank" rel="noopener noreferrer">
+              <Phone className="size-5" />
+              (11) 98512-5238
+            </a>
+          </Button>
         </div>
       </section>
     </div>

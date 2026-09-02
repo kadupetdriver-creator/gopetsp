@@ -139,7 +139,15 @@ function RootComponent() {
             <Outlet />
           </main>
           <footer className="border-t border-border/70 py-6 text-center text-xs text-muted-foreground">
-            PetMobi · Transporte de pets com carinho em São Paulo
+            <p>PetMobi · Transporte de pets com carinho em São Paulo</p>
+            <a
+              href="https://wa.me/5511985125238"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-flex items-center gap-1 text-foreground hover:underline"
+            >
+              (11) 98512-5238
+            </a>
           </footer>
         </div>
         <Toaster position="top-center" richColors />
