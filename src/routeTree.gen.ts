@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as MinhasCorridasRouteImport } from './routes/minhas-corridas'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MinhasCorridasRoute = MinhasCorridasRouteImport.update({
+  id: '/minhas-corridas',
+  path: '/minhas-corridas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolicitarRoute = SolicitarRouteImport.update({
   id: '/solicitar',
   path: '/solicitar',
@@ -32,30 +38,34 @@ const SolicitarRoute = SolicitarRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/minhas-corridas': typeof MinhasCorridasRoute
   '/solicitar': typeof SolicitarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/minhas-corridas': typeof MinhasCorridasRoute
   '/solicitar': typeof SolicitarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/minhas-corridas': typeof MinhasCorridasRoute
   '/solicitar': typeof SolicitarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/solicitar'
+  fullPaths: '/' | '/auth' | '/minhas-corridas' | '/solicitar'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/solicitar'
-  id: '__root__' | '/' | '/auth' | '/solicitar'
+  to: '/' | '/auth' | '/minhas-corridas' | '/solicitar'
+  id: '__root__' | '/' | '/auth' | '/minhas-corridas' | '/solicitar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  MinhasCorridasRoute: typeof MinhasCorridasRoute
   SolicitarRoute: typeof SolicitarRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/minhas-corridas': {
+      id: '/minhas-corridas'
+      path: '/minhas-corridas'
+      fullPath: '/minhas-corridas'
+      preLoaderRoute: typeof MinhasCorridasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/solicitar': {
       id: '/solicitar'
       path: '/solicitar'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  MinhasCorridasRoute: MinhasCorridasRoute,
   SolicitarRoute: SolicitarRoute,
 }
 export const routeTree = rootRouteImport
