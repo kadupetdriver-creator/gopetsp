@@ -17,7 +17,6 @@ import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
 import { Route as PagamentoRideIdRouteImport } from './routes/pagamento.$rideId'
-import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -60,11 +59,6 @@ const PagamentoRideIdRoute = PagamentoRideIdRouteImport.update({
   path: '/pagamento/$rideId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
-  id: '/api/public/stripe-webhook',
-  path: '/api/public/stripe-webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -81,7 +75,6 @@ export interface FileRoutesByFullPath {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -93,7 +86,6 @@ export interface FileRoutesByTo {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -106,7 +98,6 @@ export interface FileRoutesById {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -120,7 +111,6 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/pagamento/$rideId'
-    | '/api/public/stripe-webhook'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,7 +122,6 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/pagamento/$rideId'
-    | '/api/public/stripe-webhook'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -144,7 +133,6 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/pagamento/$rideId'
-    | '/api/public/stripe-webhook'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -157,7 +145,6 @@ export interface RootRouteChildren {
   SolicitarRoute: typeof SolicitarRoute
   AcompanharTokenRoute: typeof AcompanharTokenRoute
   PagamentoRideIdRoute: typeof PagamentoRideIdRoute
-  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -219,13 +206,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagamentoRideIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/stripe-webhook': {
-      id: '/api/public/stripe-webhook'
-      path: '/api/public/stripe-webhook'
-      fullPath: '/api/public/stripe-webhook'
-      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -245,7 +225,6 @@ const rootRouteChildren: RootRouteChildren = {
   SolicitarRoute: SolicitarRoute,
   AcompanharTokenRoute: AcompanharTokenRoute,
   PagamentoRideIdRoute: PagamentoRideIdRoute,
-  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
