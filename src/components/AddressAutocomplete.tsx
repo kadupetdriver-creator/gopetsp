@@ -71,7 +71,6 @@ export function AddressAutocomplete({
       cancelled = true;
       clearTimeout(timer);
       setLoading(false);
-      clearTimeout(timer);
     };
   }, [value, search]);
 
