@@ -78,7 +78,7 @@ function PerfilPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pets")
-        .select("id, name, size")
+        .select("id, name, size, species")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -87,33 +87,49 @@ function PerfilPage() {
 
   const saveProfile = useMutation({
     mutationFn: async () => {
+      if (!emailPattern.test(email.trim())) {
+        throw new Error("Informe um e-mail válido.");
+      }
       const { error } = await supabase
         .from("profiles")
         .update({
           full_name: fullName,
-          phone: phone || null,
           vehicle_model: vehicleModel || null,
           vehicle_plate: vehiclePlate || null,
         })
         .eq("id", user!.id);
       if (error) throw error;
+
+      if (email.trim().toLowerCase() !== (user?.email ?? "").toLowerCase()) {
+        const { error: emailError } = await supabase.auth.updateUser({ email: email.trim() });
+        if (emailError) throw new Error("Não foi possível alterar o e-mail. Tente novamente.");
+        return { emailChanged: true };
+      }
+      return { emailChanged: false };
     },
-    onSuccess: async () => {
-      toast.success("Perfil atualizado.");
+    onSuccess: async (result) => {
+      toast.success(
+        result?.emailChanged
+          ? "Perfil salvo. Confirme o novo e-mail pelo link que enviamos."
+          : "Perfil atualizado.",
+      );
       await refreshProfile();
     },
-    onError: () => toast.error("Não foi possível salvar o perfil."),
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível salvar o perfil."),
   });
 
   const addPet = useMutation({
     mutationFn: async () => {
+      if (!petSpeciesValue) throw new Error("Selecione a espécie do pet.");
       const { error } = await supabase
         .from("pets")
-        .insert({ owner_id: user!.id, name: petName, size: petSize });
+        .insert({ owner_id: user!.id, name: petName, size: petSize, species: petSpeciesValue });
       if (error) throw error;
     },
     onSuccess: () => {
       setPetName("");
+      setPetSpeciesValue("");
       toast.success("Pet cadastrado.");
       void qc.invalidateQueries({ queryKey: ["pets"] });
     },
