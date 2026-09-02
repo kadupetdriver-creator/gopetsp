@@ -93,6 +93,7 @@
   --sidebar-ring: oklch(0.83 0.17 87);
   --gradient-warm: linear-gradient(135deg, oklch(0.86 0.17 92), oklch(0.76 0.16 70));
   --shadow-soft: 0 18px 40px -22px oklch(0.3 0.05 90 / 0.4);
+  --brand-canvas: oklch(1 0 0);
 }
 
 .dark {
@@ -129,6 +130,7 @@
   --sidebar-ring: oklch(0.85 0.17 88);
   --gradient-warm: linear-gradient(135deg, oklch(0.7 0.15 85), oklch(0.5 0.1 70));
   --shadow-soft: 0 18px 40px -22px oklch(0 0 0 / 0.6);
+  --brand-canvas: oklch(1 0 0);
 }
 
 @layer base {
@@ -156,4 +158,8 @@
 
 @utility shadow-soft {
   box-shadow: var(--shadow-soft);
+}
+
+@utility bg-brand-canvas {
+  background-color: var(--brand-canvas);
 }
