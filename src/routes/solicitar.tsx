@@ -156,11 +156,12 @@ function SolicitarPage() {
           .insert(selectedPets.map((p) => ({ ride_id: ride.id, pet_id: p.id })));
         if (linkError) throw linkError;
       }
+      return ride.id as string;
     },
-    onSuccess: () => {
-      toast.success("Chamada enviada! Estamos procurando um motorista parceiro.");
+    onSuccess: (rideId) => {
+      toast.success("Chamada criada! Confirme o pagamento para buscarmos um motorista.");
       void qc.invalidateQueries({ queryKey: ["rides"] });
-      void navigate({ to: "/minhas-corridas" });
+      void navigate({ to: "/pagamento/$rideId", params: { rideId } });
     },
     onError: () => toast.error("Não conseguimos enviar a chamada. Tente novamente."),
   });
