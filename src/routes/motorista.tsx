@@ -119,9 +119,10 @@ function MotoristaPage() {
 
   const open = rides?.filter((r) => r.status === "pending") ?? [];
   const mine = rides?.filter((r) => r.driver_id === user?.id && r.status !== "pending") ?? [];
+  // Ganhos líquidos: o motorista recebe 80% (a plataforma retém 20% de comissão).
   const earnings = mine
     .filter((r) => r.status === "completed")
-    .reduce((sum, r) => sum + r.price_cents, 0);
+    .reduce((sum, r) => sum + Math.round(r.price_cents * 0.8), 0);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
