@@ -54,7 +54,7 @@ export function RideMap({ origin, destination, driver, className }: RideMapProps
         .bindPopup("Destino")
         .addTo(layers);
       L.polyline([origin, destination], {
-        color: "#0f766e",
+        color: "#111111",
         weight: 4,
         opacity: 0.65,
         dashArray: "8 10",
@@ -62,7 +62,7 @@ export function RideMap({ origin, destination, driver, className }: RideMapProps
 
       const points: [number, number][] = [origin, destination];
       if (driver) {
-        L.marker(driver, { icon: pin("🚐", "#fde68a"), title: "Motorista" })
+        L.marker(driver, { icon: pin("🚐", "#facc15"), title: "Motorista" })
           .bindPopup("Motorista")
           .addTo(layers);
         points.push(driver);
