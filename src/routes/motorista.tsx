@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, MapPin, Route as RouteIcon, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { releaseRidePayment } from "@/lib/payments.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -104,6 +105,10 @@ function MotoristaPage() {
         .update({ status, driver_id: user!.id })
         .eq("id", id);
       if (error) throw error;
+      if (status === "completed") {
+        const result = await releaseRidePayment({ data: { rideId: id } });
+        if ("error" in result) throw new Error(result.error);
+      }
     },
     onSuccess: () => {
       toast.success("Corrida atualizada.");
