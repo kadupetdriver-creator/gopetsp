@@ -50,3 +50,10 @@
 ## Etapa 8 — Cadastro: espécie do pet, e-mail e telefone
 - [x] Espécie obrigatória no cadastro de pets e visível nos detalhes
 - [x] E-mail no perfil com validação e confirmação por link ao alterar
+
+## Etapa 10 — Correção de lacunas de pagamento e conta
+- [ ] Webhook no caminho oficial /api/public/payments/webhook + eventos expired/async/failed
+- [ ] Corridas só aparecem ao motorista após pagamento retido
+- [ ] Stripe Connect: onboarding do motorista e repasse automático (transfer) ao concluir
+- [ ] Histórico financeiro /pagamentos para tutor e motorista
+- [ ] Gestão de conta no perfil: trocar e-mail, trocar senha e excluir conta
