@@ -133,7 +133,8 @@ function PerfilPage() {
       toast.success("Pet cadastrado.");
       void qc.invalidateQueries({ queryKey: ["pets"] });
     },
-    onError: () => toast.error("Não foi possível cadastrar o pet."),
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível cadastrar o pet."),
   });
 
   const removePet = useMutation({
