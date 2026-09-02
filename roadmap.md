@@ -1,6 +1,6 @@
 # Roadmap — PatinhasGo
 
-## Etapa 1 — Base do marketplace (em andamento)
+## Etapa 1 — Base do marketplace
 - [x] Lovable Cloud + tabelas de perfis, pets e corridas com regras de acesso
 - [x] Login/cadastro (e-mail, senha e Google) com papéis tutor/motorista
 - [x] Solicitação de corrida com estimativa de preço
@@ -10,8 +10,15 @@
 - [ ] Landing page responsiva + layout raiz (header, toasts, fontes)
 
 ## Etapa 2 — Chat e avaliações
-- [ ] Tabela de mensagens vinculada à corrida, apenas participantes
+- [ ] Tabela de mensagens vinculada à corrida, visível só aos participantes
 - [ ] Tabela de avaliações (nota + comentário) entre tutor e motorista
-- [ ] Chat em tempo real durante corrida ativa
+- [ ] Chat em tempo real enquanto a corrida está ativa
 - [ ] Avaliação mútua ao concluir a corrida
-- [ ] Exibir média e avaliações no perfil
+- [ ] Média e avaliações exibidas no perfil
+
+## Etapa 3 — Rastreamento em mapa
+- [ ] Posição do motorista persistida e atualizada em tempo real
+- [ ] Status claros: aceita, a caminho, em andamento, concluída
+- [ ] Tela de acompanhamento do tutor com mapa, rota e progresso/estimativa
+- [ ] Link público de compartilhamento por token, expondo apenas o mínimo
+- [ ] Regras de acesso restritas aos participantes da corrida
