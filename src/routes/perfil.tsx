@@ -49,8 +49,10 @@ function PerfilPage() {
   const [phone, setPhone] = useState("");
   const [vehicleModel, setVehicleModel] = useState("");
   const [vehiclePlate, setVehiclePlate] = useState("");
+  const [email, setEmail] = useState("");
   const [petName, setPetName] = useState("");
   const [petSize, setPetSize] = useState("medio");
+  const [petSpeciesValue, setPetSpeciesValue] = useState("");
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
