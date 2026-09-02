@@ -81,7 +81,7 @@ export const getPlaceDetails = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { placeId: string }) => {
     const placeId = String(input?.placeId ?? "").trim();
-    if (!/^[A-Za-z0-9_-]{5,200}$/.test(placeId)) throw new Error("Local inválido");
+    if (!/^[A-Za-z0-9_=-]{5,600}$/.test(placeId)) throw new Error("Local inválido");
     return { placeId };
   })
   .handler(async ({ data }): Promise<PlaceDetails> => {
