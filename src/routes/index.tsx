@@ -153,7 +153,7 @@ function Home() {
               Atendemos a cidade inteira
             </h2>
             <p className="mt-2 text-sm opacity-90">
-              Bairros com maior volume de chamadas hoje em São Paulo.
+              Bairros com maior volume de chamadas em São Paulo.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               {spSubprefeituras.map((b) => (
