@@ -67,10 +67,10 @@ function Home() {
         </div>
         <div className="relative">
           <img
-            src={heroImg}
-            width={1600}
-            height={1104}
-            alt="Motorista parceiro acomodando um cachorro em caixa de transporte em uma rua de São Paulo"
+            src={bannerAsset.url}
+            width={1080}
+            height={1080}
+            alt="PetMobi — transporte de pet em São Paulo: cão e gato em pose de super-heróis com a cidade ao fundo"
             className="w-full rounded-3xl object-cover shadow-soft"
           />
           <div className="absolute -bottom-6 left-6 hidden rounded-2xl bg-brand-canvas p-2 shadow-soft ring-1 ring-border sm:block">
