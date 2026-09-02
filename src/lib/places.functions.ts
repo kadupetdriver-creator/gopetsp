@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 
 /** Viés de busca: cidade de São Paulo e região metropolitana. */
-const SP_CIRCLE = {
+const SAO_PAULO_CIRCLE = {
   center: { latitude: -23.5613, longitude: -46.6565 },
   radius: 45000,
 };
@@ -46,7 +46,7 @@ export const searchAddresses = createServerFn({ method: "POST" })
         languageCode: "pt-BR",
         regionCode: "BR",
         includedRegionCodes: ["br"],
-        locationBias: { circle: SP_CIRCLE },
+        locationBias: { circle: SAO_PAULO_CIRCLE },
       }),
     });
     if (!response.ok) await readError(response);

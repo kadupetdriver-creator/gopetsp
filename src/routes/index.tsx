@@ -53,8 +53,8 @@ function Home() {
               <dd className="text-xs text-muted-foreground">chamadas na cidade</dd>
             </div>
             <div>
-              <dt className="text-2xl font-semibold text-primary-ink">SP inteira</dt>
-              <dd className="text-xs text-muted-foreground">todos os bairros de São Paulo</dd>
+              <dt className="text-2xl font-semibold text-primary-ink">Cidade de São Paulo</dt>
+              <dd className="text-xs text-muted-foreground">todos os bairros atendidos</dd>
             </div>
             <div>
               <dt className="text-2xl font-semibold text-primary-ink">Tempo real</dt>
