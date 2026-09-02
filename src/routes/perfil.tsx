@@ -17,9 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { petSizes, petSpecies, labelOf } from "@/lib/rides";
-import { PhoneVerification } from "@/components/PhoneVerification";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+const phonePattern = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
