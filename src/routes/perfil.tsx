@@ -287,7 +287,8 @@ function PerfilPage() {
                     <PawPrint className="size-4 text-primary-ink" />
                     {pet.name}
                     <span className="font-normal text-muted-foreground">
-                      · {petSizes.find((s) => s.value === pet.size)?.label ?? pet.size}
+                      · {labelOf(petSpecies, pet.species)} ·{" "}
+                      {petSizes.find((s) => s.value === pet.size)?.label ?? pet.size}
                     </span>
                   </span>
                   <Button
