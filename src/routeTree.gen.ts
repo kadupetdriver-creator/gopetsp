@@ -10,33 +10,115 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as MinhasCorridasRouteImport } from './routes/minhas-corridas'
+import { Route as MotoristaRouteImport } from './routes/motorista'
+import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as SolicitarRouteImport } from './routes/solicitar'
+import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MinhasCorridasRoute = MinhasCorridasRouteImport.update({
+  id: '/minhas-corridas',
+  path: '/minhas-corridas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaRoute = MotoristaRouteImport.update({
+  id: '/motorista',
+  path: '/motorista',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SolicitarRoute = SolicitarRouteImport.update({
+  id: '/solicitar',
+  path: '/solicitar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AcompanharTokenRoute = AcompanharTokenRouteImport.update({
+  id: '/acompanhar/$token',
+  path: '/acompanhar/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/minhas-corridas': typeof MinhasCorridasRoute
+  '/motorista': typeof MotoristaRoute
+  '/perfil': typeof PerfilRoute
+  '/solicitar': typeof SolicitarRoute
+  '/acompanhar/$token': typeof AcompanharTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/minhas-corridas': typeof MinhasCorridasRoute
+  '/motorista': typeof MotoristaRoute
+  '/perfil': typeof PerfilRoute
+  '/solicitar': typeof SolicitarRoute
+  '/acompanhar/$token': typeof AcompanharTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/minhas-corridas': typeof MinhasCorridasRoute
+  '/motorista': typeof MotoristaRoute
+  '/perfil': typeof PerfilRoute
+  '/solicitar': typeof SolicitarRoute
+  '/acompanhar/$token': typeof AcompanharTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/minhas-corridas'
+    | '/motorista'
+    | '/perfil'
+    | '/solicitar'
+    | '/acompanhar/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/minhas-corridas'
+    | '/motorista'
+    | '/perfil'
+    | '/solicitar'
+    | '/acompanhar/$token'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/minhas-corridas'
+    | '/motorista'
+    | '/perfil'
+    | '/solicitar'
+    | '/acompanhar/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  MinhasCorridasRoute: typeof MinhasCorridasRoute
+  MotoristaRoute: typeof MotoristaRoute
+  PerfilRoute: typeof PerfilRoute
+  SolicitarRoute: typeof SolicitarRoute
+  AcompanharTokenRoute: typeof AcompanharTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +130,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/minhas-corridas': {
+      id: '/minhas-corridas'
+      path: '/minhas-corridas'
+      fullPath: '/minhas-corridas'
+      preLoaderRoute: typeof MinhasCorridasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista': {
+      id: '/motorista'
+      path: '/motorista'
+      fullPath: '/motorista'
+      preLoaderRoute: typeof MotoristaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solicitar': {
+      id: '/solicitar'
+      path: '/solicitar'
+      fullPath: '/solicitar'
+      preLoaderRoute: typeof SolicitarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/acompanhar/$token': {
+      id: '/acompanhar/$token'
+      path: '/acompanhar/$token'
+      fullPath: '/acompanhar/$token'
+      preLoaderRoute: typeof AcompanharTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  MinhasCorridasRoute: MinhasCorridasRoute,
+  MotoristaRoute: MotoristaRoute,
+  PerfilRoute: PerfilRoute,
+  SolicitarRoute: SolicitarRoute,
+  AcompanharTokenRoute: AcompanharTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
