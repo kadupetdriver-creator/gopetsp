@@ -20,12 +20,12 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Acesse a PetMobi como tutor para pedir transporte do seu pet em São Paulo ou como motorista parceiro para aceitar corridas.",
+          "Acesse a PetMobi para pedir transporte do seu pet em São Paulo com motoristas parceiros verificados.",
       },
       { property: "og:title", content: "Entrar ou criar conta | PetMobi" },
       {
         property: "og:description",
-        content: "Conta de tutor ou motorista parceiro no transporte de pets em São Paulo.",
+        content: "Conta de tutor para transporte de pets em São Paulo.",
       },
     ],
   }),
@@ -35,7 +35,6 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
-  const [role, setRole] = useState<"tutor" | "driver">("tutor");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -56,7 +55,7 @@ function AuthPage() {
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: fullName, phone, role },
+        data: { full_name: fullName, phone, role: "tutor" },
       },
     });
     setBusy(false);
@@ -102,7 +101,7 @@ function AuthPage() {
       <Card className="shadow-soft">
         <CardHeader>
           <CardTitle>Acesse a PetMobi</CardTitle>
-          <CardDescription>Escolha como você quer usar a plataforma.</CardDescription>
+          <CardDescription>Crie sua conta de tutor e peça corridas para o seu pet.</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signup">
