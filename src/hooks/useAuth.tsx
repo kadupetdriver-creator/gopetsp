@@ -8,7 +8,7 @@ export type Profile = {
   id: string;
   full_name: string;
   phone: string | null;
-  phone_verified: boolean;
+  
   city: string;
   role: AppRole;
   vehicle_model: string | null;
