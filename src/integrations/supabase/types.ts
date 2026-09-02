@@ -65,6 +65,42 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_verifications: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -73,6 +109,8 @@ export type Database = {
           full_name: string
           id: string
           phone: string | null
+          phone_verified: boolean
+          phone_verified_at: string | null
           role: Database["public"]["Enums"]["app_role"]
           updated_at: string
           vehicle_model: string | null
@@ -85,6 +123,8 @@ export type Database = {
           full_name?: string
           id: string
           phone?: string | null
+          phone_verified?: boolean
+          phone_verified_at?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           vehicle_model?: string | null
@@ -97,6 +137,8 @@ export type Database = {
           full_name?: string
           id?: string
           phone?: string | null
+          phone_verified?: boolean
+          phone_verified_at?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           vehicle_model?: string | null

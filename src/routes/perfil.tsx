@@ -16,7 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { petSizes } from "@/lib/rides";
+import { petSizes, petSpecies, labelOf } from "@/lib/rides";
+import { PhoneVerification } from "@/components/PhoneVerification";
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -46,8 +49,10 @@ function PerfilPage() {
   const [phone, setPhone] = useState("");
   const [vehicleModel, setVehicleModel] = useState("");
   const [vehiclePlate, setVehiclePlate] = useState("");
+  const [email, setEmail] = useState("");
   const [petName, setPetName] = useState("");
   const [petSize, setPetSize] = useState("medio");
+  const [petSpeciesValue, setPetSpeciesValue] = useState("");
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
@@ -62,13 +67,18 @@ function PerfilPage() {
     }
   }, [profile]);
 
+  useEffect(() => {
+    if (user?.email) setEmail(user.email);
+  }, [user?.email]);
+
+
   const { data: pets } = useQuery({
     queryKey: ["pets", user?.id],
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pets")
-        .select("id, name, size")
+        .select("id, name, size, species")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -77,37 +87,54 @@ function PerfilPage() {
 
   const saveProfile = useMutation({
     mutationFn: async () => {
+      if (!emailPattern.test(email.trim())) {
+        throw new Error("Informe um e-mail válido.");
+      }
       const { error } = await supabase
         .from("profiles")
         .update({
           full_name: fullName,
-          phone: phone || null,
           vehicle_model: vehicleModel || null,
           vehicle_plate: vehiclePlate || null,
         })
         .eq("id", user!.id);
       if (error) throw error;
+
+      if (email.trim().toLowerCase() !== (user?.email ?? "").toLowerCase()) {
+        const { error: emailError } = await supabase.auth.updateUser({ email: email.trim() });
+        if (emailError) throw new Error("Não foi possível alterar o e-mail. Tente novamente.");
+        return { emailChanged: true };
+      }
+      return { emailChanged: false };
     },
-    onSuccess: async () => {
-      toast.success("Perfil atualizado.");
+    onSuccess: async (result) => {
+      toast.success(
+        result?.emailChanged
+          ? "Perfil salvo. Confirme o novo e-mail pelo link que enviamos."
+          : "Perfil atualizado.",
+      );
       await refreshProfile();
     },
-    onError: () => toast.error("Não foi possível salvar o perfil."),
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível salvar o perfil."),
   });
 
   const addPet = useMutation({
     mutationFn: async () => {
+      if (!petSpeciesValue) throw new Error("Selecione a espécie do pet.");
       const { error } = await supabase
         .from("pets")
-        .insert({ owner_id: user!.id, name: petName, size: petSize });
+        .insert({ owner_id: user!.id, name: petName, size: petSize, species: petSpeciesValue });
       if (error) throw error;
     },
     onSuccess: () => {
       setPetName("");
+      setPetSpeciesValue("");
       toast.success("Pet cadastrado.");
       void qc.invalidateQueries({ queryKey: ["pets"] });
     },
-    onError: () => toast.error("Não foi possível cadastrar o pet."),
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível cadastrar o pet."),
   });
 
   const removePet = useMutation({
@@ -147,8 +174,24 @@ function PerfilPage() {
               <Input id="nome" value={fullName} onChange={(e) => setFullName(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tel">WhatsApp</Label>
-              <Input id="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <PhoneVerification
+                phone={phone}
+                verified={!!profile?.phone_verified}
+                onPhoneChange={setPhone}
+                onVerified={() => void refreshProfile()}
+              />
             </div>
             {isDriver && (
               <>
@@ -202,6 +245,18 @@ function PerfilPage() {
                 onChange={(e) => setPetName(e.target.value)}
                 required
               />
+              <Select value={petSpeciesValue} onValueChange={setPetSpeciesValue} required>
+                <SelectTrigger className="sm:w-48" aria-label="Espécie do pet">
+                  <SelectValue placeholder="Espécie (obrigatório)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {petSpecies.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Select value={petSize} onValueChange={setPetSize}>
                 <SelectTrigger className="sm:w-56">
                   <SelectValue />
@@ -232,7 +287,8 @@ function PerfilPage() {
                     <PawPrint className="size-4 text-primary-ink" />
                     {pet.name}
                     <span className="font-normal text-muted-foreground">
-                      · {petSizes.find((s) => s.value === pet.size)?.label ?? pet.size}
+                      · {labelOf(petSpecies, pet.species)} ·{" "}
+                      {petSizes.find((s) => s.value === pet.size)?.label ?? pet.size}
                     </span>
                   </span>
                   <Button
