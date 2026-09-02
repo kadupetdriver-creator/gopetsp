@@ -97,8 +97,10 @@ function MotoristaPage() {
 
   const update = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: RideStatus }) => {
-      const payload: Record<string, unknown> = { status, driver_id: user!.id };
-      const { error } = await supabase.from("rides").update(payload).eq("id", id);
+      const { error } = await supabase
+        .from("rides")
+        .update({ status, driver_id: user!.id })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
