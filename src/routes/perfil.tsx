@@ -190,7 +190,7 @@ function PerfilPage() {
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="tel">Celular (WhatsApp/SMS)</Label>
+              <Label htmlFor="tel">Celular (WhatsApp)</Label>
               <Input
                 id="tel"
                 inputMode="tel"

@@ -50,5 +50,3 @@
 ## Etapa 8 — Cadastro: espécie do pet, e-mail e telefone verificado
 - [x] Espécie obrigatória no cadastro de pets e visível nos detalhes
 - [x] E-mail no perfil com validação e confirmação por link ao alterar
-- [x] Confirmação de telefone por código SMS (pendente/verificado, expiração e limites)
-- [ ] Conectar provedor de SMS (Twilio) para envio real dos códigos
