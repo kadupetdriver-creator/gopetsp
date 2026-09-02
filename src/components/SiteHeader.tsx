@@ -15,11 +15,13 @@ export function SiteHeader() {
     ? profile?.role === "driver"
       ? [
           { to: "/motorista", label: "Chamadas" },
+          { to: "/pagamentos", label: "Repasses" },
           { to: "/perfil", label: "Meu perfil" },
         ]
       : [
           { to: "/solicitar", label: "Solicitar corrida" },
           { to: "/minhas-corridas", label: "Minhas corridas" },
+          { to: "/pagamentos", label: "Pagamentos" },
           { to: "/perfil", label: "Meu perfil" },
         ]
     : [

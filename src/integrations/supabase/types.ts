@@ -72,8 +72,11 @@ export type Database = {
           created_at: string
           full_name: string
           id: string
+          payouts_checked_at: string | null
+          payouts_enabled: boolean
           phone: string | null
           role: Database["public"]["Enums"]["app_role"]
+          stripe_account_id: string | null
           updated_at: string
           vehicle_model: string | null
           vehicle_plate: string | null
@@ -84,8 +87,11 @@ export type Database = {
           created_at?: string
           full_name?: string
           id: string
+          payouts_checked_at?: string | null
+          payouts_enabled?: boolean
           phone?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          stripe_account_id?: string | null
           updated_at?: string
           vehicle_model?: string | null
           vehicle_plate?: string | null
@@ -96,8 +102,11 @@ export type Database = {
           created_at?: string
           full_name?: string
           id?: string
+          payouts_checked_at?: string | null
+          payouts_enabled?: boolean
           phone?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          stripe_account_id?: string | null
           updated_at?: string
           vehicle_model?: string | null
           vehicle_plate?: string | null
@@ -154,6 +163,8 @@ export type Database = {
           status: Database["public"]["Enums"]["payment_status"]
           stripe_payment_intent: string | null
           stripe_session_id: string | null
+          stripe_transfer_id: string | null
+          transfer_group: string | null
           tutor_id: string
           updated_at: string
         }
@@ -174,6 +185,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["payment_status"]
           stripe_payment_intent?: string | null
           stripe_session_id?: string | null
+          stripe_transfer_id?: string | null
+          transfer_group?: string | null
           tutor_id: string
           updated_at?: string
         }
@@ -194,6 +207,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["payment_status"]
           stripe_payment_intent?: string | null
           stripe_session_id?: string | null
+          stripe_transfer_id?: string | null
+          transfer_group?: string | null
           tutor_id?: string
           updated_at?: string
         }

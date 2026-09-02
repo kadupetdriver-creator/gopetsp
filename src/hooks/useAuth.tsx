@@ -13,6 +13,7 @@ export type Profile = {
   role: AppRole;
   vehicle_model: string | null;
   vehicle_plate: string | null;
+  payouts_enabled?: boolean | null;
 };
 
 type AuthContextValue = {

@@ -84,6 +84,7 @@ export const createRideCheckout = createServerFn({ method: "POST" })
         ],
         payment_intent_data: {
           description: `PetMobi — corrida ${ride.id}`,
+          transfer_group: `ride_${ride.id}`,
           metadata: {
             rideId: ride.id,
             userId,
@@ -104,6 +105,7 @@ export const createRideCheckout = createServerFn({ method: "POST" })
           driver_amount_cents: driverAmountCents,
           status: "pending",
           environment: data.environment,
+          transfer_group: `ride_${ride.id}`,
           stripe_session_id: session.id,
         },
         { onConflict: "ride_id" },
@@ -182,17 +184,45 @@ export const releaseRidePayment = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: payment } = await supabaseAdmin
       .from("ride_payments")
-      .select("id, status")
+      .select("id, status, driver_amount_cents, transfer_group, environment")
       .eq("ride_id", ride.id)
       .maybeSingle();
     if (!payment) return { status: "none" };
     if (payment.status !== "held") return { status: payment.status };
+
+    // Repasse automático quando o motorista já concluiu o cadastro de recebimento.
+    let transferId: string | null = null;
+    if (ride.driver_id) {
+      const { data: driver } = await supabaseAdmin
+        .from("profiles")
+        .select("stripe_account_id, payouts_enabled")
+        .eq("id", ride.driver_id)
+        .maybeSingle();
+      if (driver?.stripe_account_id && driver.payouts_enabled) {
+        try {
+          const stripe = createStripeClient(
+            payment.environment === "live" ? "live" : "sandbox",
+          );
+          const transfer = await stripe.transfers.create({
+            amount: payment.driver_amount_cents,
+            currency: "brl",
+            destination: driver.stripe_account_id,
+            transfer_group: payment.transfer_group ?? `ride_${ride.id}`,
+            metadata: { rideId: ride.id },
+          });
+          transferId = transfer.id;
+        } catch (err) {
+          return { error: getStripeErrorMessage(err) };
+        }
+      }
+    }
 
     await supabaseAdmin
       .from("ride_payments")
       .update({
         status: "released",
         driver_id: ride.driver_id,
+        stripe_transfer_id: transferId,
         released_at: new Date().toISOString(),
       })
       .eq("id", payment.id);
@@ -254,6 +284,100 @@ export const refundRidePayment = createServerFn({ method: "POST" })
         })
         .eq("id", payment.id);
       return { status: "refunded" };
+    } catch (err) {
+      return { error: getStripeErrorMessage(err) };
+    }
+  });
+
+type PayoutStatus = {
+  connected: boolean;
+  payoutsEnabled: boolean;
+  onboardingUrl?: string;
+};
+
+/** Cria/recupera a conta de recebimento do motorista e devolve o link de cadastro. */
+export const startDriverPayouts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { returnUrl: string; environment: StripeEnv }) => {
+    validEnv(data.environment);
+    return data;
+  })
+  .handler(async ({ data, context }): Promise<PayoutStatus | { error: string }> => {
+    const { supabase, userId } = context;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, stripe_account_id, full_name")
+      .eq("id", userId)
+      .maybeSingle();
+    if (!profile || profile.role !== "driver")
+      return { error: "Apenas motoristas parceiros podem configurar recebimentos" };
+
+    try {
+      const stripe = createStripeClient(data.environment);
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      let accountId = profile.stripe_account_id;
+
+      if (!accountId) {
+        const account = await stripe.accounts.create({
+          type: "express",
+          country: "BR",
+          capabilities: { transfers: { requested: true } },
+          business_type: "individual",
+          metadata: { userId },
+        });
+        accountId = account.id;
+        await supabaseAdmin
+          .from("profiles")
+          .update({ stripe_account_id: accountId })
+          .eq("id", userId);
+      }
+
+      const account = await stripe.accounts.retrieve(accountId);
+      const payoutsEnabled = Boolean(account.payouts_enabled);
+      await supabaseAdmin
+        .from("profiles")
+        .update({ payouts_enabled: payoutsEnabled, payouts_checked_at: new Date().toISOString() })
+        .eq("id", userId);
+
+      if (payoutsEnabled) return { connected: true, payoutsEnabled: true };
+
+      const link = await stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: data.returnUrl,
+        return_url: data.returnUrl,
+        type: "account_onboarding",
+      });
+      return { connected: true, payoutsEnabled: false, onboardingUrl: link.url };
+    } catch (err) {
+      return { error: getStripeErrorMessage(err) };
+    }
+  });
+
+/** Reconsulta no Stripe se o motorista já pode receber repasses. */
+export const refreshDriverPayouts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { environment: StripeEnv }) => {
+    validEnv(data.environment);
+    return data;
+  })
+  .handler(async ({ data, context }): Promise<PayoutStatus | { error: string }> => {
+    const { supabase, userId } = context;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("stripe_account_id")
+      .eq("id", userId)
+      .maybeSingle();
+    if (!profile?.stripe_account_id) return { connected: false, payoutsEnabled: false };
+    try {
+      const stripe = createStripeClient(data.environment);
+      const account = await stripe.accounts.retrieve(profile.stripe_account_id);
+      const payoutsEnabled = Boolean(account.payouts_enabled);
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
+        .from("profiles")
+        .update({ payouts_enabled: payoutsEnabled, payouts_checked_at: new Date().toISOString() })
+        .eq("id", userId);
+      return { connected: true, payoutsEnabled };
     } catch (err) {
       return { error: getStripeErrorMessage(err) };
     }

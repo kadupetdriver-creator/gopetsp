@@ -17,6 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { petSizes, petSpecies, labelOf } from "@/lib/rides";
+import { getStripeEnvironment } from "@/lib/stripe";
+import { startDriverPayouts, refreshDriverPayouts } from "@/lib/payments.functions";
+import { deleteMyAccount } from "@/lib/account.functions";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 const phonePattern = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
@@ -53,6 +56,8 @@ function PerfilPage() {
   const [petName, setPetName] = useState("");
   const [petSize, setPetSize] = useState("medio");
   const [petSpeciesValue, setPetSpeciesValue] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
@@ -147,6 +152,72 @@ function PerfilPage() {
       if (error) throw error;
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["pets"] }),
+  });
+
+  const changePassword = useMutation({
+    mutationFn: async () => {
+      if (password.length < 8) throw new Error("A senha deve ter ao menos 8 caracteres.");
+      if (password !== passwordConfirm) throw new Error("As senhas não conferem.");
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw new Error("Não foi possível alterar a senha.");
+    },
+    onSuccess: () => {
+      setPassword("");
+      setPasswordConfirm("");
+      toast.success("Senha atualizada.");
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível alterar a senha."),
+  });
+
+  const removeAccount = useMutation({
+    mutationFn: async () => {
+      const result = await deleteMyAccount({ data: undefined });
+      if ("error" in result) throw new Error(result.error);
+    },
+    onSuccess: async () => {
+      toast.success("Conta excluída.");
+      await supabase.auth.signOut();
+      void navigate({ to: "/" });
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível excluir a conta."),
+  });
+
+  const payouts = useMutation({
+    mutationFn: async () => {
+      const result = await startDriverPayouts({
+        data: { returnUrl: window.location.href, environment: getStripeEnvironment() },
+      });
+      if ("error" in result) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: (result) => {
+      if (result.onboardingUrl) window.location.href = result.onboardingUrl;
+      else toast.success("Sua conta já está apta a receber repasses.");
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível iniciar o cadastro."),
+  });
+
+  const checkPayouts = useMutation({
+    mutationFn: async () => {
+      const result = await refreshDriverPayouts({
+        data: { environment: getStripeEnvironment() },
+      });
+      if ("error" in result) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: async (result) => {
+      await refreshProfile();
+      toast.success(
+        result.payoutsEnabled
+          ? "Recebimentos liberados."
+          : "Cadastro ainda em análise pelo Stripe.",
+      );
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível consultar o status."),
   });
 
   const isDriver = profile?.role === "driver";
@@ -312,6 +383,100 @@ function PerfilPage() {
           </CardContent>
         </Card>
       )}
+          {isDriver && (
+        <Card className="shadow-soft">
+          <CardHeader>
+            <CardTitle className="text-lg">Recebimento de corridas</CardTitle>
+            <CardDescription>
+              Cadastre sua conta de recebimento para que o repasse caia automaticamente quando
+              você concluir a corrida.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center gap-3">
+            <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold">
+              {profile?.payouts_enabled ? "Recebimentos liberados" : "Cadastro pendente"}
+            </span>
+            <Button onClick={() => payouts.mutate()} disabled={payouts.isPending}>
+              {payouts.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+              {profile?.payouts_enabled ? "Atualizar dados bancários" : "Cadastrar recebimento"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => checkPayouts.mutate()}
+              disabled={checkPayouts.isPending}
+            >
+              Verificar status
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      <Card className="shadow-soft">
+        <CardHeader>
+          <CardTitle className="text-lg">Segurança da conta</CardTitle>
+          <CardDescription>Altere sua senha de acesso quando quiser.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form
+            className="grid gap-4 sm:grid-cols-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              changePassword.mutate();
+            }}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="senha">Nova senha</Label>
+              <Input
+                id="senha"
+                type="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="senha2">Confirmar nova senha</Label>
+              <Input
+                id="senha2"
+                type="password"
+                autoComplete="new-password"
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Button type="submit" disabled={changePassword.isPending}>
+                {changePassword.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+                Alterar senha
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/40 shadow-soft">
+        <CardHeader>
+          <CardTitle className="text-lg text-destructive">Excluir conta</CardTitle>
+          <CardDescription>
+            Apaga definitivamente seu cadastro, pets e histórico. Não é possível excluir com
+            pagamentos em aberto.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            variant="destructive"
+            disabled={removeAccount.isPending}
+            onClick={() => {
+              if (window.confirm("Tem certeza que deseja excluir sua conta? Essa ação é definitiva.")) {
+                removeAccount.mutate();
+              }
+            }}
+          >
+            {removeAccount.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            Excluir minha conta
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
