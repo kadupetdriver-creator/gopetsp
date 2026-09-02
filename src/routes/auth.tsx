@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { PawPrint, Car, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -20,12 +19,12 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Acesse a PetMobi como tutor para pedir transporte do seu pet em São Paulo ou como motorista parceiro para aceitar corridas.",
+          "Acesse a PetMobi para pedir transporte do seu pet em São Paulo com motoristas parceiros verificados.",
       },
       { property: "og:title", content: "Entrar ou criar conta | PetMobi" },
       {
         property: "og:description",
-        content: "Conta de tutor ou motorista parceiro no transporte de pets em São Paulo.",
+        content: "Conta de tutor para transporte de pets em São Paulo.",
       },
     ],
   }),
@@ -35,7 +34,6 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
-  const [role, setRole] = useState<"tutor" | "driver">("tutor");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -56,7 +54,7 @@ function AuthPage() {
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: fullName, phone, role },
+        data: { full_name: fullName, phone, role: "tutor" },
       },
     });
     setBusy(false);
@@ -102,7 +100,7 @@ function AuthPage() {
       <Card className="shadow-soft">
         <CardHeader>
           <CardTitle>Acesse a PetMobi</CardTitle>
-          <CardDescription>Escolha como você quer usar a plataforma.</CardDescription>
+          <CardDescription>Crie sua conta de tutor e peça corridas para o seu pet.</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signup">
@@ -113,29 +111,7 @@ function AuthPage() {
 
             <TabsContent value="signup" className="mt-5">
               <form className="space-y-4" onSubmit={handleSignUp}>
-                <div className="grid grid-cols-2 gap-3">
-                  {(
-                    [
-                      { value: "tutor", label: "Sou tutor", icon: PawPrint },
-                      { value: "driver", label: "Sou motorista", icon: Car },
-                    ] as const
-                  ).map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setRole(opt.value)}
-                      className={cn(
-                        "flex flex-col items-center gap-2 rounded-xl border p-4 text-sm font-medium transition-colors",
-                        role === opt.value
-                          ? "border-primary bg-primary/10 text-primary-ink"
-                          : "border-border text-muted-foreground hover:bg-secondary",
-                      )}
-                    >
-                      <opt.icon className="size-5" />
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome completo</Label>
                   <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
