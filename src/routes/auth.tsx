@@ -15,13 +15,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar ou criar conta | PatinhasGo" },
+      { title: "Entrar ou criar conta | PetMobi" },
       {
         name: "description",
         content:
-          "Acesse a PatinhasGo como tutor para pedir transporte do seu pet em São Paulo ou como motorista parceiro para aceitar corridas.",
+          "Acesse a PetMobi como tutor para pedir transporte do seu pet em São Paulo ou como motorista parceiro para aceitar corridas.",
       },
-      { property: "og:title", content: "Entrar ou criar conta | PatinhasGo" },
+      { property: "og:title", content: "Entrar ou criar conta | PetMobi" },
       {
         property: "og:description",
         content: "Conta de tutor ou motorista parceiro no transporte de pets em São Paulo.",
@@ -99,7 +99,7 @@ function AuthPage() {
 
       <Card className="shadow-soft">
         <CardHeader>
-          <CardTitle>Acesse a PatinhasGo</CardTitle>
+          <CardTitle>Acesse a PetMobi</CardTitle>
           <CardDescription>Escolha como você quer usar a plataforma.</CardDescription>
         </CardHeader>
         <CardContent>

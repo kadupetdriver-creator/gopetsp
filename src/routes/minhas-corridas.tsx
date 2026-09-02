@@ -21,16 +21,16 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/minhas-corridas")({
   head: () => ({
     meta: [
-      { title: "Minhas corridas pet | PatinhasGo" },
+      { title: "Minhas corridas pet | PetMobi" },
       {
         name: "description",
         content:
           "Acompanhe em tempo real o status das corridas do seu pet em São Paulo: motorista a caminho, em transporte e concluída.",
       },
-      { property: "og:title", content: "Minhas corridas pet | PatinhasGo" },
+      { property: "og:title", content: "Minhas corridas pet | PetMobi" },
       {
         property: "og:description",
-        content: "Status ao vivo das viagens do seu pet com a PatinhasGo.",
+        content: "Status ao vivo das viagens do seu pet com a PetMobi.",
       },
     ],
   }),

@@ -34,7 +34,7 @@ export function SiteHeader() {
             <PawPrint className="size-5" />
           </span>
           <span className="text-lg font-semibold tracking-tight">
-            Patinhas<span className="text-primary">Go</span>
+            Pet<span className="text-primary">Mobi</span>
           </span>
         </Link>
 

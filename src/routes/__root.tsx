@@ -80,14 +80,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "PatinhasGo — Transporte de pets em São Paulo" },
+      { title: "PetMobi — Transporte de pets em São Paulo" },
       {
         name: "description",
         content:
           "Marketplace de transporte de pets em São Paulo: peça uma corrida para o seu animal e acompanhe motoristas parceiros verificados.",
       },
-      { name: "author", content: "PatinhasGo" },
-      { property: "og:title", content: "PatinhasGo — Transporte de pets em São Paulo" },
+      { name: "author", content: "PetMobi" },
+      { property: "og:title", content: "PetMobi — Transporte de pets em São Paulo" },
       {
         property: "og:description",
         content: "Corridas seguras para o seu pet, com motoristas parceiros verificados.",
@@ -139,7 +139,7 @@ function RootComponent() {
             <Outlet />
           </main>
           <footer className="border-t border-border/70 py-6 text-center text-xs text-muted-foreground">
-            PatinhasGo · Transporte de pets com carinho em São Paulo
+            PetMobi · Transporte de pets com carinho em São Paulo
           </footer>
         </div>
         <Toaster position="top-center" richColors />

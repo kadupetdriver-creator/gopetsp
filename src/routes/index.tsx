@@ -8,13 +8,13 @@ import { spSubprefeituras } from "@/lib/rides";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "PatinhasGo — Transporte de pets em São Paulo" },
+      { title: "PetMobi — Transporte de pets em São Paulo" },
       {
         name: "description",
         content:
           "Peça uma corrida para o seu pet em São Paulo: motoristas parceiros verificados, acompanhamento em tempo real e preço estimado antes de confirmar.",
       },
-      { property: "og:title", content: "PatinhasGo — Transporte de pets em São Paulo" },
+      { property: "og:title", content: "PetMobi — Transporte de pets em São Paulo" },
       {
         property: "og:description",
         content:
