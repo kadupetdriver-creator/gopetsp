@@ -17,6 +17,8 @@ import {
   type RideStatus,
 } from "@/lib/rides";
 import { cn } from "@/lib/utils";
+import { paymentStatusLabels, paymentStatusStyles, getStripeEnvironment } from "@/lib/stripe";
+import { refundRidePayment } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/minhas-corridas")({
   head: () => ({
@@ -52,6 +54,8 @@ type Ride = {
   driver_id: string | null;
 };
 
+type Payment = { ride_id: string; status: string };
+
 function MinhasCorridas() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -77,12 +81,30 @@ function MinhasCorridas() {
     },
   });
 
+  const { data: payments } = useQuery({
+    queryKey: ["ride-payments", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ride_payments")
+        .select("ride_id, status")
+        .eq("tutor_id", user!.id);
+      if (error) throw error;
+      return data as Payment[];
+    },
+  });
+
+  const paymentOf = (rideId: string) => payments?.find((p) => p.ride_id === rideId);
+
   useEffect(() => {
     if (!user) return;
     const channel = supabase
       .channel("rides-tutor")
       .on("postgres_changes", { event: "*", schema: "public", table: "rides" }, () => {
         void qc.invalidateQueries({ queryKey: ["rides"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "ride_payments" }, () => {
+        void qc.invalidateQueries({ queryKey: ["ride-payments"] });
       })
       .subscribe();
     return () => {
@@ -94,10 +116,20 @@ function MinhasCorridas() {
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("rides").update({ status: "cancelled" }).eq("id", id);
       if (error) throw error;
+      const result = await refundRidePayment({
+        data: { rideId: id, environment: getStripeEnvironment() },
+      });
+      if ("error" in result) throw new Error(result.error);
+      return result.status;
     },
-    onSuccess: () => {
-      toast.success("Corrida cancelada.");
+    onSuccess: (status) => {
+      toast.success(
+        status === "refunded"
+          ? "Corrida cancelada. O estorno foi solicitado."
+          : "Corrida cancelada.",
+      );
       void qc.invalidateQueries({ queryKey: ["rides"] });
+      void qc.invalidateQueries({ queryKey: ["ride-payments"] });
     },
     onError: () => toast.error("Não foi possível cancelar."),
   });
@@ -152,6 +184,25 @@ function MinhasCorridas() {
                 >
                   {statusLabels[ride.status]}
                 </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={cn(
+                    "rounded-full px-3 py-1 text-xs font-semibold",
+                    paymentStatusStyles[paymentOf(ride.id)?.status ?? "pending"],
+                  )}
+                >
+                  {paymentStatusLabels[paymentOf(ride.id)?.status ?? "pending"]}
+                </span>
+                {(paymentOf(ride.id)?.status ?? "pending") === "pending" &&
+                  ride.status !== "cancelled" && (
+                    <Button asChild size="sm" className="rounded-full">
+                      <Link to="/pagamento/$rideId" params={{ rideId: ride.id }}>
+                        Pagar corrida
+                      </Link>
+                    </Button>
+                  )}
               </div>
 
               <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
