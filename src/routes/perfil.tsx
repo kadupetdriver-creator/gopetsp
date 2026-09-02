@@ -67,6 +67,11 @@ function PerfilPage() {
     }
   }, [profile]);
 
+  useEffect(() => {
+    if (user?.email) setEmail(user.email);
+  }, [user?.email]);
+
+
   const { data: pets } = useQuery({
     queryKey: ["pets", user?.id],
     enabled: !!user,
