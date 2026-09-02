@@ -44,5 +44,5 @@
 ## Etapa 7 — Identidade visual PetMobi
 - [x] Logo enviada publicada como asset e componente BrandLogo
 - [x] Paleta preto/amarelo aplicada nos tokens globais (claro e escuro)
-- [ ] Logo no cabeçalho, landing, autenticação e favicon
-- [ ] Revisar contraste e cores fixas em todas as telas
+- [x] Logo no cabeçalho, landing, autenticação e favicon
+- [x] Revisar contraste e cores fixas em todas as telas (token text-primary-ink)
