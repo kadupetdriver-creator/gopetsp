@@ -185,12 +185,15 @@ function PerfilPage() {
                 required
               />
             </div>
-            <div className="sm:col-span-2">
-              <PhoneVerification
-                phone={phone}
-                verified={!!profile?.phone_verified}
-                onPhoneChange={setPhone}
-                onVerified={() => void refreshProfile()}
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="tel">Celular (WhatsApp/SMS)</Label>
+              <Input
+                id="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="(11) 90000-0000"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
               />
             </div>
             {isDriver && (
