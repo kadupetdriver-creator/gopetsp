@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as MinhasCorridasRouteImport } from './routes/minhas-corridas'
 import { Route as MotoristaRouteImport } from './routes/motorista'
+import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const MotoristaRoute = MotoristaRouteImport.update({
   path: '/motorista',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolicitarRoute = SolicitarRouteImport.update({
   id: '/solicitar',
   path: '/solicitar',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/minhas-corridas': typeof MinhasCorridasRoute
   '/motorista': typeof MotoristaRoute
+  '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/minhas-corridas': typeof MinhasCorridasRoute
   '/motorista': typeof MotoristaRoute
+  '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
 }
 export interface FileRoutesById {
@@ -61,19 +69,23 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/minhas-corridas': typeof MinhasCorridasRoute
   '/motorista': typeof MotoristaRoute
+  '/perfil': typeof PerfilRoute
   '/solicitar': typeof SolicitarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/minhas-corridas' | '/motorista' | '/solicitar'
+  fullPaths:
+    '/' | '/auth' | '/minhas-corridas' | '/motorista' | '/perfil' | '/solicitar'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/minhas-corridas' | '/motorista' | '/solicitar'
+  to:
+    '/' | '/auth' | '/minhas-corridas' | '/motorista' | '/perfil' | '/solicitar'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/minhas-corridas'
     | '/motorista'
+    | '/perfil'
     | '/solicitar'
   fileRoutesById: FileRoutesById
 }
@@ -82,6 +94,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   MinhasCorridasRoute: typeof MinhasCorridasRoute
   MotoristaRoute: typeof MotoristaRoute
+  PerfilRoute: typeof PerfilRoute
   SolicitarRoute: typeof SolicitarRoute
 }
 
@@ -115,6 +128,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MotoristaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/solicitar': {
       id: '/solicitar'
       path: '/solicitar'
@@ -130,6 +150,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   MinhasCorridasRoute: MinhasCorridasRoute,
   MotoristaRoute: MotoristaRoute,
+  PerfilRoute: PerfilRoute,
   SolicitarRoute: SolicitarRoute,
 }
 export const routeTree = rootRouteImport
