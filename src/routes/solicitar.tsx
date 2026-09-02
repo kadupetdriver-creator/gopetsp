@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -19,12 +18,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  distanceKmBetween,
   estimatePriceCents,
   formatBRL,
   petSizes,
   serviceTypes,
-  spSubprefeituras,
 } from "@/lib/rides";
+import { AddressAutocomplete, type SelectedPlace } from "@/components/AddressAutocomplete";
+import { RideMap } from "@/components/RideMap";
 
 export const Route = createFileRoute("/solicitar")({
   head: () => ({
@@ -54,11 +55,10 @@ function SolicitarPage() {
   const [petSize, setPetSize] = useState("medio");
   const [serviceType, setServiceType] = useState("veterinario");
   const [originAddress, setOriginAddress] = useState("");
-  const [originNeighborhood, setOriginNeighborhood] = useState("Pinheiros");
+  const [origin, setOrigin] = useState<SelectedPlace | null>(null);
   const [destinationAddress, setDestinationAddress] = useState("");
-  const [destinationNeighborhood, setDestinationNeighborhood] = useState("Vila Mariana");
+  const [destination, setDestination] = useState<SelectedPlace | null>(null);
   const [scheduledAt, setScheduledAt] = useState(defaultDateTime());
-  const [distance, setDistance] = useState(8);
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -79,20 +79,35 @@ function SolicitarPage() {
     },
   });
 
+  const originPoint: [number, number] | null = origin ? [origin.lat, origin.lng] : null;
+  const destinationPoint: [number, number] | null = destination
+    ? [destination.lat, destination.lng]
+    : null;
+  // Fator simples para aproximar distância em linha reta da distância por vias.
+  const distance =
+    originPoint && destinationPoint
+      ? Math.max(1, Math.round(distanceKmBetween(originPoint, destinationPoint) * 1.35 * 10) / 10)
+      : 0;
+  const routeReady = !!originPoint && !!destinationPoint;
   const price = estimatePriceCents(distance, petSize);
 
   const create = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Sessão expirada");
+      if (!origin || !destination) throw new Error("Selecione origem e destino nas sugestões");
       const { error } = await supabase.from("rides").insert({
         tutor_id: user.id,
         pet_name: petName,
         pet_size: petSize,
         service_type: serviceType,
-        origin_address: originAddress,
-        origin_neighborhood: originNeighborhood,
-        destination_address: destinationAddress,
-        destination_neighborhood: destinationNeighborhood,
+        origin_address: origin.address,
+        origin_neighborhood: origin.neighborhood,
+        origin_lat: origin.lat,
+        origin_lng: origin.lng,
+        destination_address: destination.address,
+        destination_neighborhood: destination.neighborhood,
+        destination_lat: destination.lat,
+        destination_lng: destination.lng,
         scheduled_at: new Date(scheduledAt).toISOString(),
         notes: notes || null,
         distance_km: distance,
@@ -182,57 +197,33 @@ function SolicitarPage() {
               <CardTitle className="text-lg">Trajeto em São Paulo</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="origem">Endereço de embarque</Label>
-                <Input
-                  id="origem"
+              <div className="sm:col-span-2">
+                <AddressAutocomplete
+                  label="Endereço de embarque"
+                  placeholder="Rua dos Pinheiros, 500 - São Paulo"
                   value={originAddress}
-                  onChange={(e) => setOriginAddress(e.target.value)}
-                  placeholder="Rua dos Pinheiros, 500 - apto 42"
+                  onValueChange={(v) => {
+                    setOriginAddress(v);
+                    setOrigin(null);
+                  }}
+                  onSelect={setOrigin}
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Bairro de embarque</Label>
-                <Select value={originNeighborhood} onValueChange={setOriginNeighborhood}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {spSubprefeituras.map((b) => (
-                      <SelectItem key={b} value={b}>
-                        {b}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Bairro de destino</Label>
-                <Select value={destinationNeighborhood} onValueChange={setDestinationNeighborhood}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {spSubprefeituras.map((b) => (
-                      <SelectItem key={b} value={b}>
-                        {b}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="sm:col-span-2">
+                <AddressAutocomplete
+                  label="Endereço de destino"
+                  placeholder="Clínica veterinária, Rua Domingos de Morais, 1200"
+                  value={destinationAddress}
+                  onValueChange={(v) => {
+                    setDestinationAddress(v);
+                    setDestination(null);
+                  }}
+                  onSelect={setDestination}
+                  required
+                />
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="destino">Endereço de destino</Label>
-                <Input
-                  id="destino"
-                  value={destinationAddress}
-                  onChange={(e) => setDestinationAddress(e.target.value)}
-                  placeholder="Clínica Vet Vila Mariana - Rua Domingos de Morais, 1200"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="quando">Data e horário</Label>
                 <Input
                   id="quando"
@@ -242,17 +233,22 @@ function SolicitarPage() {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Distância estimada: {distance} km</Label>
-                <Slider
-                  value={[distance]}
-                  min={1}
-                  max={45}
-                  step={1}
-                  onValueChange={(v) => setDistance(v[0] ?? 1)}
-                  className="pt-3"
-                />
-              </div>
+              {routeReady ? (
+                <div className="space-y-2 sm:col-span-2">
+                  <p className="text-sm text-muted-foreground">
+                    Distância estimada pela rota: <strong>{distance} km</strong>
+                  </p>
+                  <RideMap
+                    origin={originPoint!}
+                    destination={destinationPoint!}
+                    className="h-56 w-full rounded-2xl border border-border sm:h-72"
+                  />
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground sm:col-span-2">
+                  Escolha os endereços nas sugestões do mapa para calcularmos rota e valor.
+                </p>
+              )}
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="obs">Observações para o motorista</Label>
                 <Textarea
@@ -278,20 +274,21 @@ function SolicitarPage() {
                 <p className="text-xs uppercase tracking-wide opacity-80">Estimativa</p>
                 <p className="mt-1 text-3xl font-semibold">{formatBRL(price)}</p>
                 <p className="mt-1 text-xs opacity-90">
-                  {distance} km · {petSizes.find((s) => s.value === petSize)?.label}
+                  {routeReady ? `${distance} km` : "— km"} · {petSizes.find((s) => s.value === petSize)?.label}
                 </p>
               </div>
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-primary-ink" />
                 <span>
-                  {originNeighborhood} → {destinationNeighborhood}
+                  {origin?.neighborhood ?? origin?.address ?? "Origem"} →{" "}
+                  {destination?.neighborhood ?? destination?.address ?? "Destino"}
                 </span>
               </div>
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
                 <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary-ink" />
                 <span>Motoristas com curso de manejo animal e veículo higienizado.</span>
               </div>
-              <Button type="submit" className="w-full" disabled={create.isPending}>
+              <Button type="submit" className="w-full" disabled={create.isPending || !routeReady}>
                 {create.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Chamar motorista
               </Button>
