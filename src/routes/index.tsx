@@ -43,6 +43,9 @@ function Home() {
             ou aeroporto. Acompanhe a corrida em tempo real e converse com o motorista pelo app.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
+            <Button asChild size="lg" variant="secondary" className="rounded-full">
+              <Link to="/perfil">Cadastrar pet</Link>
+            </Button>
             <Button asChild size="lg" className="rounded-full">
               <Link to="/solicitar">Solicitar corrida</Link>
             </Button>
