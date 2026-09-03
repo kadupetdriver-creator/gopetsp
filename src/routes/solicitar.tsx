@@ -193,6 +193,10 @@ function SolicitarPage() {
                     {selectedPetIds.length} de {maxPets} selecionados
                   </span>
                 </div>
+                <div className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-ink">
+                  <PawPrint className="size-4 shrink-0" />
+                  Máximo de 3 pets previamente cadastrados
+                </div>
                 {pets && pets.length > 0 ? (
                   <div className="grid gap-2 sm:grid-cols-2">
                     {pets.map((p) => {
