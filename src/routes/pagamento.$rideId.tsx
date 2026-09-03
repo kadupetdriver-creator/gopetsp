@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, ShieldCheck } from "lucide-react";
+import { CheckCircle2, MessageCircle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { RideCheckout } from "@/components/RideCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { formatBRL } from "@/lib/rides";
+import { formatBRL, rideWhatsAppUrl } from "@/lib/rides";
 import { getStripeEnvironment, splitRideAmount } from "@/lib/stripe";
 import { syncRidePayment } from "@/lib/payments.functions";
 
@@ -53,7 +53,9 @@ function PagamentoCorrida() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("rides")
-        .select("id, pet_name, price_cents, distance_km, status")
+        .select(
+          "id, pet_name, service_type, origin_address, destination_address, scheduled_at, price_cents, distance_km, status",
+        )
         .eq("id", rideId)
         .maybeSingle();
       if (error) throw error;
@@ -132,9 +134,19 @@ function PagamentoCorrida() {
             <p className="max-w-sm text-sm text-muted-foreground">
               Já estamos procurando um motorista parceiro. Você acompanha tudo em tempo real.
             </p>
-            <Button asChild className="mt-2 rounded-full">
-              <Link to="/minhas-corridas">Ver minhas corridas</Link>
-            </Button>
+            <div className="mt-2 flex flex-wrap justify-center gap-2">
+              <Button asChild className="rounded-full">
+                <Link to="/minhas-corridas">Ver minhas corridas</Link>
+              </Button>
+              {ride && (
+                <Button asChild variant="secondary" className="rounded-full">
+                  <a href={rideWhatsAppUrl(ride)} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="mr-2 size-4" />
+                    Enviar para a central (WhatsApp)
+                  </a>
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       ) : (
