@@ -154,6 +154,12 @@ function SolicitarPage() {
     },
     onSuccess: (rideId) => {
       toast.success("Chamada criada! Confirme o pagamento para buscarmos um motorista.");
+      // Envia automaticamente o arquivo/resumo da corrida para a central no WhatsApp.
+      void dispatchRide({ data: { rideId } })
+        .then((r) => {
+          if (r.status === "sent") toast.success("Corrida encaminhada para a central.");
+        })
+        .catch(() => undefined);
       void qc.invalidateQueries({ queryKey: ["rides"] });
       void navigate({ to: "/pagamento/$rideId", params: { rideId } });
     },
