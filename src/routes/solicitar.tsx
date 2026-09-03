@@ -51,8 +51,6 @@ function SolicitarPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const [petName, setPetName] = useState("");
-  const [petSize, setPetSize] = useState("medio");
   const [selectedPetIds, setSelectedPetIds] = useState<string[]>([]);
   const [serviceType, setServiceType] = useState("veterinario");
   const [originAddress, setOriginAddress] = useState("");
@@ -89,12 +87,9 @@ function SolicitarPage() {
           (acc, p) => (sizeRank.indexOf(p.size) > sizeRank.indexOf(acc) ? p.size : acc),
           "pequeno",
         )
-      : petSize;
+      : "medio";
   const petCount = Math.max(1, selectedPets.length);
-  const rideTitle =
-    selectedPets.length > 0
-      ? selectedPets.map((p) => p.name).join(", ")
-      : petName;
+  const rideTitle = selectedPets.map((p) => p.name).join(", ");
 
   const togglePet = (id: string) => {
     setSelectedPetIds((prev) => {
@@ -124,8 +119,7 @@ function SolicitarPage() {
     mutationFn: async () => {
       if (!user) throw new Error("Sessão expirada");
       if (!origin || !destination) throw new Error("Selecione origem e destino nas sugestões");
-      if (selectedPets.length === 0 && !petName.trim())
-        throw new Error("Selecione ao menos um pet");
+      if (selectedPets.length === 0) throw new Error("Selecione ao menos um pet cadastrado");
       const { data: ride, error } = await supabase
         .from("rides")
         .insert({
@@ -247,8 +241,11 @@ function SolicitarPage() {
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    Você ainda não cadastrou pets. Informe o nome e o porte abaixo, ou cadastre
-                    perfis completos no seu perfil.
+                    Você ainda não cadastrou pets.{" "}
+                    <a href="/perfil" className="font-medium text-primary-ink underline">
+                      Cadastre seu pet no seu perfil
+                    </a>{" "}
+                    para solicitar uma corrida.
                   </p>
                 )}
                 {selectedPets.length > 0 && (
@@ -272,35 +269,6 @@ function SolicitarPage() {
                 )}
               </div>
 
-              {selectedPets.length === 0 && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="petName">Nome do pet</Label>
-                    <Input
-                      id="petName"
-                      value={petName}
-                      onChange={(e) => setPetName(e.target.value)}
-                      placeholder="Nina"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Porte</Label>
-                    <Select value={petSize} onValueChange={setPetSize}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {petSizes.map((s) => (
-                          <SelectItem key={s.value} value={s.value}>
-                            {s.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
               <div className="space-y-2 sm:col-span-2">
                 <Label>Motivo da viagem</Label>
                 <Select value={serviceType} onValueChange={setServiceType}>
