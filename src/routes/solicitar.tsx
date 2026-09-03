@@ -52,6 +52,7 @@ function SolicitarPage() {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const dispatchRide = useServerFn(dispatchRideToCentral);
 
   const [selectedPetIds, setSelectedPetIds] = useState<string[]>([]);
   const [serviceType, setServiceType] = useState("veterinario");
