@@ -350,7 +350,6 @@ function SolicitarPage() {
                   id="obs"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Nina fica ansiosa no carro, prefere caixa coberta."
                   rows={3}
                 />
               </div>
