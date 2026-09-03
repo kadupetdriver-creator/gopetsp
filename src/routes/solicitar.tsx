@@ -196,14 +196,14 @@ function SolicitarPage() {
                 <div className="rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-ink">
                   <div className="flex items-center gap-2">
                     <PawPrint className="size-4 shrink-0" />
-                    <span>CAPACIDADE MÁXIMA DO VEÍCULO:</span>
+                    <span className="normal-case">Capacidade máxima do veículo:</span>
                   </div>
                   <ul className="mt-1 list-disc pl-6 normal-case">
-                    <li>1 pet + 3 pessoas</li>
-                    <li>2 pets + 2 pessoas</li>
-                    <li>3 pets + 1 pessoa</li>
+                    <li>1 pet + 2 pessoas</li>
+                    <li>2 pets + 1 pessoa</li>
+                    <li>3 pets</li>
                   </ul>
-                  <p className="mt-1 font-extrabold">NÃO SERÁ PERMITIDO ULTRAPASSAR A CAPACIDADE MÁXIMA.</p>
+                  <p className="mt-1 font-extrabold normal-case">Cobrança adicional por passageiro ou excesso de bagagem.</p>
                 </div>
                 {pets && pets.length > 0 ? (
                   <div className="grid gap-2 sm:grid-cols-2">
