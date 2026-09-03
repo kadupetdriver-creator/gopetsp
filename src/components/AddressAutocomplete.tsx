@@ -90,8 +90,11 @@ export function AddressAutocomplete({
       skipNext.current = true;
       onValueChange(place.address || `${s.primary} ${s.secondary}`.trim());
       onSelect(place);
-    } catch {
-      toast.error("Não conseguimos carregar esse endereço. Tente outro.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Não conseguimos carregar esse endereço. Tente outro.";
+      toast.error(message);
+      onValueChange("");
+      onSelect({ address: "", neighborhood: null, lat: 0, lng: 0 });
     } finally {
       setLoading(false);
     }
