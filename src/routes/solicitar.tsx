@@ -295,7 +295,7 @@ function SolicitarPage() {
               <div className="sm:col-span-2">
                 <AddressAutocomplete
                   label="Endereço de embarque"
-                  placeholder="Rua dos Pinheiros, 500 - São Paulo"
+                  placeholder="coloque o endereço aqui"
                   value={originAddress}
                   onValueChange={(v) => {
                     setOriginAddress(v);
@@ -308,7 +308,7 @@ function SolicitarPage() {
               <div className="sm:col-span-2">
                 <AddressAutocomplete
                   label="Endereço de destino"
-                  placeholder="Clínica veterinária, Rua Domingos de Morais, 1200"
+                  placeholder="coloque o endereço aqui"
                   value={destinationAddress}
                   onValueChange={(v) => {
                     setDestinationAddress(v);
