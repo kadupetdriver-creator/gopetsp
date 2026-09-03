@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, MapPin, PawPrint } from "lucide-react";
+import { CalendarClock, MapPin, MessageCircle, PawPrint } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,7 @@ import {
   formatBRL,
   formatDateTime,
   serviceTypes,
+  rideWhatsAppUrl,
   statusLabels,
   statusStyles,
   type RideStatus,
@@ -232,16 +233,30 @@ function MinhasCorridas() {
                 </p>
               </div>
 
-              {(ride.status === "pending" || ride.status === "accepted") && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => cancel.mutate(ride.id)}
-                  disabled={cancel.isPending}
-                >
-                  Cancelar corrida
-                </Button>
-              )}
+              <div className="flex flex-wrap gap-2">
+                {ride.status !== "cancelled" && (
+                  <Button asChild variant="secondary" size="sm" className="rounded-full">
+                    <a
+                      href={rideWhatsAppUrl(ride)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageCircle className="mr-2 size-4" />
+                      Enviar para a central
+                    </a>
+                  </Button>
+                )}
+                {(ride.status === "pending" || ride.status === "accepted") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => cancel.mutate(ride.id)}
+                    disabled={cancel.isPending}
+                  >
+                    Cancelar corrida
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
         ))}
