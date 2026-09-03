@@ -1,4 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { dispatchRideToCentral } from "@/lib/whatsapp.functions";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, MapPin, PawPrint, Plus, ShieldCheck, X } from "lucide-react";
@@ -50,6 +52,7 @@ function SolicitarPage() {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const dispatchRide = useServerFn(dispatchRideToCentral);
 
   const [selectedPetIds, setSelectedPetIds] = useState<string[]>([]);
   const [serviceType, setServiceType] = useState("veterinario");
@@ -154,6 +157,12 @@ function SolicitarPage() {
     },
     onSuccess: (rideId) => {
       toast.success("Chamada criada! Confirme o pagamento para buscarmos um motorista.");
+      // Envia automaticamente o arquivo/resumo da corrida para a central no WhatsApp.
+      void dispatchRide({ data: { rideId } })
+        .then((r) => {
+          if (r.status === "sent") toast.success("Corrida encaminhada para a central.");
+        })
+        .catch(() => undefined);
       void qc.invalidateQueries({ queryKey: ["rides"] });
       void navigate({ to: "/pagamento/$rideId", params: { rideId } });
     },

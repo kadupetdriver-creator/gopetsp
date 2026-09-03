@@ -113,6 +113,50 @@ export type Database = {
         }
         Relationships: []
       }
+      ride_dispatches: {
+        Row: {
+          content: string
+          created_at: string
+          error: string | null
+          file_name: string
+          id: string
+          provider_message_id: string | null
+          ride_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          error?: string | null
+          file_name: string
+          id?: string
+          provider_message_id?: string | null
+          ride_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          error?: string | null
+          file_name?: string
+          id?: string
+          provider_message_id?: string | null
+          ride_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_dispatches_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_messages: {
         Row: {
           body: string
