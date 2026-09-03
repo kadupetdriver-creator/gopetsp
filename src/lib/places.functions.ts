@@ -3,10 +3,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 
-/** Viés de busca: cidade de São Paulo e região metropolitana. */
+/** Restrição de busca: cidade de São Paulo. */
 const SAO_PAULO_CIRCLE = {
   center: { latitude: -23.5613, longitude: -46.6565 },
-  radius: 45000,
+  radius: 30000,
 };
 
 function gatewayHeaders() {
@@ -28,6 +28,14 @@ async function readError(response: Response): Promise<never> {
   throw new Error(`Falha na busca de endereços [${response.status}]: ${body}`);
 }
 
+function isSaoPauloCity(components: { longText?: string; types?: string[] }[]) {
+  const locality =
+    components.find((c) => c.types?.includes("locality"))?.longText ??
+    components.find((c) => c.types?.includes("administrative_area_level_2"))?.longText ??
+    "";
+  return locality.trim().toLowerCase() === "são paulo";
+}
+
 export type PlaceSuggestion = { placeId: string; primary: string; secondary: string };
 
 export const searchAddresses = createServerFn({ method: "POST" })
@@ -46,7 +54,7 @@ export const searchAddresses = createServerFn({ method: "POST" })
         languageCode: "pt-BR",
         regionCode: "BR",
         includedRegionCodes: ["br"],
-        locationBias: { circle: SAO_PAULO_CIRCLE },
+        locationRestriction: { circle: SAO_PAULO_CIRCLE },
       }),
     });
     if (!response.ok) await readError(response);
@@ -107,11 +115,13 @@ export const getPlaceDetails = createServerFn({ method: "POST" })
       throw new Error("Não foi possível obter as coordenadas do endereço.");
     }
     const comps = json.addressComponents ?? [];
+    if (!isSaoPauloCity(comps)) {
+      throw new Error("Endereço fora da cidade de São Paulo. Selecione um endereço dentro da cidade.");
+    }
     const neighborhood =
       comps.find((c) => c.types?.includes("sublocality_level_1"))?.longText ??
       comps.find((c) => c.types?.includes("sublocality"))?.longText ??
       comps.find((c) => c.types?.includes("neighborhood"))?.longText ??
-      comps.find((c) => c.types?.includes("administrative_area_level_2"))?.longText ??
       null;
     return {
       address: json.formattedAddress ?? "",
