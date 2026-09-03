@@ -131,6 +131,33 @@ export const spSubprefeituras = [
   "Bela Vista",
 ];
 
+/** Central PetMobi no WhatsApp. */
+export const CENTRAL_WHATSAPP = "5511985125238";
+
+/** Monta link wa.me com o resumo da corrida para encaminhar à central. */
+export function rideWhatsAppUrl(ride: {
+  pet_name: string;
+  service_type: string;
+  origin_address: string;
+  destination_address: string;
+  scheduled_at: string;
+  distance_km: number;
+  price_cents: number;
+}): string {
+  const service = serviceTypes.find((s) => s.value === ride.service_type)?.label ?? "Transporte";
+  const text = [
+    "🐾 Nova corrida PetMobi",
+    `Pet(s): ${ride.pet_name}`,
+    `Motivo: ${service}`,
+    `Embarque: ${ride.origin_address}`,
+    `Destino: ${ride.destination_address}`,
+    `Agendada para: ${formatDateTime(ride.scheduled_at)}`,
+    `Distância: ${ride.distance_km} km`,
+    `Valor: ${formatBRL(ride.price_cents)}`,
+  ].join("\n");
+  return `https://wa.me/${CENTRAL_WHATSAPP}?text=${encodeURIComponent(text)}`;
+}
+
 /** Coordenadas aproximadas de bairros de São Paulo, usadas como fallback no mapa. */
 export const neighborhoodCoords: Record<string, [number, number]> = {
   Pinheiros: [-23.5647, -46.6989],
