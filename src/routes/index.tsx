@@ -9,13 +9,13 @@ import { spSubprefeituras } from "@/lib/rides";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "PetMobi — Transporte de pets em São Paulo" },
+      { title: "GoPet — Transporte de pets em São Paulo" },
       {
         name: "description",
         content:
           "Peça uma corrida para o seu pet em São Paulo: motoristas parceiros verificados, acompanhamento em tempo real e preço estimado antes de confirmar.",
       },
-      { property: "og:title", content: "PetMobi — Transporte de pets em São Paulo" },
+      { property: "og:title", content: "GoPet — Transporte de pets em São Paulo" },
       {
         property: "og:description",
         content:
@@ -70,7 +70,7 @@ function Home() {
             src={bannerAsset.url}
             width={1080}
             height={1080}
-            alt="PetMobi — transporte de pet em São Paulo: cão e gato em pose de super-heróis com a cidade ao fundo"
+            alt="GoPet — transporte de pet em São Paulo: cão e gato em pose de super-heróis com a cidade ao fundo"
             className="w-full rounded-3xl object-cover shadow-soft"
           />
           <div className="absolute -bottom-6 left-6 hidden rounded-2xl bg-brand-canvas p-2 shadow-soft ring-1 ring-border sm:block">
@@ -175,7 +175,7 @@ function Home() {
       <section className="border-y border-border/70 bg-card/60 py-14">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 text-center md:flex-row md:justify-between md:text-left">
           <div>
-            <h2 className="text-2xl font-semibold sm:text-3xl">Fale com a PetMobi</h2>
+            <h2 className="text-2xl font-semibold sm:text-3xl">Fale com a GoPet</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Tire dúvidas, faça seu cadastro ou acompanhe seu pet pelo WhatsApp.
             </p>
