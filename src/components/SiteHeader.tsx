@@ -23,6 +23,7 @@ export function SiteHeader() {
           { to: "/solicitar", label: "Solicitar corrida" },
           { to: "/minhas-corridas", label: "Minhas corridas" },
           { to: "/rastreio", label: "Rastreio ao vivo" },
+          { to: "/creditos", label: "Créditos" },
           { to: "/pagamentos", label: "Pagamentos" },
           { to: "/perfil", label: "Meu perfil" },
         ]

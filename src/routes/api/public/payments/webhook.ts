@@ -50,6 +50,19 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           case "checkout.session.completed":
           case "checkout.session.async_payment_succeeded": {
             const session = event.data.object;
+            if (session.metadata?.["kind"] === "credit_topup" && session.payment_status === "paid") {
+              await supabaseAdmin
+                .from("credit_transactions")
+                .update({
+                  status: "completed",
+                  completed_at: new Date().toISOString(),
+                  stripe_payment_intent:
+                    typeof session.payment_intent === "string" ? session.payment_intent : null,
+                })
+                .eq("stripe_session_id", session.id)
+                .eq("status", "pending");
+              break;
+            }
             const rideId = session.metadata?.["rideId"];
             if (rideId && session.payment_status !== "unpaid") {
               await markPaid(

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CreditosRouteImport } from './routes/creditos'
 import { Route as MinhasCorridasRouteImport } from './routes/minhas-corridas'
 import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as PagamentosRouteImport } from './routes/pagamentos'
@@ -29,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditosRoute = CreditosRouteImport.update({
+  id: '/creditos',
+  path: '/creditos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MinhasCorridasRoute = MinhasCorridasRouteImport.update({
@@ -81,6 +87,7 @@ const ApiPublicPaymentsWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/creditos': typeof CreditosRoute
   '/minhas-corridas': typeof MinhasCorridasRoute
   '/motorista': typeof MotoristaRoute
   '/pagamentos': typeof PagamentosRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/creditos': typeof CreditosRoute
   '/minhas-corridas': typeof MinhasCorridasRoute
   '/motorista': typeof MotoristaRoute
   '/pagamentos': typeof PagamentosRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/creditos': typeof CreditosRoute
   '/minhas-corridas': typeof MinhasCorridasRoute
   '/motorista': typeof MotoristaRoute
   '/pagamentos': typeof PagamentosRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/creditos'
     | '/minhas-corridas'
     | '/motorista'
     | '/pagamentos'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/creditos'
     | '/minhas-corridas'
     | '/motorista'
     | '/pagamentos'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/creditos'
     | '/minhas-corridas'
     | '/motorista'
     | '/pagamentos'
@@ -163,6 +175,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  CreditosRoute: typeof CreditosRoute
   MinhasCorridasRoute: typeof MinhasCorridasRoute
   MotoristaRoute: typeof MotoristaRoute
   PagamentosRoute: typeof PagamentosRoute
@@ -188,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creditos': {
+      id: '/creditos'
+      path: '/creditos'
+      fullPath: '/creditos'
+      preLoaderRoute: typeof CreditosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/minhas-corridas': {
@@ -259,6 +279,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  CreditosRoute: CreditosRoute,
   MinhasCorridasRoute: MinhasCorridasRoute,
   MotoristaRoute: MotoristaRoute,
   PagamentosRoute: PagamentosRoute,
