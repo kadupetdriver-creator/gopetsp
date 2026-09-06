@@ -53,6 +53,7 @@ type Ride = {
   distance_km: number;
   status: RideStatus;
   driver_id: string | null;
+  needs_trunk: boolean;
 };
 
 type Payment = { ride_id: string; status: string };
