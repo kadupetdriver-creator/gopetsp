@@ -71,6 +71,7 @@ export const createRideCheckout = createServerFn({ method: "POST" })
         mode: "payment",
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
+        payment_method_types: data.method === "pix" ? ["pix"] : ["card"],
         line_items: [
           {
             quantity: 1,
