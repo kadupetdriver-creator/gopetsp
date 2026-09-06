@@ -254,7 +254,7 @@ export const refundRidePayment = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: payment } = await supabaseAdmin
       .from("ride_payments")
-      .select("id, status, amount_cents, stripe_payment_intent, environment")
+      .select("id, status, amount_cents, stripe_payment_intent, environment, payment_method")
       .eq("ride_id", ride.id)
       .maybeSingle();
     if (!payment) return { status: "none" };
@@ -269,7 +269,34 @@ export const refundRidePayment = createServerFn({ method: "POST" })
     const feeCents = ride.driver_id ? Math.round(payment.amount_cents * CANCELLATION_FEE_RATE) : 0;
     const refundCents = payment.amount_cents - feeCents;
 
+    // Pagamento feito com saldo volta como crédito na carteira, na hora.
+    if (payment.payment_method === "credits") {
+      if (refundCents > 0) {
+        await supabaseAdmin.from("credit_transactions").insert({
+          user_id: ride.tutor_id,
+          kind: "refund",
+          amount_cents: refundCents,
+          status: "completed",
+          payment_method: "credits",
+          description: "Estorno de corrida cancelada",
+          ride_id: ride.id,
+          completed_at: new Date().toISOString(),
+        });
+      }
+      await supabaseAdmin
+        .from("ride_payments")
+        .update({
+          status: "refunded",
+          cancellation_fee_cents: feeCents,
+          refunded_cents: refundCents,
+          refunded_at: new Date().toISOString(),
+        })
+        .eq("id", payment.id);
+      return { status: "refunded" };
+    }
+
     try {
+
       const stripe = createStripeClient(data.environment);
       if (payment.stripe_payment_intent && refundCents > 0) {
         await stripe.refunds.create({
