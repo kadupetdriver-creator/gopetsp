@@ -28,14 +28,6 @@ async function readError(response: Response): Promise<never> {
   throw new Error(`Falha na busca de endereços [${response.status}]: ${body}`);
 }
 
-function isSaoPauloCity(components: { longText?: string; types?: string[] }[]) {
-  const locality =
-    components.find((c) => c.types?.includes("locality"))?.longText ??
-    components.find((c) => c.types?.includes("administrative_area_level_2"))?.longText ??
-    "";
-  return locality.trim().toLowerCase() === "são paulo";
-}
-
 export type PlaceSuggestion = { placeId: string; primary: string; secondary: string };
 
 export const searchAddresses = createServerFn({ method: "POST" })
