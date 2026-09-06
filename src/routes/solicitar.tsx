@@ -63,7 +63,7 @@ function SolicitarPage() {
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
   const [scheduledAt, setScheduledAt] = useState(defaultDateTime());
   const [notes, setNotes] = useState("");
-  const [needsTrunk, setNeedsTrunk] = useState(false);
+  const [needsTrunk, setNeedsTrunk] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
@@ -127,6 +127,7 @@ function SolicitarPage() {
       if (!user) throw new Error("Sessão expirada");
       if (!origin || !destination) throw new Error("Selecione origem e destino nas sugestões");
       if (selectedPets.length === 0) throw new Error("Selecione ao menos um pet cadastrado");
+      if (needsTrunk === null) throw new Error("Informe se deseja utilizar o porta-malas");
       const { data: ride, error } = await supabase
         .from("rides")
         .insert({
