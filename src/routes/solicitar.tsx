@@ -173,7 +173,12 @@ function SolicitarPage() {
       void qc.invalidateQueries({ queryKey: ["rides"] });
       void navigate({ to: "/pagamento/$rideId", params: { rideId } });
     },
-    onError: () => toast.error("Não conseguimos enviar a chamada. Tente novamente."),
+    onError: (error) =>
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : "Não conseguimos enviar a chamada. Tente novamente.",
+      ),
   });
 
   return (
