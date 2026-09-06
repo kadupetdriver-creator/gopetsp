@@ -155,7 +155,7 @@ function SolicitarPage() {
         distance_km: distance,
         price_cents: price,
         needs_trunk: needsTrunk === true,
-        trunk_fee_cents: trunkFeeCents,
+        trunk_fee_cents: needsTrunk === true ? 500 : 0,
         })
         .select("id")
         .single();
