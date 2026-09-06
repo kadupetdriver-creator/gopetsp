@@ -56,6 +56,8 @@ function SolicitarPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const dispatchRide = useServerFn(dispatchRideToCentral);
+  const fetchDrivingRoute = useServerFn(getDrivingRoute);
+
 
   const [selectedPetIds, setSelectedPetIds] = useState<string[]>([]);
   const [serviceType, setServiceType] = useState("veterinario");
