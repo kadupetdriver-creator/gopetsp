@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PawPrint, ShieldCheck, MapPinned, Clock, Star, MessageCircle, Phone } from "lucide-react";
-import bannerAsset from "@/assets/petmobi-banner.jpg.asset.json";
+import bannerAsset from "@/assets/gopet-logo.jpg.asset.json";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
