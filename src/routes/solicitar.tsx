@@ -379,6 +379,21 @@ function SolicitarPage() {
                   rows={3}
                 />
               </div>
+              <div className="flex items-start gap-3 rounded-xl border border-border p-3 sm:col-span-2">
+                <Checkbox
+                  id="porta-malas"
+                  checked={needsTrunk}
+                  onCheckedChange={(checked) => setNeedsTrunk(checked === true)}
+                />
+                <div className="grid gap-0.5 leading-none">
+                  <Label htmlFor="porta-malas" className="font-medium">
+                    Utilizar porta-malas
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Acréscimo de R$ 5,00 no valor da corrida.
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
