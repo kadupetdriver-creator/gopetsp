@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,7 +63,7 @@ function SolicitarPage() {
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
   const [scheduledAt, setScheduledAt] = useState(defaultDateTime());
   const [notes, setNotes] = useState("");
-  const [needsTrunk, setNeedsTrunk] = useState(false);
+  const [needsTrunk, setNeedsTrunk] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
@@ -119,7 +119,7 @@ function SolicitarPage() {
   const routeReady = !!originPoint && !!destinationPoint;
   // Cada pet adicional acrescenta 15% ao valor estimado.
   const basePrice = Math.round(estimatePriceCents(distance, groupSize) * (1 + 0.15 * (petCount - 1)));
-  const trunkFeeCents = needsTrunk ? 500 : 0;
+  const trunkFeeCents = needsTrunk === true ? 500 : 0;
   const price = basePrice + trunkFeeCents;
 
   const create = useMutation({
@@ -127,6 +127,7 @@ function SolicitarPage() {
       if (!user) throw new Error("Sessão expirada");
       if (!origin || !destination) throw new Error("Selecione origem e destino nas sugestões");
       if (selectedPets.length === 0) throw new Error("Selecione ao menos um pet cadastrado");
+      if (needsTrunk === null) throw new Error("Informe se deseja utilizar o porta-malas");
       const { data: ride, error } = await supabase
         .from("rides")
         .insert({
@@ -147,7 +148,7 @@ function SolicitarPage() {
         notes: notes || null,
         distance_km: distance,
         price_cents: price,
-        needs_trunk: needsTrunk,
+        needs_trunk: needsTrunk === true,
         trunk_fee_cents: trunkFeeCents,
         })
         .select("id")
@@ -172,7 +173,12 @@ function SolicitarPage() {
       void qc.invalidateQueries({ queryKey: ["rides"] });
       void navigate({ to: "/pagamento/$rideId", params: { rideId } });
     },
-    onError: () => toast.error("Não conseguimos enviar a chamada. Tente novamente."),
+    onError: (error) =>
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : "Não conseguimos enviar a chamada. Tente novamente.",
+      ),
   });
 
   return (
@@ -371,6 +377,45 @@ function SolicitarPage() {
                   Escolha os endereços nas sugestões do mapa para calcularmos rota e valor.
                 </p>
               )}
+              <div className="space-y-3 sm:col-span-2">
+                <Label>
+                  Utilizar porta-malas? <span className="text-destructive">*</span>
+                </Label>
+                <RadioGroup
+                  value={needsTrunk === null ? "" : needsTrunk ? "sim" : "nao"}
+                  onValueChange={(v) => setNeedsTrunk(v === "sim")}
+                  className="grid gap-2 sm:grid-cols-2"
+                  required
+                >
+                  <label
+                    htmlFor="porta-malas-sim"
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
+                      needsTrunk === true
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-muted"
+                    }`}
+                  >
+                    <RadioGroupItem id="porta-malas-sim" value="sim" />
+                    <span className="grid gap-0.5 leading-none">
+                      <span className="font-medium">Sim</span>
+                      <span className="text-xs text-muted-foreground">
+                        Acréscimo de R$ 5,00 no valor da corrida.
+                      </span>
+                    </span>
+                  </label>
+                  <label
+                    htmlFor="porta-malas-nao"
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
+                      needsTrunk === false
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-muted"
+                    }`}
+                  >
+                    <RadioGroupItem id="porta-malas-nao" value="nao" />
+                    <span className="font-medium">Não</span>
+                  </label>
+                </RadioGroup>
+              </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="obs">Observações para o motorista</Label>
                 <Textarea
@@ -379,21 +424,6 @@ function SolicitarPage() {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
                 />
-              </div>
-              <div className="flex items-start gap-3 rounded-xl border border-border p-3 sm:col-span-2">
-                <Checkbox
-                  id="porta-malas"
-                  checked={needsTrunk}
-                  onCheckedChange={(checked) => setNeedsTrunk(checked === true)}
-                />
-                <div className="grid gap-0.5 leading-none">
-                  <Label htmlFor="porta-malas" className="font-medium">
-                    Utilizar porta-malas
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Acréscimo de R$ 5,00 no valor da corrida.
-                  </p>
-                </div>
               </div>
             </CardContent>
           </Card>
