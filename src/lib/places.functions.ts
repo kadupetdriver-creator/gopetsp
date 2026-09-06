@@ -107,9 +107,6 @@ export const getPlaceDetails = createServerFn({ method: "POST" })
       throw new Error("Não foi possível obter as coordenadas do endereço.");
     }
     const comps = json.addressComponents ?? [];
-    if (!isSaoPauloCity(comps)) {
-      throw new Error("Endereço fora da cidade de São Paulo. Selecione um endereço dentro da cidade.");
-    }
     const neighborhood =
       comps.find((c) => c.types?.includes("sublocality_level_1"))?.longText ??
       comps.find((c) => c.types?.includes("sublocality"))?.longText ??
