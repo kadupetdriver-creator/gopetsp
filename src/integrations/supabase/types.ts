@@ -415,6 +415,7 @@ export type Database = {
           driver_lng: number | null
           id: string
           location_updated_at: string | null
+          needs_trunk: boolean
           notes: string | null
           origin_address: string
           origin_lat: number | null
@@ -428,6 +429,7 @@ export type Database = {
           service_type: string
           share_token: string
           status: Database["public"]["Enums"]["ride_status"]
+          trunk_fee_cents: number
           tutor_id: string
           updated_at: string
         }
@@ -443,6 +445,7 @@ export type Database = {
           driver_lng?: number | null
           id?: string
           location_updated_at?: string | null
+          needs_trunk?: boolean
           notes?: string | null
           origin_address: string
           origin_lat?: number | null
@@ -456,6 +459,7 @@ export type Database = {
           service_type?: string
           share_token?: string
           status?: Database["public"]["Enums"]["ride_status"]
+          trunk_fee_cents?: number
           tutor_id: string
           updated_at?: string
         }
@@ -471,6 +475,7 @@ export type Database = {
           driver_lng?: number | null
           id?: string
           location_updated_at?: string | null
+          needs_trunk?: boolean
           notes?: string | null
           origin_address?: string
           origin_lat?: number | null
@@ -484,6 +489,7 @@ export type Database = {
           service_type?: string
           share_token?: string
           status?: Database["public"]["Enums"]["ride_status"]
+          trunk_fee_cents?: number
           tutor_id?: string
           updated_at?: string
         }
