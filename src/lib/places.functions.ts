@@ -111,3 +111,50 @@ export const getPlaceDetails = createServerFn({ method: "POST" })
       lng,
     };
   });
+
+export type DrivingRoute = { distanceKm: number; durationMinutes: number };
+
+/** Distância real por vias (Routes API), usada para precificar a corrida. */
+export const getDrivingRoute = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { originLat: number; originLng: number; destLat: number; destLng: number }) => {
+    const nums = [input?.originLat, input?.originLng, input?.destLat, input?.destLng];
+    if (nums.some((n) => typeof n !== "number" || !Number.isFinite(n))) {
+      throw new Error("Coordenadas inválidas");
+    }
+    return {
+      originLat: input.originLat,
+      originLng: input.originLng,
+      destLat: input.destLat,
+      destLng: input.destLng,
+    };
+  })
+  .handler(async ({ data }): Promise<DrivingRoute> => {
+    const response = await fetch(`${GATEWAY_URL}/routes/directions/v2:computeRoutes`, {
+      method: "POST",
+      headers: {
+        ...gatewayHeaders(),
+        "X-Goog-FieldMask": "routes.distanceMeters,routes.duration",
+      },
+      body: JSON.stringify({
+        origin: { location: { latLng: { latitude: data.originLat, longitude: data.originLng } } },
+        destination: { location: { latLng: { latitude: data.destLat, longitude: data.destLng } } },
+        travelMode: "DRIVE",
+        routingPreference: "TRAFFIC_AWARE",
+        languageCode: "pt-BR",
+        regionCode: "BR",
+        units: "METRIC",
+      }),
+    });
+    if (!response.ok) await readError(response);
+    const json = (await response.json()) as {
+      routes?: { distanceMeters?: number; duration?: string }[];
+    };
+    const route = json.routes?.[0];
+    if (!route?.distanceMeters) throw new Error("Não foi possível calcular a rota por vias.");
+    const seconds = Number(String(route.duration ?? "0s").replace("s", "")) || 0;
+    return {
+      distanceKm: Math.max(0.5, Math.round((route.distanceMeters / 1000) * 10) / 10),
+      durationMinutes: Math.max(1, Math.round(seconds / 60)),
+    };
+  });
