@@ -3,12 +3,6 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 
-/** Restrição de busca: cidade de São Paulo. */
-const SAO_PAULO_CIRCLE = {
-  center: { latitude: -23.5613, longitude: -46.6565 },
-  radius: 30000,
-};
-
 function gatewayHeaders() {
   const lovableKey = process.env["LOVABLE_API_KEY"];
   const mapsKey = process.env["GOOGLE_MAPS_API_KEY"];
