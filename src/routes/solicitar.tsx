@@ -62,6 +62,7 @@ function SolicitarPage() {
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
   const [scheduledAt, setScheduledAt] = useState(defaultDateTime());
   const [notes, setNotes] = useState("");
+  const [needsTrunk, setNeedsTrunk] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
