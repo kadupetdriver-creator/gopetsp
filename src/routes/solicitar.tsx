@@ -115,12 +115,37 @@ function SolicitarPage() {
   const destinationPoint: [number, number] | null = destination
     ? [destination.lat, destination.lng]
     : null;
-  // Fator simples para aproximar distância em linha reta da distância por vias.
-  const distance =
+
+  // Distância real por vias (Google Routes), com fallback aproximado se a rota falhar.
+  const routeQuery = useQuery({
+    queryKey: [
+      "driving-route",
+      originPoint?.[0],
+      originPoint?.[1],
+      destinationPoint?.[0],
+      destinationPoint?.[1],
+    ],
+    enabled: !!originPoint && !!destinationPoint,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+    queryFn: () =>
+      fetchDrivingRoute({
+        data: {
+          originLat: originPoint![0],
+          originLng: originPoint![1],
+          destLat: destinationPoint![0],
+          destLng: destinationPoint![1],
+        },
+      }),
+  });
+
+  const fallbackDistance =
     originPoint && destinationPoint
       ? Math.max(1, Math.round(distanceKmBetween(originPoint, destinationPoint) * 1.35 * 10) / 10)
       : 0;
-  const routeReady = !!originPoint && !!destinationPoint;
+  const distance = routeQuery.data?.distanceKm ?? fallbackDistance;
+  const routeReady = !!originPoint && !!destinationPoint && !routeQuery.isPending;
+
   // Primeiro pet (maior porte) paga o valor integral; cada pet seguinte paga 40% do valor integral.
   const basePrice = petsBySize.reduce(
     (sum, pet, i) => sum + estimatePriceCents(distance, pet.size) * (i === 0 ? 1 : 0.4),
