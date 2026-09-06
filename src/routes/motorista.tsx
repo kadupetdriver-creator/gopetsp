@@ -267,6 +267,11 @@ function RideCard({ ride, children }: { ride: Ride; children?: React.ReactNode }
           <p className="font-semibold text-foreground">
             {formatBRL(ride.price_cents)}{" "}
             <span className="font-normal text-muted-foreground">· {ride.distance_km} km</span>
+            {ride.needs_trunk && (
+              <span className="ml-2 rounded-full bg-warning/20 px-2 py-0.5 text-xs font-medium text-warning-foreground">
+                Porta-malas
+              </span>
+            )}
           </p>
         </div>
 
