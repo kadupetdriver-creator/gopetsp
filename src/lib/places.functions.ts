@@ -39,8 +39,6 @@ export const searchAddresses = createServerFn({ method: "POST" })
         input: data.query,
         languageCode: "pt-BR",
         regionCode: "BR",
-        includedRegionCodes: ["br"],
-        locationRestriction: { circle: SAO_PAULO_CIRCLE },
       }),
     });
     if (!response.ok) await readError(response);
