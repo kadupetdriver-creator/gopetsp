@@ -117,3 +117,88 @@ export const syncCreditTopup = createServerFn({ method: "POST" })
       return { error: getStripeErrorMessage(err) };
     }
   });
+
+/** Saldo disponível (em centavos) do usuário autenticado. */
+export const getCreditBalance = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ balanceCents: number }> => {
+    const { data } = await context.supabase.rpc("my_credit_balance_cents");
+    return { balanceCents: typeof data === "number" ? data : 0 };
+  });
+
+/** Paga a corrida usando o saldo de créditos do tutor (sem cartão/Pix). */
+export const payRideWithCredits = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { rideId: string }) => {
+    if (!/^[0-9a-fA-F-]{36}$/.test(data.rideId)) throw new Error("Corrida inválida");
+    return data;
+  })
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ status: string } | { error: string; balanceCents?: number }> => {
+      const { supabase, userId } = context;
+
+      const { data: ride } = await supabase
+        .from("rides")
+        .select("id, tutor_id, driver_id, price_cents, status")
+        .eq("id", data.rideId)
+        .maybeSingle();
+      if (!ride) return { error: "Corrida não encontrada" };
+      if (ride.tutor_id !== userId) return { error: "Somente o tutor pode pagar esta corrida" };
+      if (ride.status === "cancelled" || ride.status === "completed")
+        return { error: "Esta corrida não está mais disponível para pagamento" };
+
+      const amountCents = ride.price_cents;
+      if (!amountCents || amountCents < 500) return { error: "Valor da corrida inválido" };
+
+      const { data: balance } = await supabase.rpc("my_credit_balance_cents");
+      const balanceCents = typeof balance === "number" ? balance : 0;
+      if (balanceCents < amountCents)
+        return { error: "Saldo insuficiente para pagar esta corrida", balanceCents };
+
+      const platformFeeCents = Math.round(amountCents * 0.2);
+      const driverAmountCents = amountCents - platformFeeCents;
+
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: existing } = await supabaseAdmin
+        .from("ride_payments")
+        .select("id, status")
+        .eq("ride_id", ride.id)
+        .maybeSingle();
+      if (existing && ["held", "released"].includes(existing.status))
+        return { error: "Esta corrida já foi paga" };
+
+      const { error: spendError } = await supabaseAdmin.from("credit_transactions").insert({
+        user_id: userId,
+        kind: "spend",
+        amount_cents: amountCents,
+        status: "completed",
+        payment_method: "credits",
+        description: "Pagamento de corrida com saldo",
+        ride_id: ride.id,
+        completed_at: new Date().toISOString(),
+      });
+      if (spendError) return { error: "Não foi possível debitar o saldo. Tente novamente." };
+
+      await supabaseAdmin.from("ride_payments").upsert(
+        {
+          ride_id: ride.id,
+          tutor_id: ride.tutor_id,
+          driver_id: ride.driver_id,
+          amount_cents: amountCents,
+          platform_fee_cents: platformFeeCents,
+          driver_amount_cents: driverAmountCents,
+          status: "held",
+          environment: "sandbox",
+          payment_method: "credits",
+          transfer_group: `ride_${ride.id}`,
+          paid_at: new Date().toISOString(),
+        },
+        { onConflict: "ride_id" },
+      );
+
+      return { status: "held" };
+    },
+  );
