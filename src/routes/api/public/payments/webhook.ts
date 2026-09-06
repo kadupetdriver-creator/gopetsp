@@ -74,6 +74,14 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           }
           case "checkout.session.async_payment_failed": {
             const session = event.data.object;
+            if (session.metadata?.["kind"] === "credit_topup") {
+              await supabaseAdmin
+                .from("credit_transactions")
+                .update({ status: "failed" })
+                .eq("stripe_session_id", session.id)
+                .eq("status", "pending");
+              break;
+            }
             const rideId = session.metadata?.["rideId"];
             if (rideId) {
               await supabaseAdmin
@@ -86,6 +94,14 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           }
           case "checkout.session.expired": {
             const session = event.data.object;
+            if (session.metadata?.["kind"] === "credit_topup") {
+              await supabaseAdmin
+                .from("credit_transactions")
+                .update({ status: "cancelled" })
+                .eq("stripe_session_id", session.id)
+                .eq("status", "pending");
+              break;
+            }
             const rideId = session.metadata?.["rideId"];
             if (rideId) {
               await supabaseAdmin
