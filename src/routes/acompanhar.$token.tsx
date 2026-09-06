@@ -103,6 +103,11 @@ function AcompanharPage() {
             Última atualização:{" "}
             {ride.location_updated_at ? formatDateTime(ride.location_updated_at) : "—"}
           </p>
+          {ride.needs_trunk && (
+            <p className="col-span-full font-medium text-warning-foreground">
+              Porta-malas solicitado
+            </p>
+          )}
         </CardContent>
       </Card>
 
