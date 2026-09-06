@@ -405,6 +405,10 @@ function SolicitarPage() {
                 <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary-ink" />
                 <span>Motoristas com curso de manejo animal e veículo higienizado.</span>
               </div>
+              <div className="rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-ink">
+                Não aceitamos dinheiro em espécie. O pagamento é feito pelo app (saldo GoPet, Pix ou
+                cartão) antes do início do transporte.
+              </div>
               <Button type="submit" className="w-full" disabled={create.isPending || !routeReady}>
                 {create.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Chamar motorista
