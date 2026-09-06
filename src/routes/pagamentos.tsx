@@ -15,16 +15,16 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/pagamentos")({
   head: () => ({
     meta: [
-      { title: "Pagamentos e repasses | PetMobi" },
+      { title: "Pagamentos e repasses | GoPet" },
       {
         name: "description",
         content:
-          "Acompanhe o histórico financeiro das corridas PetMobi: valores pagos, taxa da plataforma, repasses ao motorista e estornos.",
+          "Acompanhe o histórico financeiro das corridas GoPet: valores pagos, taxa da plataforma, repasses ao motorista e estornos.",
       },
-      { property: "og:title", content: "Pagamentos e repasses | PetMobi" },
+      { property: "og:title", content: "Pagamentos e repasses | GoPet" },
       {
         property: "og:description",
-        content: "Extrato de pagamentos, taxas e repasses das corridas PetMobi.",
+        content: "Extrato de pagamentos, taxas e repasses das corridas GoPet.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -118,7 +118,7 @@ function PagamentosPage() {
             <CardHeader className="pb-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <CardTitle className="text-base">
-                  {payment.rides?.pet_name ?? "Corrida PetMobi"}
+                  {payment.rides?.pet_name ?? "Corrida GoPet"}
                 </CardTitle>
                 <span
                   className={cn(

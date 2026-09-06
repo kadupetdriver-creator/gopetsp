@@ -131,7 +131,7 @@ export const spSubprefeituras = [
   "Bela Vista",
 ];
 
-/** Central PetMobi no WhatsApp. */
+/** Central GoPet no WhatsApp. */
 export const CENTRAL_WHATSAPP = "5511985125238";
 
 /** Monta link wa.me com o resumo da corrida para encaminhar à central. */
@@ -146,7 +146,7 @@ export function rideWhatsAppUrl(ride: {
 }): string {
   const service = serviceTypes.find((s) => s.value === ride.service_type)?.label ?? "Transporte";
   const text = [
-    "🐾 Nova corrida PetMobi",
+    "🐾 Nova corrida GoPet",
     `Pet(s): ${ride.pet_name}`,
     `Motivo: ${service}`,
     `Embarque: ${ride.origin_address}`,

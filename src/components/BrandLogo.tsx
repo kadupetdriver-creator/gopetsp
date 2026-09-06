@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import logoAsset from "@/assets/petmobi-logo.jpg.asset.json";
+import logoAsset from "@/assets/gopet-logo.jpg.asset.json";
 import { cn } from "@/lib/utils";
 
-export const petMobiLogoUrl = logoAsset.url;
+export const goPetLogoUrl = logoAsset.url;
 
 interface BrandLogoProps {
   className?: string;
@@ -26,8 +26,8 @@ export function BrandLogo({
       style={{ width: size, height: size }}
     >
       <img
-        src={petMobiLogoUrl}
-        alt="PetMobi — transporte de pets em São Paulo"
+        src={goPetLogoUrl}
+        alt="GoPet — transporte de pets em São Paulo"
         width={size}
         height={size}
         className="size-full object-contain"
@@ -41,7 +41,7 @@ export function BrandLogo({
       {mark}
       {withWordmark ? (
         <span className="text-lg font-semibold tracking-tight">
-          Pet<span className="text-primary-ink">Mobi</span>
+          Go<span className="text-primary-ink">Pet</span>
         </span>
       ) : null}
     </span>
@@ -49,7 +49,7 @@ export function BrandLogo({
 
   if (asLink) {
     return (
-      <Link to="/" aria-label="PetMobi — início">
+      <Link to="/" aria-label="GoPet — início">
         {content}
       </Link>
     );

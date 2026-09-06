@@ -77,13 +77,13 @@ export const createRideCheckout = createServerFn({ method: "POST" })
               unit_amount: amountCents,
               product_data: {
                 name: `Transporte pet — ${ride.pet_name}`,
-                description: `Corrida PetMobi em São Paulo (${profile?.full_name ?? "tutor"})`,
+                description: `Corrida GoPet em São Paulo (${profile?.full_name ?? "tutor"})`,
               },
             },
           },
         ],
         payment_intent_data: {
-          description: `PetMobi — corrida ${ride.id}`,
+          description: `GoPet — corrida ${ride.id}`,
           transfer_group: `ride_${ride.id}`,
           metadata: {
             rideId: ride.id,

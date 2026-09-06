@@ -20,13 +20,13 @@ export const Route = createFileRoute("/pagamento/$rideId")({
   }),
   head: () => ({
     meta: [
-      { title: "Pagamento da corrida | PetMobi" },
+      { title: "Pagamento da corrida | GoPet" },
       {
         name: "description",
         content:
           "Pague a corrida do seu pet com segurança. O valor fica retido e só é repassado ao motorista após a conclusão do transporte.",
       },
-      { property: "og:title", content: "Pagamento da corrida | PetMobi" },
+      { property: "og:title", content: "Pagamento da corrida | GoPet" },
       {
         property: "og:description",
         content: "Cobrança segura com retenção até a conclusão da corrida.",
