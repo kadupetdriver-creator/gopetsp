@@ -51,6 +51,10 @@
 - [x] Espécie obrigatória no cadastro de pets e visível nos detalhes
 - [x] E-mail no perfil com validação e confirmação por link ao alterar
 
+## Ajustes pós-entrega
+- [ ] Remover filtro de endereços restritos à cidade de São Paulo
+- [ ] Enviar automaticamente todos os dados da corrida para a central no WhatsApp (11) 98512-5238
+
 ## Etapa 10 — Correção de lacunas de pagamento e conta
 - [x] Webhook no caminho oficial /api/public/payments/webhook + eventos expired/async/failed
 - [x] Corridas só aparecem ao motorista após pagamento retido
