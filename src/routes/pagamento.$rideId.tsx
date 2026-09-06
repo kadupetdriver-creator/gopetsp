@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, MessageCircle, ShieldCheck } from "lucide-react";
+import { CheckCircle2, CreditCard, MessageCircle, QrCode, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,6 +42,7 @@ function PagamentoCorrida() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
+  const [method, setMethod] = useState<"card" | "pix">("pix");
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
@@ -150,7 +151,45 @@ function PagamentoCorrida() {
           </CardContent>
         </Card>
       ) : (
-        ride && <RideCheckout rideId={rideId} returnUrl={returnUrlFor(rideId)} />
+        ride && (
+          <>
+            <Card className="shadow-soft">
+              <CardHeader>
+                <CardTitle className="text-lg">Como você quer pagar?</CardTitle>
+                <CardDescription>Escolha entre Pix ou cartão de crédito.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-3">
+                {(
+                  [
+                    { id: "pix", label: "Pix", icon: QrCode, hint: "QR Code, aprovação rápida" },
+                    { id: "card", label: "Cartão", icon: CreditCard, hint: "Crédito à vista" },
+                  ] as const
+                ).map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setMethod(option.id)}
+                    className={`flex flex-col items-center gap-1 rounded-2xl border-2 px-4 py-4 text-sm font-medium transition ${
+                      method === option.id
+                        ? "border-primary bg-primary/10 text-foreground"
+                        : "border-border text-muted-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    <option.icon className="size-5" />
+                    {option.label}
+                    <span className="text-xs font-normal text-muted-foreground">{option.hint}</span>
+                  </button>
+                ))}
+              </CardContent>
+            </Card>
+            <RideCheckout
+              key={method}
+              rideId={rideId}
+              returnUrl={returnUrlFor(rideId)}
+              method={method}
+            />
+          </>
+        )
       )}
     </div>
   );

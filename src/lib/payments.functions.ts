@@ -24,9 +24,11 @@ function isUuid(value: string) {
 /** Cria (ou reaproveita) a cobrança da corrida e devolve o clientSecret do checkout. */
 export const createRideCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { rideId: string; returnUrl: string; environment: StripeEnv }) => {
+  .inputValidator((data: { rideId: string; returnUrl: string; environment: StripeEnv; method?: "card" | "pix" }) => {
     if (!isUuid(data.rideId)) throw new Error("Corrida inválida");
     validEnv(data.environment);
+    if (data.method && data.method !== "card" && data.method !== "pix")
+      throw new Error("Forma de pagamento inválida");
     return data;
   })
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
@@ -69,6 +71,7 @@ export const createRideCheckout = createServerFn({ method: "POST" })
         mode: "payment",
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
+        payment_method_types: data.method === "pix" ? ["pix"] : ["card"],
         line_items: [
           {
             quantity: 1,
