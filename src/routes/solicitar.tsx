@@ -316,7 +316,7 @@ function SolicitarPage() {
 
           <Card className="shadow-soft">
             <CardHeader>
-              <CardTitle className="text-lg">Trajeto em São Paulo</CardTitle>
+              <CardTitle className="text-lg">Trajeto</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
