@@ -386,13 +386,8 @@ function SolicitarPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-xl bg-gradient-warm p-5 text-primary-foreground">
-                <p className="text-xs uppercase tracking-wide opacity-80">Estimativa</p>
+                <p className="text-xs uppercase tracking-wide opacity-80">Valor estimado</p>
                 <p className="mt-1 text-3xl font-semibold">{formatBRL(price)}</p>
-                <p className="mt-1 text-xs opacity-90">
-                  {routeReady ? `${distance} km` : "— km"} ·{" "}
-                  {petSizes.find((s) => s.value === groupSize)?.label} · {petCount}{" "}
-                  {petCount > 1 ? "pets" : "pet"}
-                </p>
               </div>
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-primary-ink" />
