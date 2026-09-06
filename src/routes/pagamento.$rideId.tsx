@@ -95,7 +95,6 @@ function PagamentoCorrida() {
   }, [sessionId, user]);
 
   const amount = ride?.price_cents ?? 0;
-  const { platformFeeCents, driverAmountCents } = splitRideAmount(amount);
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4 px-4 py-8">
