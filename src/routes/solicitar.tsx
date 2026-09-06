@@ -121,10 +121,12 @@ function SolicitarPage() {
       ? Math.max(1, Math.round(distanceKmBetween(originPoint, destinationPoint) * 1.35 * 10) / 10)
       : 0;
   const routeReady = !!originPoint && !!destinationPoint;
-  // Cada pet adicional acrescenta 15% ao valor estimado.
-  const basePrice = Math.round(estimatePriceCents(distance, groupSize) * (1 + 0.15 * (petCount - 1)));
-  const trunkFeeCents = needsTrunk === true ? 500 : 0;
-  const price = basePrice + trunkFeeCents;
+  // Primeiro pet (maior porte) paga o valor integral; cada pet seguinte paga 40% do valor integral.
+  const basePrice = petsBySize.reduce(
+    (sum, pet, i) => sum + estimatePriceCents(distance, pet.size) * (i === 0 ? 1 : 0.4),
+    0,
+  );
+  const price = Math.round(basePrice) + (needsTrunk === true ? 500 : 0);
 
   const create = useMutation({
     mutationFn: async () => {
