@@ -131,6 +131,10 @@ function PagamentoCorrida() {
               <ShieldCheck className="size-4 text-primary-ink" /> Valor retido até a conclusão do
               transporte.
             </p>
+            <div className="mt-3 rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-ink">
+              Não aceitamos dinheiro em espécie. O pagamento é feito pelo app (saldo GoPet, Pix ou
+              cartão) antes do início do transporte.
+            </div>
           </CardContent>
         </Card>
       )}
