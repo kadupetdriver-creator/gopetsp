@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RideCheckout } from "@/components/RideCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { formatBRL, rideWhatsAppUrl } from "@/lib/rides";
-import { getStripeEnvironment, splitRideAmount } from "@/lib/stripe";
+import { getStripeEnvironment } from "@/lib/stripe";
 import { syncRidePayment } from "@/lib/payments.functions";
 import { getCreditBalance, payRideWithCredits } from "@/lib/credits.functions";
 
