@@ -15,6 +15,7 @@ import { Route as MinhasCorridasRouteImport } from './routes/minhas-corridas'
 import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as PagamentosRouteImport } from './routes/pagamentos'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as RastreioRouteImport } from './routes/rastreio'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
 import { Route as PagamentoRideIdRouteImport } from './routes/pagamento.$rideId'
@@ -50,6 +51,11 @@ const PerfilRoute = PerfilRouteImport.update({
   path: '/perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RastreioRoute = RastreioRouteImport.update({
+  id: '/rastreio',
+  path: '/rastreio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolicitarRoute = SolicitarRouteImport.update({
   id: '/solicitar',
   path: '/solicitar',
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/motorista': typeof MotoristaRoute
   '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
+  '/rastreio': typeof RastreioRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/motorista': typeof MotoristaRoute
   '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
+  '/rastreio': typeof RastreioRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/motorista': typeof MotoristaRoute
   '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
+  '/rastreio': typeof RastreioRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/pagamentos'
     | '/perfil'
+    | '/rastreio'
     | '/solicitar'
     | '/acompanhar/$token'
     | '/pagamento/$rideId'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/pagamentos'
     | '/perfil'
+    | '/rastreio'
     | '/solicitar'
     | '/acompanhar/$token'
     | '/pagamento/$rideId'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/pagamentos'
     | '/perfil'
+    | '/rastreio'
     | '/solicitar'
     | '/acompanhar/$token'
     | '/pagamento/$rideId'
@@ -155,6 +167,7 @@ export interface RootRouteChildren {
   MotoristaRoute: typeof MotoristaRoute
   PagamentosRoute: typeof PagamentosRoute
   PerfilRoute: typeof PerfilRoute
+  RastreioRoute: typeof RastreioRoute
   SolicitarRoute: typeof SolicitarRoute
   AcompanharTokenRoute: typeof AcompanharTokenRoute
   PagamentoRideIdRoute: typeof PagamentoRideIdRoute
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rastreio': {
+      id: '/rastreio'
+      path: '/rastreio'
+      fullPath: '/rastreio'
+      preLoaderRoute: typeof RastreioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/solicitar': {
       id: '/solicitar'
       path: '/solicitar'
@@ -243,6 +263,7 @@ const rootRouteChildren: RootRouteChildren = {
   MotoristaRoute: MotoristaRoute,
   PagamentosRoute: PagamentosRoute,
   PerfilRoute: PerfilRoute,
+  RastreioRoute: RastreioRoute,
   SolicitarRoute: SolicitarRoute,
   AcompanharTokenRoute: AcompanharTokenRoute,
   PagamentoRideIdRoute: PagamentoRideIdRoute,
