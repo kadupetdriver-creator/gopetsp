@@ -508,12 +508,93 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_ride: {
+        Args: { _ride_id: string }
+        Returns: {
+          created_at: string
+          destination_address: string
+          destination_lat: number | null
+          destination_lng: number | null
+          destination_neighborhood: string | null
+          distance_km: number
+          driver_id: string | null
+          driver_lat: number | null
+          driver_lng: number | null
+          id: string
+          location_updated_at: string | null
+          needs_trunk: boolean
+          notes: string | null
+          origin_address: string
+          origin_lat: number | null
+          origin_lng: number | null
+          origin_neighborhood: string | null
+          pet_id: string | null
+          pet_name: string
+          pet_size: string
+          price_cents: number
+          scheduled_at: string
+          service_type: string
+          share_token: string
+          status: Database["public"]["Enums"]["ride_status"]
+          trunk_fee_cents: number
+          tutor_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rides"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       is_driver: { Args: { _user_id: string }; Returns: boolean }
       is_ride_participant: {
         Args: { _ride_id: string; _user_id: string }
         Returns: boolean
       }
       my_credit_balance_cents: { Args: never; Returns: number }
+      set_ride_status: {
+        Args: {
+          _ride_id: string
+          _status: Database["public"]["Enums"]["ride_status"]
+        }
+        Returns: {
+          created_at: string
+          destination_address: string
+          destination_lat: number | null
+          destination_lng: number | null
+          destination_neighborhood: string | null
+          distance_km: number
+          driver_id: string | null
+          driver_lat: number | null
+          driver_lng: number | null
+          id: string
+          location_updated_at: string | null
+          needs_trunk: boolean
+          notes: string | null
+          origin_address: string
+          origin_lat: number | null
+          origin_lng: number | null
+          origin_neighborhood: string | null
+          pet_id: string | null
+          pet_name: string
+          pet_size: string
+          price_cents: number
+          scheduled_at: string
+          service_type: string
+          share_token: string
+          status: Database["public"]["Enums"]["ride_status"]
+          trunk_fee_cents: number
+          tutor_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rides"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_role: "tutor" | "driver"
