@@ -86,6 +86,10 @@ function SolicitarPage() {
   const selectedPets = (pets ?? []).filter((p) => selectedPetIds.includes(p.id));
   const maxPets = 3;
   const sizeRank = ["pequeno", "medio", "grande"];
+  // Precificação: maior porte primeiro (grande > médio > pequeno).
+  const petsBySize = [...selectedPets].sort(
+    (a, b) => sizeRank.indexOf(b.size) - sizeRank.indexOf(a.size),
+  );
   const groupSize =
     selectedPets.length > 0
       ? selectedPets.reduce(
