@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, CreditCard, MessageCircle, QrCode, ShieldCheck } from "lucide-react";
+import { CheckCircle2, CreditCard, MessageCircle, QrCode, ShieldCheck, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +13,7 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { formatBRL, rideWhatsAppUrl } from "@/lib/rides";
 import { getStripeEnvironment, splitRideAmount } from "@/lib/stripe";
 import { syncRidePayment } from "@/lib/payments.functions";
+import { getCreditBalance, payRideWithCredits } from "@/lib/credits.functions";
 
 export const Route = createFileRoute("/pagamento/$rideId")({
   validateSearch: (search: Record<string, unknown>): { session_id?: string | undefined } => ({
@@ -42,7 +43,8 @@ function PagamentoCorrida() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
-  const [method, setMethod] = useState<"card" | "pix">("pix");
+  const [method, setMethod] = useState<"credits" | "card" | "pix">("pix");
+  const [payingWithCredits, setPayingWithCredits] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
@@ -62,6 +64,12 @@ function PagamentoCorrida() {
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: balanceCents = 0, refetch: refetchBalance } = useQuery({
+    queryKey: ["credit-balance"],
+    enabled: !!user,
+    queryFn: async () => (await getCreditBalance({ data: undefined })).balanceCents,
   });
 
   useEffect(() => {
@@ -156,11 +164,17 @@ function PagamentoCorrida() {
             <Card className="shadow-soft">
               <CardHeader>
                 <CardTitle className="text-lg">Como você quer pagar?</CardTitle>
-                <CardDescription>Escolha entre Pix ou cartão de crédito.</CardDescription>
+                <CardDescription>Use seu saldo GoPet, Pix ou cartão de crédito.</CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3">
+              <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {(
                   [
+                    {
+                      id: "credits",
+                      label: "Saldo",
+                      icon: Wallet,
+                      hint: `Disponível ${formatBRL(balanceCents)}`,
+                    },
                     { id: "pix", label: "Pix", icon: QrCode, hint: "QR Code, aprovação rápida" },
                     { id: "card", label: "Cartão", icon: CreditCard, hint: "Crédito à vista" },
                   ] as const
@@ -182,12 +196,56 @@ function PagamentoCorrida() {
                 ))}
               </CardContent>
             </Card>
-            <RideCheckout
-              key={method}
-              rideId={rideId}
-              returnUrl={returnUrlFor(rideId)}
-              method={method}
-            />
+            {method === "credits" ? (
+              <Card className="shadow-soft">
+                <CardContent className="space-y-3 py-6 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Saldo disponível</span>
+                    <span className="font-medium">{formatBRL(balanceCents)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Valor da corrida</span>
+                    <span className="font-medium">{formatBRL(amount)}</span>
+                  </div>
+                  {balanceCents < amount ? (
+                    <div className="space-y-3 pt-1">
+                      <p className="text-sm text-destructive">
+                        Saldo insuficiente. Faltam {formatBRL(amount - balanceCents)}.
+                      </p>
+                      <Button asChild variant="secondary" className="w-full rounded-full">
+                        <Link to="/creditos">Recarregar créditos</Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      className="w-full rounded-full"
+                      disabled={payingWithCredits}
+                      onClick={async () => {
+                        setPayingWithCredits(true);
+                        const result = await payRideWithCredits({ data: { rideId } });
+                        setPayingWithCredits(false);
+                        if ("error" in result) {
+                          toast.error(result.error);
+                          return;
+                        }
+                        void refetchBalance();
+                        setConfirmed(true);
+                        toast.success("Corrida paga com seu saldo GoPet.");
+                      }}
+                    >
+                      Pagar {formatBRL(amount)} com saldo
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <RideCheckout
+                key={method}
+                rideId={rideId}
+                returnUrl={returnUrlFor(rideId)}
+                method={method}
+              />
+            )}
           </>
         )
       )}

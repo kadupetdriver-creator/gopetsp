@@ -258,6 +258,7 @@ export type Database = {
           environment: string
           id: string
           paid_at: string | null
+          payment_method: string
           platform_fee_cents: number
           refunded_at: string | null
           refunded_cents: number
@@ -280,6 +281,7 @@ export type Database = {
           environment?: string
           id?: string
           paid_at?: string | null
+          payment_method?: string
           platform_fee_cents: number
           refunded_at?: string | null
           refunded_cents?: number
@@ -302,6 +304,7 @@ export type Database = {
           environment?: string
           id?: string
           paid_at?: string | null
+          payment_method?: string
           platform_fee_cents?: number
           refunded_at?: string | null
           refunded_cents?: number
