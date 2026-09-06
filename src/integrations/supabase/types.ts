@@ -499,12 +499,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      credit_balance_cents: { Args: { _user_id: string }; Returns: number }
       is_driver: { Args: { _user_id: string }; Returns: boolean }
       is_ride_participant: {
         Args: { _ride_id: string; _user_id: string }
         Returns: boolean
       }
+      my_credit_balance_cents: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "tutor" | "driver"
