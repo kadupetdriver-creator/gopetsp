@@ -146,6 +146,8 @@ function SolicitarPage() {
         notes: notes || null,
         distance_km: distance,
         price_cents: price,
+        needs_trunk: needsTrunk,
+        trunk_fee_cents: trunkFeeCents,
         })
         .select("id")
         .single();
