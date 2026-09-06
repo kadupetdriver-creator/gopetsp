@@ -56,6 +56,7 @@ type Ride = {
   distance_km: number;
   status: RideStatus;
   driver_id: string | null;
+  needs_trunk: boolean;
   ride_pets: { pets: PetInfo | null }[] | null;
 };
 
