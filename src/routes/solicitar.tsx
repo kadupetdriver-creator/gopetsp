@@ -119,7 +119,7 @@ function SolicitarPage() {
   const routeReady = !!originPoint && !!destinationPoint;
   // Cada pet adicional acrescenta 15% ao valor estimado.
   const basePrice = Math.round(estimatePriceCents(distance, groupSize) * (1 + 0.15 * (petCount - 1)));
-  const trunkFeeCents = needsTrunk ? 500 : 0;
+  const trunkFeeCents = needsTrunk === true ? 500 : 0;
   const price = basePrice + trunkFeeCents;
 
   const create = useMutation({
@@ -148,7 +148,7 @@ function SolicitarPage() {
         notes: notes || null,
         distance_km: distance,
         price_cents: price,
-        needs_trunk: needsTrunk,
+        needs_trunk: needsTrunk === true,
         trunk_fee_cents: trunkFeeCents,
         })
         .select("id")
@@ -377,7 +377,7 @@ function SolicitarPage() {
                   Utilizar porta-malas? <span className="text-destructive">*</span>
                 </Label>
                 <RadioGroup
-                  value={needsTrunk ? "sim" : "nao"}
+                  value={needsTrunk === null ? "" : needsTrunk ? "sim" : "nao"}
                   onValueChange={(v) => setNeedsTrunk(v === "sim")}
                   className="grid gap-2 sm:grid-cols-2"
                   required
@@ -385,7 +385,9 @@ function SolicitarPage() {
                   <label
                     htmlFor="porta-malas-sim"
                     className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
-                      needsTrunk ? "border-primary bg-primary/10" : "border-border hover:bg-muted"
+                      needsTrunk === true
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-muted"
                     }`}
                   >
                     <RadioGroupItem id="porta-malas-sim" value="sim" />
@@ -399,7 +401,9 @@ function SolicitarPage() {
                   <label
                     htmlFor="porta-malas-nao"
                     className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
-                      !needsTrunk ? "border-primary bg-primary/10" : "border-border hover:bg-muted"
+                      needsTrunk === false
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-muted"
                     }`}
                   >
                     <RadioGroupItem id="porta-malas-nao" value="nao" />
