@@ -1,4 +1,4 @@
-# Roadmap — PetMobi
+# Roadmap — GoPet
 
 ## Etapa 1 — Base do marketplace
 - [x] Lovable Cloud + tabelas de perfis, pets e corridas com regras de acesso
@@ -32,7 +32,7 @@
 - [ ] Armazenamento de fotos e regras de acesso por tutor
 
 ## Etapa 5 — Marca
-- [x] Renomear toda a marca visível para PetMobi (interface, títulos e metadados SEO)
+- [x] Renomear toda a marca visível para GoPet (interface, títulos e metadados SEO)
 
 ## Etapa 6 — Pagamentos (Stripe)
 - [x] Cobrança do tutor na confirmação, com comissão da plataforma (20%) + valor do motorista
@@ -41,7 +41,7 @@
 - [x] Estorno/cancelamento tratado (taxa de 20% após aceite)
 - [x] Status de pagamento visível em cada corrida do tutor
 
-## Etapa 7 — Identidade visual PetMobi
+## Etapa 7 — Identidade visual GoPet
 - [x] Logo enviada publicada como asset e componente BrandLogo
 - [x] Paleta preto/amarelo aplicada nos tokens globais (claro e escuro)
 - [x] Logo no cabeçalho, landing, autenticação e favicon

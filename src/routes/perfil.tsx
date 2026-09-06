@@ -27,16 +27,16 @@ const phonePattern = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
 export const Route = createFileRoute("/perfil")({
   head: () => ({
     meta: [
-      { title: "Meu perfil e meus pets | PetMobi" },
+      { title: "Meu perfil e meus pets | GoPet" },
       {
         name: "description",
         content:
           "Atualize seus dados de contato, informações do veículo parceiro e cadastre os pets que viajam com você em São Paulo.",
       },
-      { property: "og:title", content: "Meu perfil e meus pets | PetMobi" },
+      { property: "og:title", content: "Meu perfil e meus pets | GoPet" },
       {
         property: "og:description",
-        content: "Dados de contato, veículo e pets cadastrados na PetMobi.",
+        content: "Dados de contato, veículo e pets cadastrados na GoPet.",
       },
     ],
   }),

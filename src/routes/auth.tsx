@@ -15,13 +15,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar ou criar conta | PetMobi" },
+      { title: "Entrar ou criar conta | GoPet" },
       {
         name: "description",
         content:
-          "Acesse a PetMobi para pedir transporte do seu pet em São Paulo com motoristas parceiros verificados.",
+          "Acesse a GoPet para pedir transporte do seu pet em São Paulo com motoristas parceiros verificados.",
       },
-      { property: "og:title", content: "Entrar ou criar conta | PetMobi" },
+      { property: "og:title", content: "Entrar ou criar conta | GoPet" },
       {
         property: "og:description",
         content: "Conta de tutor para transporte de pets em São Paulo.",
@@ -99,7 +99,7 @@ function AuthPage() {
 
       <Card className="shadow-soft">
         <CardHeader>
-          <CardTitle>Acesse a PetMobi</CardTitle>
+          <CardTitle>Acesse a GoPet</CardTitle>
           <CardDescription>Crie sua conta de tutor e peça corridas para o seu pet.</CardDescription>
         </CardHeader>
         <CardContent>
