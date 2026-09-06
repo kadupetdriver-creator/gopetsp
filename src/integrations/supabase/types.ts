@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      credit_transactions: {
+        Row: {
+          amount_cents: number
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          environment: string
+          id: string
+          kind: string
+          payment_method: string | null
+          ride_id: string | null
+          status: string
+          stripe_payment_intent: string | null
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          environment?: string
+          id?: string
+          kind?: string
+          payment_method?: string | null
+          ride_id?: string | null
+          status?: string
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          environment?: string
+          id?: string
+          kind?: string
+          payment_method?: string | null
+          ride_id?: string | null
+          status?: string
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_transactions_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pets: {
         Row: {
           breed: string | null
@@ -445,6 +504,7 @@ export type Database = {
         Args: { _ride_id: string; _user_id: string }
         Returns: boolean
       }
+      my_credit_balance_cents: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "tutor" | "driver"
