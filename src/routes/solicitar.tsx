@@ -117,7 +117,9 @@ function SolicitarPage() {
       : 0;
   const routeReady = !!originPoint && !!destinationPoint;
   // Cada pet adicional acrescenta 15% ao valor estimado.
-  const price = Math.round(estimatePriceCents(distance, groupSize) * (1 + 0.15 * (petCount - 1)));
+  const basePrice = Math.round(estimatePriceCents(distance, groupSize) * (1 + 0.15 * (petCount - 1)));
+  const trunkFeeCents = needsTrunk ? 500 : 0;
+  const price = basePrice + trunkFeeCents;
 
   const create = useMutation({
     mutationFn: async () => {
