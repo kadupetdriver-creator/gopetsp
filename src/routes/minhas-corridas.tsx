@@ -74,7 +74,7 @@ function MinhasCorridas() {
       const { data, error } = await supabase
         .from("rides")
         .select(
-          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id",
+          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk",
         )
         .eq("tutor_id", user!.id)
         .order("scheduled_at", { ascending: false });
