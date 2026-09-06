@@ -371,6 +371,41 @@ function SolicitarPage() {
                   Escolha os endereços nas sugestões do mapa para calcularmos rota e valor.
                 </p>
               )}
+              <div className="space-y-3 sm:col-span-2">
+                <Label>
+                  Utilizar porta-malas? <span className="text-destructive">*</span>
+                </Label>
+                <RadioGroup
+                  value={needsTrunk ? "sim" : "nao"}
+                  onValueChange={(v) => setNeedsTrunk(v === "sim")}
+                  className="grid gap-2 sm:grid-cols-2"
+                  required
+                >
+                  <label
+                    htmlFor="porta-malas-sim"
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
+                      needsTrunk ? "border-primary bg-primary/10" : "border-border hover:bg-muted"
+                    }`}
+                  >
+                    <RadioGroupItem id="porta-malas-sim" value="sim" />
+                    <span className="grid gap-0.5 leading-none">
+                      <span className="font-medium">Sim</span>
+                      <span className="text-xs text-muted-foreground">
+                        Acréscimo de R$ 5,00 no valor da corrida.
+                      </span>
+                    </span>
+                  </label>
+                  <label
+                    htmlFor="porta-malas-nao"
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
+                      !needsTrunk ? "border-primary bg-primary/10" : "border-border hover:bg-muted"
+                    }`}
+                  >
+                    <RadioGroupItem id="porta-malas-nao" value="nao" />
+                    <span className="font-medium">Não</span>
+                  </label>
+                </RadioGroup>
+              </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="obs">Observações para o motorista</Label>
                 <Textarea
@@ -379,21 +414,6 @@ function SolicitarPage() {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
                 />
-              </div>
-              <div className="flex items-start gap-3 rounded-xl border border-border p-3 sm:col-span-2">
-                <Checkbox
-                  id="porta-malas"
-                  checked={needsTrunk}
-                  onCheckedChange={(checked) => setNeedsTrunk(checked === true)}
-                />
-                <div className="grid gap-0.5 leading-none">
-                  <Label htmlFor="porta-malas" className="font-medium">
-                    Utilizar porta-malas
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Acréscimo de R$ 5,00 no valor da corrida.
-                  </p>
-                </div>
               </div>
             </CardContent>
           </Card>
