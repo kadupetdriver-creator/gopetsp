@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import logoAsset from "@/assets/petmobi-logo.jpg.asset.json";
+import logoAsset from "@/assets/gopet-logo.jpg.asset.json";
 import { cn } from "@/lib/utils";
 
-export const petMobiLogoUrl = logoAsset.url;
+export const goPetLogoUrl = logoAsset.url;
 
 interface BrandLogoProps {
   className?: string;
