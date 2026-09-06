@@ -114,14 +114,6 @@ function PagamentoCorrida() {
             <CardDescription>{ride.distance_km} km em São Paulo</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Valor do motorista</span>
-              <span>{formatBRL(driverAmountCents)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Taxa da plataforma (20%)</span>
-              <span>{formatBRL(platformFeeCents)}</span>
-            </div>
             <div className="flex justify-between border-t pt-2 text-base font-semibold">
               <span>Total</span>
               <span>{formatBRL(amount)}</span>
