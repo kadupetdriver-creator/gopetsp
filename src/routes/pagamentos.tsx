@@ -137,23 +137,10 @@ function PagamentosPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-1 text-sm">
-              {isDriver ? (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Valor do motorista</span>
-                  <span className="font-medium">{formatBRL(payment.driver_amount_cents)}</span>
-                </div>
-              ) : (
-                <>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total cobrado</span>
-                    <span className="font-medium">{formatBRL(payment.amount_cents)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Taxa da plataforma</span>
-                    <span>{formatBRL(payment.platform_fee_cents)}</span>
-                  </div>
-                </>
-              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Total</span>
+                <span className="font-medium">{formatBRL(payment.amount_cents)}</span>
+              </div>
               {payment.refunded_cents > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Estornado</span>

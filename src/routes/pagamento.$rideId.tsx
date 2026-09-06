@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RideCheckout } from "@/components/RideCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { formatBRL, rideWhatsAppUrl } from "@/lib/rides";
-import { getStripeEnvironment, splitRideAmount } from "@/lib/stripe";
+import { getStripeEnvironment } from "@/lib/stripe";
 import { syncRidePayment } from "@/lib/payments.functions";
 import { getCreditBalance, payRideWithCredits } from "@/lib/credits.functions";
 
@@ -95,7 +95,6 @@ function PagamentoCorrida() {
   }, [sessionId, user]);
 
   const amount = ride?.price_cents ?? 0;
-  const { platformFeeCents, driverAmountCents } = splitRideAmount(amount);
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4 px-4 py-8">
@@ -115,14 +114,6 @@ function PagamentoCorrida() {
             <CardDescription>{ride.distance_km} km em São Paulo</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Valor do motorista</span>
-              <span>{formatBRL(driverAmountCents)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Taxa da plataforma (20%)</span>
-              <span>{formatBRL(platformFeeCents)}</span>
-            </div>
             <div className="flex justify-between border-t pt-2 text-base font-semibold">
               <span>Total</span>
               <span>{formatBRL(amount)}</span>

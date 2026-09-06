@@ -53,6 +53,7 @@ type Ride = {
   distance_km: number;
   status: RideStatus;
   driver_id: string | null;
+  needs_trunk: boolean;
 };
 
 type Payment = { ride_id: string; status: string };
@@ -73,7 +74,7 @@ function MinhasCorridas() {
       const { data, error } = await supabase
         .from("rides")
         .select(
-          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id",
+          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk",
         )
         .eq("tutor_id", user!.id)
         .order("scheduled_at", { ascending: false });
@@ -230,6 +231,11 @@ function MinhasCorridas() {
                 <p className="font-semibold text-foreground">
                   {formatBRL(ride.price_cents)}{" "}
                   <span className="font-normal text-muted-foreground">· {ride.distance_km} km</span>
+                  {ride.needs_trunk && (
+                    <span className="ml-2 rounded-full bg-warning/20 px-2 py-0.5 text-xs font-medium text-warning-foreground">
+                      Porta-malas
+                    </span>
+                  )}
                 </p>
               </div>
 

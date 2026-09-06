@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -62,6 +63,7 @@ function SolicitarPage() {
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
   const [scheduledAt, setScheduledAt] = useState(defaultDateTime());
   const [notes, setNotes] = useState("");
+  const [needsTrunk, setNeedsTrunk] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
@@ -116,7 +118,9 @@ function SolicitarPage() {
       : 0;
   const routeReady = !!originPoint && !!destinationPoint;
   // Cada pet adicional acrescenta 15% ao valor estimado.
-  const price = Math.round(estimatePriceCents(distance, groupSize) * (1 + 0.15 * (petCount - 1)));
+  const basePrice = Math.round(estimatePriceCents(distance, groupSize) * (1 + 0.15 * (petCount - 1)));
+  const trunkFeeCents = needsTrunk ? 500 : 0;
+  const price = basePrice + trunkFeeCents;
 
   const create = useMutation({
     mutationFn: async () => {
@@ -143,6 +147,8 @@ function SolicitarPage() {
         notes: notes || null,
         distance_km: distance,
         price_cents: price,
+        needs_trunk: needsTrunk,
+        trunk_fee_cents: trunkFeeCents,
         })
         .select("id")
         .single();
@@ -374,6 +380,21 @@ function SolicitarPage() {
                   rows={3}
                 />
               </div>
+              <div className="flex items-start gap-3 rounded-xl border border-border p-3 sm:col-span-2">
+                <Checkbox
+                  id="porta-malas"
+                  checked={needsTrunk}
+                  onCheckedChange={(checked) => setNeedsTrunk(checked === true)}
+                />
+                <div className="grid gap-0.5 leading-none">
+                  <Label htmlFor="porta-malas" className="font-medium">
+                    Utilizar porta-malas
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Acréscimo de R$ 5,00 no valor da corrida.
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -388,6 +409,12 @@ function SolicitarPage() {
               <div className="rounded-xl bg-gradient-warm p-5 text-primary-foreground">
                 <p className="text-xs uppercase tracking-wide opacity-80">Valor estimado</p>
                 <p className="mt-1 text-3xl font-semibold">{formatBRL(price)}</p>
+                <p className="mt-1 text-xs opacity-90">
+                  {routeReady ? `${distance} km` : "— km"} ·{" "}
+                  {petSizes.find((s) => s.value === groupSize)?.label} · {petCount}{" "}
+                  {petCount > 1 ? "pets" : "pet"}
+                  {needsTrunk && " · porta-malas"}
+                </p>
               </div>
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-primary-ink" />

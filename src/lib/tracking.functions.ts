@@ -15,7 +15,7 @@ export const getSharedRide = createServerFn({ method: "GET" })
     const { data: ride, error } = await supabaseAdmin
       .from("rides")
       .select(
-        "status, pet_name, origin_neighborhood, destination_neighborhood, distance_km, scheduled_at, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng",
+        "status, pet_name, origin_neighborhood, destination_neighborhood, distance_km, scheduled_at, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, needs_trunk",
       )
       .eq("share_token", data.token)
       .maybeSingle();

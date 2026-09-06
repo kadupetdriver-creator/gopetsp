@@ -56,11 +56,12 @@ type Ride = {
   distance_km: number;
   status: RideStatus;
   driver_id: string | null;
+  needs_trunk: boolean;
   ride_pets: { pets: PetInfo | null }[] | null;
 };
 
 const selectCols =
-  "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
+  "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
 function MotoristaPage() {
   const { user, profile, loading } = useAuth();
@@ -267,6 +268,11 @@ function RideCard({ ride, children }: { ride: Ride; children?: React.ReactNode }
           <p className="font-semibold text-foreground">
             {formatBRL(ride.price_cents)}{" "}
             <span className="font-normal text-muted-foreground">· {ride.distance_km} km</span>
+            {ride.needs_trunk && (
+              <span className="ml-2 rounded-full bg-warning/20 px-2 py-0.5 text-xs font-medium text-warning-foreground">
+                Porta-malas
+              </span>
+            )}
           </p>
         </div>
 
