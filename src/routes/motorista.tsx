@@ -101,10 +101,11 @@ function MotoristaPage() {
 
   const update = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: RideStatus }) => {
-      const { error } = await supabase
-        .from("rides")
-        .update({ status, driver_id: user!.id })
-        .eq("id", id);
+      // Aceite e mudança de status são validados no backend (transições e disputa).
+      const { error } =
+        status === "accepted"
+          ? await supabase.rpc("accept_ride", { _ride_id: id })
+          : await supabase.rpc("set_ride_status", { _ride_id: id, _status: status });
       if (error) throw error;
       if (status === "completed") {
         const result = await releaseRidePayment({ data: { rideId: id } });
@@ -115,8 +116,14 @@ function MotoristaPage() {
       toast.success("Corrida atualizada.");
       void qc.invalidateQueries({ queryKey: ["rides"] });
     },
-    onError: () => toast.error("Não foi possível atualizar a corrida."),
+    onError: (error) =>
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : "Não foi possível atualizar a corrida.",
+      ),
   });
+
 
   const open = rides?.filter((r) => r.status === "pending") ?? [];
   const mine = rides?.filter((r) => r.driver_id === user?.id && r.status !== "pending") ?? [];
