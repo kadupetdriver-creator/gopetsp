@@ -116,8 +116,12 @@ function MinhasCorridas() {
 
   const cancel = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("rides").update({ status: "cancelled" }).eq("id", id);
+      const { error } = await supabase.rpc("set_ride_status", {
+        _ride_id: id,
+        _status: "cancelled",
+      });
       if (error) throw error;
+
       const result = await refundRidePayment({
         data: { rideId: id, environment: getStripeEnvironment() },
       });
