@@ -165,7 +165,11 @@ export const syncRidePayment = createServerFn({ method: "POST" })
     }
   });
 
-/** Libera o repasse ao motorista depois que a corrida é concluída. */
+/**
+ * Libera o repasse ao motorista depois que a corrida é concluída.
+ * Somente o motorista da corrida pode disparar; o estado final é decidido
+ * pelo backend e o banco só aceita "released" com repasse efetivamente feito.
+ */
 export const releaseRidePayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { rideId: string }) => {
@@ -180,47 +184,79 @@ export const releaseRidePayment = createServerFn({ method: "POST" })
       .eq("id", data.rideId)
       .maybeSingle();
     if (!ride) return { error: "Corrida não encontrada" };
-    if (ride.tutor_id !== userId && ride.driver_id !== userId)
-      return { error: "Sem permissão" };
+    if (!ride.driver_id || ride.driver_id !== userId)
+      return { error: "Somente o motorista da corrida pode solicitar o repasse" };
     if (ride.status !== "completed") return { error: "A corrida ainda não foi concluída" };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: payment } = await supabaseAdmin
       .from("ride_payments")
-      .select("id, status, driver_amount_cents, transfer_group, environment")
+      .select(
+        "id, status, driver_amount_cents, transfer_group, environment, payment_method, stripe_transfer_id",
+      )
       .eq("ride_id", ride.id)
       .maybeSingle();
     if (!payment) return { status: "none" };
     if (payment.status !== "held") return { status: payment.status };
 
-    // Repasse automático quando o motorista já concluiu o cadastro de recebimento.
-    let transferId: string | null = null;
-    if (ride.driver_id) {
-      const { data: driver } = await supabaseAdmin
-        .from("profiles")
-        .select("stripe_account_id, payouts_enabled")
-        .eq("id", ride.driver_id)
-        .maybeSingle();
-      if (driver?.stripe_account_id && driver.payouts_enabled) {
-        try {
-          const stripe = createStripeClient(
-            payment.environment === "live" ? "live" : "sandbox",
-          );
-          const transfer = await stripe.transfers.create({
+    // Pagamento com saldo: o repasse vira crédito na carteira do motorista.
+    if (payment.payment_method === "credits") {
+      const { error: payoutError } = await supabaseAdmin.from("credit_transactions").insert({
+        user_id: ride.driver_id,
+        kind: "payout",
+        amount_cents: payment.driver_amount_cents,
+        status: "completed",
+        payment_method: "credits",
+        description: "Repasse de corrida concluída",
+        ride_id: ride.id,
+        completed_at: new Date().toISOString(),
+      });
+      // 23505 = repasse já registrado antes (operação repetida é segura).
+      if (payoutError && payoutError.code !== "23505")
+        return { error: "Não foi possível registrar o repasse. Tente novamente." };
+
+      const { error: updateError } = await supabaseAdmin
+        .from("ride_payments")
+        .update({ status: "released", driver_id: ride.driver_id })
+        .eq("id", payment.id)
+        .eq("status", "held");
+      if (updateError) return { error: "Não foi possível concluir o repasse." };
+      return { status: "released" };
+    }
+
+    // Repasse via Stripe Connect: exige conta habilitada do motorista.
+    const { data: driver } = await supabaseAdmin
+      .from("profiles")
+      .select("stripe_account_id, payouts_enabled")
+      .eq("id", ride.driver_id)
+      .maybeSingle();
+    if (!driver?.stripe_account_id || !driver.payouts_enabled) {
+      // Sem conta de recebimento o valor continua retido — nunca marcamos released.
+      return { status: "pending_payout" };
+    }
+
+    let transferId = payment.stripe_transfer_id;
+    if (!transferId) {
+      try {
+        const stripe = createStripeClient(payment.environment === "live" ? "live" : "sandbox");
+        const transfer = await stripe.transfers.create(
+          {
             amount: payment.driver_amount_cents,
             currency: "brl",
             destination: driver.stripe_account_id,
             transfer_group: payment.transfer_group ?? `ride_${ride.id}`,
             metadata: { rideId: ride.id },
-          });
-          transferId = transfer.id;
-        } catch (err) {
-          return { error: getStripeErrorMessage(err) };
-        }
+          },
+          // Idempotência: uma corrida nunca gera duas transferências.
+          { idempotencyKey: `ride_transfer_${ride.id}` },
+        );
+        transferId = transfer.id;
+      } catch (err) {
+        return { error: getStripeErrorMessage(err) };
       }
     }
 
-    await supabaseAdmin
+    const { error: updateError } = await supabaseAdmin
       .from("ride_payments")
       .update({
         status: "released",
@@ -228,9 +264,12 @@ export const releaseRidePayment = createServerFn({ method: "POST" })
         stripe_transfer_id: transferId,
         released_at: new Date().toISOString(),
       })
-      .eq("id", payment.id);
+      .eq("id", payment.id)
+      .eq("status", "held");
+    if (updateError) return { error: "Não foi possível concluir o repasse." };
     return { status: "released" };
   });
+
 
 /** Estorna (total ou parcial) quando a corrida é cancelada. */
 export const refundRidePayment = createServerFn({ method: "POST" })
