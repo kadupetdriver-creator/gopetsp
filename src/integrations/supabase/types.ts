@@ -503,6 +503,27 @@ export type Database = {
           },
         ]
       }
+      stripe_webhook_events: {
+        Row: {
+          created_at: string
+          environment: string
+          event_id: string
+          event_type: string
+        }
+        Insert: {
+          created_at?: string
+          environment: string
+          event_id: string
+          event_type: string
+        }
+        Update: {
+          created_at?: string
+          environment?: string
+          event_id?: string
+          event_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
