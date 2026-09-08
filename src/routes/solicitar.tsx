@@ -120,42 +120,35 @@ function SolicitarPage() {
     ? [destination.lat, destination.lng]
     : null;
 
-  // Distância real por vias (Google Routes), com fallback aproximado se a rota falhar.
-  const routeQuery = useQuery({
+  // Orçamento oficial: distância e preço são calculados e validados no backend.
+  const quoteQuery = useQuery({
     queryKey: [
-      "driving-route",
+      "ride-quote",
       originPoint?.[0],
       originPoint?.[1],
       destinationPoint?.[0],
       destinationPoint?.[1],
+      selectedPetIds.join(","),
+      needsTrunk,
     ],
-    enabled: !!originPoint && !!destinationPoint,
-    staleTime: 5 * 60 * 1000,
+    enabled: !!originPoint && !!destinationPoint && selectedPets.length > 0 && needsTrunk !== null,
+    staleTime: 60 * 1000,
     retry: false,
     queryFn: () =>
-      fetchDrivingRoute({
+      fetchQuote({
         data: {
-          originLat: originPoint![0],
-          originLng: originPoint![1],
-          destLat: destinationPoint![0],
-          destLng: destinationPoint![1],
+          origin: { lat: originPoint![0], lng: originPoint![1] },
+          destination: { lat: destinationPoint![0], lng: destinationPoint![1] },
+          petIds: selectedPetIds,
+          needsTrunk: needsTrunk === true,
         },
       }),
   });
 
-  const fallbackDistance =
-    originPoint && destinationPoint
-      ? Math.max(1, Math.round(distanceKmBetween(originPoint, destinationPoint) * 1.35 * 10) / 10)
-      : 0;
-  const distance = routeQuery.data?.distanceKm ?? fallbackDistance;
-  const routeReady = !!originPoint && !!destinationPoint && !routeQuery.isPending;
-
-  // Primeiro pet (maior porte) paga o valor integral; cada pet seguinte paga 40% do valor integral.
-  const basePrice = petsBySize.reduce(
-    (sum, pet, i) => sum + estimatePriceCents(distance, pet.size) * (i === 0 ? 1 : 0.4),
-    0,
-  );
-  const price = Math.round(basePrice) + (needsTrunk === true ? 500 : 0);
+  const distance = quoteQuery.data?.distanceKm ?? 0;
+  const price = quoteQuery.data?.priceCents ?? 0;
+  const mapReady = !!originPoint && !!destinationPoint;
+  const routeReady = !!quoteQuery.data;
 
   const create = useMutation({
     mutationFn: async () => {
@@ -163,40 +156,30 @@ function SolicitarPage() {
       if (!origin || !destination) throw new Error("Selecione origem e destino nas sugestões");
       if (selectedPets.length === 0) throw new Error("Selecione ao menos um pet cadastrado");
       if (needsTrunk === null) throw new Error("Informe se deseja utilizar o porta-malas");
-      const { data: ride, error } = await supabase
-        .from("rides")
-        .insert({
-        tutor_id: user.id,
-        pet_id: selectedPets[0]?.id ?? null,
-        pet_name: rideTitle,
-        pet_size: groupSize,
-        service_type: serviceType,
-        origin_address: origin.address,
-        origin_neighborhood: origin.neighborhood,
-        origin_lat: origin.lat,
-        origin_lng: origin.lng,
-        destination_address: destination.address,
-        destination_neighborhood: destination.neighborhood,
-        destination_lat: destination.lat,
-        destination_lng: destination.lng,
-        scheduled_at: new Date(scheduledAt).toISOString(),
-        notes: notes || null,
-        distance_km: distance,
-        price_cents: price,
-        needs_trunk: needsTrunk === true,
-        trunk_fee_cents: needsTrunk === true ? 500 : 0,
-        })
-        .select("id")
-        .single();
-      if (error) throw error;
-      if (selectedPets.length > 0) {
-        const { error: linkError } = await supabase
-          .from("ride_pets")
-          .insert(selectedPets.map((p) => ({ ride_id: ride.id, pet_id: p.id })));
-        if (linkError) throw linkError;
-      }
-      return ride.id as string;
+      const result = await submitRide({
+        data: {
+          origin: {
+            lat: origin.lat,
+            lng: origin.lng,
+            address: origin.address,
+            neighborhood: origin.neighborhood,
+          },
+          destination: {
+            lat: destination.lat,
+            lng: destination.lng,
+            address: destination.address,
+            neighborhood: destination.neighborhood,
+          },
+          petIds: selectedPetIds,
+          serviceType,
+          scheduledAt: new Date(scheduledAt).toISOString(),
+          notes: notes || null,
+          needsTrunk: needsTrunk === true,
+        },
+      });
+      return result.rideId;
     },
+
     onSuccess: (rideId) => {
       toast.success("Chamada criada! Confirme o pagamento para buscarmos um motorista.");
       // Envia automaticamente o arquivo/resumo da corrida para a central no WhatsApp.
