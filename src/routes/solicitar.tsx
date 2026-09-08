@@ -57,7 +57,9 @@ function SolicitarPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const dispatchRide = useServerFn(dispatchRideToCentral);
-  const fetchDrivingRoute = useServerFn(getDrivingRoute);
+  const fetchQuote = useServerFn(quoteRide);
+  const submitRide = useServerFn(createRide);
+
 
 
   const [selectedPetIds, setSelectedPetIds] = useState<string[]>([]);
