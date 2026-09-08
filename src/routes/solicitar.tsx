@@ -382,11 +382,14 @@ function SolicitarPage() {
                   required
                 />
               </div>
-              {routeReady ? (
+              {mapReady ? (
                 <div className="space-y-2 sm:col-span-2">
                   <p className="text-sm text-muted-foreground">
-                    Distância estimada pela rota: <strong>{distance} km</strong>
+                    {routeReady
+                      ? `Distância estimada pela rota: ${distance} km`
+                      : "Selecione os pets e o porta-malas para calcularmos rota e valor."}
                   </p>
+
                   <RideMap
                     origin={originPoint!}
                     destination={destinationPoint!}
