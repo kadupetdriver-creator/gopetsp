@@ -119,7 +119,7 @@ function AdminMotoristasPage() {
     const c = { fila: 0, todos: data?.length ?? 0 } as Record<string, number>;
     for (const d of data ?? []) {
       c[d.status] = (c[d.status] ?? 0) + 1;
-      if (d.status === "pendente" || d.status === "em_analise") c.fila!++;
+      if (d.status === "pendente" || d.status === "em_analise") c["fila"] = (c["fila"] ?? 0) + 1;
     }
     return c;
   }, [data]);
@@ -186,8 +186,8 @@ function AdminMotoristasPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="fila">Fila de revisão ({counts.fila ?? 0})</SelectItem>
-            <SelectItem value="todos">Todos ({counts.todos ?? 0})</SelectItem>
+            <SelectItem value="fila">Fila de revisão ({counts["fila"] ?? 0})</SelectItem>
+            <SelectItem value="todos">Todos ({counts["todos"] ?? 0})</SelectItem>
             {(Object.keys(driverStatusLabels) as DriverStatus[]).map((s) => (
               <SelectItem key={s} value={s}>
                 {driverStatusLabels[s]} ({counts[s] ?? 0})
