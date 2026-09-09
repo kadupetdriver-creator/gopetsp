@@ -143,7 +143,8 @@ function SejaMotoristaPage() {
   });
 
   const driver = application?.driver ?? null;
-  const locked = driver?.status === "em_analise" || driver?.status === "aprovado";
+  const locked =
+    driver?.status === "em_analise" || driver?.status === "aprovado" || driver?.status === "suspenso";
 
   if (loading || isLoading || !user) {
     return (
@@ -262,6 +263,7 @@ export function StatusCard({ driver }: { driver: DriverRow | { status: DriverSta
     em_analise: "Seus documentos estão sendo verificados. Avisamos assim que houver novidade.",
     aprovado: "Tudo certo! Você já pode receber chamadas de transporte de pets.",
     rejeitado: "Seu cadastro não foi aprovado desta vez. Veja o motivo e reenvie os documentos.",
+    suspenso: "Seu cadastro está suspenso temporariamente. Entre em contato com o suporte GoPet.",
   };
   return (
     <Card className="shadow-soft">
@@ -277,6 +279,13 @@ export function StatusCard({ driver }: { driver: DriverRow | { status: DriverSta
         <CardTitle className="mt-2">Situação do seu cadastro</CardTitle>
         <CardDescription>{descriptions[driver.status]}</CardDescription>
       </CardHeader>
+      {driver.status === "suspenso" && driver.rejection_reason && (
+        <CardContent>
+          <p className="rounded-xl bg-destructive/5 p-3 text-sm">
+            <strong className="text-destructive">Motivo:</strong> {driver.rejection_reason}
+          </p>
+        </CardContent>
+      )}
       {driver.status === "rejeitado" && (
         <CardContent className="space-y-4">
           <p className="rounded-xl bg-destructive/5 p-3 text-sm">

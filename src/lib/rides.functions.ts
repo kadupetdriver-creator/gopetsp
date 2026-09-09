@@ -128,6 +128,14 @@ export const createRide = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data, context }): Promise<{ rideId: string; priceCents: number }> => {
+    const { data: me } = await context.supabase
+      .from("profiles")
+      .select("is_active")
+      .eq("id", context.userId)
+      .maybeSingle();
+    if (me && me.is_active === false) {
+      throw new Error("Sua conta está desativada. Fale com o suporte GoPet.");
+    }
     const pets = await loadOwnedPets(context.supabase as any, context.userId, data.petIds);
     const { drivingDistance } = await import("./routing.server");
     const route = await drivingDistance(

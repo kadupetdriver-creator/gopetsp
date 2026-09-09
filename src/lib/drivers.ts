@@ -1,4 +1,4 @@
-export type DriverStatus = "pendente" | "em_analise" | "aprovado" | "rejeitado";
+export type DriverStatus = "pendente" | "em_analise" | "aprovado" | "rejeitado" | "suspenso";
 export type DocumentType = "cnh" | "crlv" | "comprovante_residencia";
 export type DocumentStatus = "pendente" | "aprovado" | "rejeitado";
 
@@ -7,6 +7,7 @@ export const driverStatusLabels: Record<DriverStatus, string> = {
   em_analise: "Em análise",
   aprovado: "Aprovado",
   rejeitado: "Rejeitado",
+  suspenso: "Suspenso",
 };
 
 export const driverStatusStyles: Record<DriverStatus, string> = {
@@ -14,6 +15,7 @@ export const driverStatusStyles: Record<DriverStatus, string> = {
   em_analise: "bg-primary/15 text-primary-ink",
   aprovado: "bg-success/15 text-success",
   rejeitado: "bg-destructive/10 text-destructive",
+  suspenso: "bg-destructive/15 text-destructive",
 };
 
 export const documentStatusLabels: Record<DocumentStatus, string> = {
