@@ -73,6 +73,107 @@ export type Database = {
           },
         ]
       }
+      driver_documents: {
+        Row: {
+          created_at: string
+          document_type: Database["public"]["Enums"]["driver_document_type"]
+          driver_id: string
+          file_path: string
+          id: string
+          notes: string | null
+          status: Database["public"]["Enums"]["document_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_type: Database["public"]["Enums"]["driver_document_type"]
+          driver_id: string
+          file_path: string
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["document_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: Database["public"]["Enums"]["driver_document_type"]
+          driver_id?: string
+          file_path?: string
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["document_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_documents_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers: {
+        Row: {
+          avatar_path: string | null
+          birth_date: string
+          city: string
+          cpf: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          neighborhood: string
+          phone: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["driver_status"]
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_path?: string | null
+          birth_date: string
+          city?: string
+          cpf: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          neighborhood?: string
+          phone: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["driver_status"]
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_path?: string | null
+          birth_date?: string
+          city?: string
+          cpf?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          neighborhood?: string
+          phone?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["driver_status"]
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pets: {
         Row: {
           breed: string | null
@@ -524,6 +625,74 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["platform_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["platform_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["platform_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          brand: string
+          color: string
+          created_at: string
+          driver_id: string
+          id: string
+          model: string
+          plate: string
+          updated_at: string
+          vehicle_type: string
+          year: number
+        }
+        Insert: {
+          brand: string
+          color: string
+          created_at?: string
+          driver_id: string
+          id?: string
+          model: string
+          plate: string
+          updated_at?: string
+          vehicle_type?: string
+          year: number
+        }
+        Update: {
+          brand?: string
+          color?: string
+          created_at?: string
+          driver_id?: string
+          id?: string
+          model?: string
+          plate?: string
+          updated_at?: string
+          vehicle_type?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: true
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -568,12 +737,51 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["platform_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_driver: { Args: { _user_id: string }; Returns: boolean }
       is_ride_participant: {
         Args: { _ride_id: string; _user_id: string }
         Returns: boolean
       }
       my_credit_balance_cents: { Args: never; Returns: number }
+      review_driver_application: {
+        Args: {
+          _driver_id: string
+          _reason?: string
+          _status: Database["public"]["Enums"]["driver_status"]
+        }
+        Returns: {
+          avatar_path: string | null
+          birth_date: string
+          city: string
+          cpf: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          neighborhood: string
+          phone: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["driver_status"]
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "drivers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       set_ride_status: {
         Args: {
           _ride_id: string
@@ -619,6 +827,9 @@ export type Database = {
     }
     Enums: {
       app_role: "tutor" | "driver"
+      document_status: "pendente" | "aprovado" | "rejeitado"
+      driver_document_type: "cnh" | "crlv" | "comprovante_residencia"
+      driver_status: "pendente" | "em_analise" | "aprovado" | "rejeitado"
       payment_status:
         | "pending"
         | "held"
@@ -626,6 +837,7 @@ export type Database = {
         | "refunded"
         | "cancelled"
         | "failed"
+      platform_role: "admin"
       ride_status:
         | "pending"
         | "accepted"
@@ -761,6 +973,9 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["tutor", "driver"],
+      document_status: ["pendente", "aprovado", "rejeitado"],
+      driver_document_type: ["cnh", "crlv", "comprovante_residencia"],
+      driver_status: ["pendente", "em_analise", "aprovado", "rejeitado"],
       payment_status: [
         "pending",
         "held",
@@ -769,6 +984,7 @@ export const Constants = {
         "cancelled",
         "failed",
       ],
+      platform_role: ["admin"],
       ride_status: [
         "pending",
         "accepted",
