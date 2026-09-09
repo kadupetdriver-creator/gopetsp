@@ -165,12 +165,30 @@ function MotoristaPage() {
 
   const open = rides?.filter((r) => r.status === "pending") ?? [];
   const mine = rides?.filter((r) => r.driver_id === user?.id && r.status !== "pending") ?? [];
+  const active = mine.filter((r) => r.status !== "completed" && r.status !== "cancelled");
+  const completed = mine.filter((r) => r.status === "completed");
   // Ganhos líquidos: o motorista recebe 80% (a plataforma retém 20% de comissão).
-  const earnings = mine
-    .filter((r) => r.status === "completed")
-    .reduce((sum, r) => sum + Math.round(r.price_cents * 0.8), 0);
+  const netOf = (r: Ride) => Math.round(r.price_cents * 0.8);
+  const earnings = completed.reduce((sum, r) => sum + netOf(r), 0);
+  const now = new Date();
+  const thisMonth = completed.filter((r) => {
+    const d = new Date(r.scheduled_at);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  const monthEarnings = thisMonth.reduce((sum, r) => sum + netOf(r), 0);
+  const kmTotal = completed.reduce((sum, r) => sum + Number(r.distance_km ?? 0), 0);
+  const vehicle = application?.vehicles?.[0] ?? null;
 
-  if (profile && profile.role !== "driver") {
+  if (loading || !user || !profile || appLoading) {
+    return (
+      <div className="mx-auto w-full max-w-5xl px-4 py-8">
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
+    );
+  }
+
+  // Cadastro ainda não aprovado (ou suspenso): só a tela de status, sem acesso a corridas.
+  if (!approved) {
     if (!application) return null;
     return (
       <div className="mx-auto w-full max-w-2xl px-4 py-8">
@@ -199,9 +217,11 @@ function MotoristaPage() {
       </div>
 
       <Tabs defaultValue="abertas" className="mt-8">
-        <TabsList>
+        <TabsList className="flex h-auto w-full flex-wrap justify-start">
           <TabsTrigger value="abertas">Chamadas abertas</TabsTrigger>
           <TabsTrigger value="minhas">Minhas corridas</TabsTrigger>
+          <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
+          <TabsTrigger value="veiculo">Meu veículo</TabsTrigger>
         </TabsList>
 
         <TabsContent value="abertas" className="mt-5 space-y-4">
@@ -222,8 +242,10 @@ function MotoristaPage() {
         </TabsContent>
 
         <TabsContent value="minhas" className="mt-5 space-y-4">
-          {mine.length === 0 && <EmptyState text="Você ainda não aceitou nenhuma corrida." />}
-          {mine.map((ride) => (
+          {active.length === 0 && (
+            <EmptyState text="Nenhuma corrida em andamento. As concluídas ficam em Relatórios." />
+          )}
+          {active.map((ride) => (
             <RideCard key={ride.id} ride={ride}>
               {ride.status === "accepted" && (
                 <Button
@@ -243,6 +265,102 @@ function MotoristaPage() {
               )}
             </RideCard>
           ))}
+        </TabsContent>
+
+        <TabsContent value="relatorios" className="mt-5 space-y-5">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <StatCard icon={CheckCircle2} label="Corridas realizadas" value={String(completed.length)} />
+            <StatCard icon={Wallet} label="Ganhos neste mês" value={formatBRL(monthEarnings)} />
+            <StatCard icon={RouteIcon} label="Km percorridos" value={`${kmTotal.toFixed(1)} km`} />
+          </div>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Histórico</h2>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/pagamentos">Ver repasses</Link>
+            </Button>
+          </div>
+          {mine.filter((r) => r.status === "completed" || r.status === "cancelled").length === 0 && (
+            <EmptyState text="Suas corridas concluídas aparecerão aqui." />
+          )}
+          <div className="space-y-2">
+            {mine
+              .filter((r) => r.status === "completed" || r.status === "cancelled")
+              .sort((a, b) => b.scheduled_at.localeCompare(a.scheduled_at))
+              .map((ride) => (
+                <Card key={ride.id} className="shadow-soft">
+                  <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4 text-sm">
+                    <div>
+                      <p className="font-semibold">
+                        {ride.pet_name}{" "}
+                        <span className="font-normal text-muted-foreground">
+                          · {formatDateTime(ride.scheduled_at)}
+                        </span>
+                      </p>
+                      <p className="text-muted-foreground">
+                        {ride.origin_address} → {ride.destination_address}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn(
+                          "rounded-full px-3 py-1 text-xs font-semibold",
+                          statusStyles[ride.status],
+                        )}
+                      >
+                        {statusLabels[ride.status]}
+                      </span>
+                      <span className="font-semibold">
+                        {ride.status === "completed" ? formatBRL(netOf(ride)) : "—"}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="veiculo" className="mt-5">
+          {vehicle ? (
+            <Card className="shadow-soft">
+              <CardContent className="py-6">
+                <div className="flex items-center gap-3">
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary-ink">
+                    <Car className="size-5" />
+                  </span>
+                  <div>
+                    <p className="text-lg font-semibold">
+                      {vehicle.brand} {vehicle.model}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Placa {vehicle.plate}</p>
+                  </div>
+                </div>
+                <dl className="mt-5 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Ano</dt>
+                    <dd className="font-medium">{vehicle.year}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Cor</dt>
+                    <dd className="font-medium">{vehicle.color}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Tipo</dt>
+                    <dd className="font-medium capitalize">{vehicle.vehicle_type}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Placa</dt>
+                    <dd className="font-medium">{vehicle.plate}</dd>
+                  </div>
+                </dl>
+                <p className="mt-5 text-xs text-muted-foreground">
+                  Precisa trocar de veículo? Fale com o suporte GoPet pelo WhatsApp para atualizar o
+                  cadastro.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState text="Nenhum veículo encontrado no seu cadastro." />
+          )}
         </TabsContent>
       </Tabs>
     </div>
