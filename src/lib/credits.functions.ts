@@ -108,7 +108,9 @@ export const syncCreditTopup = createServerFn({ method: "POST" })
                 ? session.payment_intent
                 : (session.payment_intent?.id ?? null),
           })
-          .eq("id", tx.id);
+          .eq("id", tx.id)
+          .eq("status", "pending");
+
         return { status: "completed" };
       }
 
