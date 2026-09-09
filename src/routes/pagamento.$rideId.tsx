@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, CreditCard, MessageCircle, QrCode, ShieldCheck, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useRoleGuard } from "@/hooks/useRoleGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,15 +40,11 @@ export const Route = createFileRoute("/pagamento/$rideId")({
 function PagamentoCorrida() {
   const { rideId } = Route.useParams();
   const { session_id: sessionId } = Route.useSearch();
-  const { user, loading } = useAuth();
+  const { user, loading } = useRoleGuard("tutor");
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
   const [method, setMethod] = useState<"credits" | "card" | "pix">("pix");
   const [payingWithCredits, setPayingWithCredits] = useState(false);
-
-  useEffect(() => {
-    if (!loading && !user) void navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
 
   const { data: ride, isLoading } = useQuery({
     queryKey: ["ride-payment", rideId],

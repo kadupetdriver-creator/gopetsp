@@ -1,10 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, MapPin, MessageCircle, PawPrint } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useRoleGuard } from "@/hooks/useRoleGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,13 +59,8 @@ type Ride = {
 type Payment = { ride_id: string; status: string };
 
 function MinhasCorridas() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useRoleGuard("tutor", "/minhas-corridas");
   const qc = useQueryClient();
-
-  useEffect(() => {
-    if (!loading && !user) void navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
 
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "tutor", user?.id],

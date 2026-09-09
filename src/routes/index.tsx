@@ -1,10 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { PawPrint, ShieldCheck, MapPinned, Clock, Star, MessageCircle, Phone } from "lucide-react";
-import bannerAsset from "@/assets/gopet-logo.jpg.asset.json";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { Car, ChevronRight, Loader2, PawPrint, ShieldCheck, Sparkles } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { spSubprefeituras } from "@/lib/rides";
+import { useAuth } from "@/hooks/useAuth";
+import { homeForRole } from "@/hooks/useRoleGuard";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -13,7 +12,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Peça uma corrida para o seu pet em São Paulo: motoristas parceiros verificados, acompanhamento em tempo real e preço estimado antes de confirmar.",
+          "Peça uma corrida para o seu pet em São Paulo: motoristas parceiros verificados, acompanhamento em tempo real e preço definido antes de confirmar.",
       },
       { property: "og:title", content: "GoPet — Transporte de pets em São Paulo" },
       {
@@ -23,178 +22,97 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  component: Home,
+  component: Splash,
 });
 
-function Home() {
-  return (
-    <div>
-      <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 lg:grid-cols-2 lg:py-20">
-        <div>
-          <BrandLogo size={96} withWordmark={false} className="mb-5" />
-          <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
-            <PawPrint className="size-3.5 text-primary-ink" /> Só em São Paulo, com carinho
-          </span>
-          <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
-            O transporte do seu pet, com gente que entende de bicho
-          </h1>
-          <p className="mt-4 text-base text-muted-foreground sm:text-lg">
-            Chame um motorista parceiro para levar seu animal ao veterinário, banho e tosa, creche
-            ou aeroporto. Acompanhe a corrida em tempo real e converse com o motorista pelo app.
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Button asChild size="lg" variant="secondary" className="rounded-full">
-              <Link to="/perfil">Cadastrar pet</Link>
-            </Button>
-            <Button asChild size="lg" className="rounded-full">
-              <Link to="/solicitar">Solicitar corrida</Link>
-            </Button>
-          </div>
-          <dl className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-border pt-6">
-            <div>
-              <dt className="text-2xl font-semibold text-primary-ink">24/7</dt>
-              <dd className="text-xs text-muted-foreground">chamadas na cidade</dd>
-            </div>
-            <div>
-              <dt className="text-2xl font-semibold text-primary-ink">Cidade de São Paulo</dt>
-              <dd className="text-xs text-muted-foreground">todos os bairros atendidos</dd>
-            </div>
-            <div>
-              <dt className="text-2xl font-semibold text-primary-ink">Tempo real</dt>
-              <dd className="text-xs text-muted-foreground">mapa e chat durante a corrida</dd>
-            </div>
-          </dl>
-        </div>
-        <div className="relative">
-          <img
-            src={bannerAsset.url}
-            width={1080}
-            height={1080}
-            alt="GoPet — transporte de pet em São Paulo: cão e gato em pose de super-heróis com a cidade ao fundo"
-            className="w-full rounded-3xl object-cover shadow-soft"
-          />
-          <div className="absolute -bottom-6 left-6 hidden rounded-2xl bg-brand-canvas p-2 shadow-soft ring-1 ring-border sm:block">
-            <BrandLogo size={72} withWordmark={false} />
-          </div>
-        </div>
-      </section>
+const options = [
+  {
+    to: "/auth",
+    search: { papel: "tutor" as const },
+    icon: PawPrint,
+    title: "Sou Tutor",
+    text: "Peça uma corrida para o seu pet e acompanhe em tempo real.",
+    tone: "bg-primary text-primary-foreground hover:bg-primary/90",
+    iconTone: "bg-primary-foreground/15 text-primary-foreground",
+  },
+  {
+    to: "/auth",
+    search: { papel: "motorista" as const },
+    icon: Car,
+    title: "Sou Motorista",
+    text: "Entre para ver chamadas, relatórios e dados do seu veículo.",
+    tone: "bg-foreground text-background hover:bg-foreground/90",
+    iconTone: "bg-background/15 text-background",
+  },
+  {
+    to: "/auth",
+    search: { papel: "tutor" as const, next: "/seja-motorista" },
+    icon: Sparkles,
+    title: "Quero ser Motorista",
+    text: "Já tem conta de tutor? Envie seus documentos e vire parceiro GoPet.",
+    tone: "bg-card text-foreground ring-1 ring-border hover:bg-secondary",
+    iconTone: "bg-primary/15 text-primary-ink",
+  },
+];
 
-      <section className="border-y border-border/70 bg-card/60 py-14">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-2xl font-semibold sm:text-3xl">Como funciona</h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              {
-                icon: PawPrint,
-                title: "1. Conte sobre o pet",
-                text: "Nome, porte, temperamento e itens necessários para a viagem.",
-              },
-              {
-                icon: MapPinned,
-                title: "2. Informe o trajeto",
-                text: "Endereço de embarque e destino em qualquer bairro de São Paulo.",
-              },
-              {
-                icon: Clock,
-                title: "3. Acompanhe em tempo real",
-                text: "Veja o motorista a caminho, converse pelo chat e avalie no final.",
-              },
-            ].map((s) => (
-              <Card key={s.title} className="shadow-soft">
-                <CardContent className="space-y-3 py-6">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary-ink">
-                    <s.icon className="size-5" />
-                  </span>
-                  <h3 className="text-lg font-semibold">{s.title}</h3>
-                  <p className="text-sm text-muted-foreground">{s.text}</p>
-                </CardContent>
-              </Card>
+function Splash() {
+  const { user, profile, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Sessão ativa: pula a escolha e vai direto para a tela do papel atual.
+  useEffect(() => {
+    if (!loading && user && profile) {
+      void navigate({ to: homeForRole(profile), replace: true });
+    }
+  }, [loading, user, profile, navigate]);
+
+  const deciding = loading || (!!user && !profile) || (!!user && !!profile);
+
+  return (
+    <div className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-md flex-col items-center justify-center px-4 py-10">
+      <BrandLogo size={128} withWordmark={false} />
+      <h1 className="mt-6 text-center text-3xl font-semibold leading-tight">
+        Go<span className="text-primary-ink">Pet</span>
+      </h1>
+      <p className="mt-2 text-center text-sm text-muted-foreground">
+        Transporte de pets com carinho na cidade de São Paulo.
+      </p>
+
+      {deciding ? (
+        <div className="mt-12 flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" /> Entrando…
+        </div>
+      ) : (
+        <>
+          <p className="mt-10 self-start text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Como você quer entrar?
+          </p>
+          <div className="mt-3 flex w-full flex-col gap-3">
+            {options.map((o) => (
+              <Link
+                key={o.title}
+                to={o.to}
+                search={o.search}
+                className={`flex items-center gap-4 rounded-2xl px-4 py-4 shadow-soft transition-colors ${o.tone}`}
+              >
+                <span className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${o.iconTone}`}>
+                  <o.icon className="size-5" />
+                </span>
+                <span className="flex-1">
+                  <span className="block text-base font-semibold">{o.title}</span>
+                  <span className="block text-xs opacity-80">{o.text}</span>
+                </span>
+                <ChevronRight className="size-5 shrink-0 opacity-70" />
+              </Link>
             ))}
           </div>
-        </div>
-      </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-14">
-        <div className="grid gap-8 lg:grid-cols-2">
-          <div>
-            <h2 className="text-2xl font-semibold sm:text-3xl">Segurança em primeiro lugar</h2>
-            <ul className="mt-6 space-y-4">
-              {[
-                {
-                  icon: ShieldCheck,
-                  title: "Parceiros verificados",
-                  text: "Documento, veículo e curso de manejo animal conferidos antes da primeira corrida.",
-                },
-                {
-                  icon: MessageCircle,
-                  title: "Chat durante a corrida",
-                  text: "Fale com o motorista enquanto o transporte estiver ativo, com histórico salvo.",
-                },
-                {
-                  icon: Star,
-                  title: "Avaliação mútua",
-                  text: "Tutor e motorista se avaliam ao final, mantendo a qualidade da comunidade.",
-                },
-              ].map((f) => (
-                <li key={f.title} className="flex gap-3">
-                  <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent/20 text-accent-foreground">
-                    <f.icon className="size-4" />
-                  </span>
-                  <div>
-                    <p className="font-semibold">{f.title}</p>
-                    <p className="text-sm text-muted-foreground">{f.text}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-3xl bg-gradient-warm p-8 text-primary-foreground shadow-soft">
-            <h2 className="text-2xl font-semibold text-primary-foreground">
-              Atendemos a cidade inteira
-            </h2>
-            <p className="mt-2 text-sm opacity-90">
-              Bairros com maior volume de chamadas em São Paulo.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {spSubprefeituras.map((b) => (
-                <span
-                  key={b}
-                  className="rounded-full bg-primary-foreground/15 px-3 py-1 text-sm font-medium"
-                >
-                  {b}
-                </span>
-              ))}
-            </div>
-            <Button asChild variant="secondary" className="mt-7 rounded-full">
-              <Link to="/auth">Criar minha conta</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-y border-border/70 bg-card/60 py-14">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 text-center md:flex-row md:justify-between md:text-left">
-          <div>
-            <h2 className="text-2xl font-semibold sm:text-3xl">Fale com a GoPet</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Tire dúvidas, faça seu cadastro ou acompanhe seu pet pelo WhatsApp.
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Tem carro e ama pets?{" "}
-              <Link to="/seja-motorista" className="font-medium text-foreground underline">
-                Cadastre-se como motorista parceiro
-              </Link>
-              .
-            </p>
-          </div>
-          <Button asChild size="lg" className="gap-2 rounded-full">
-            <a href="https://wa.me/5511985125238" target="_blank" rel="noopener noreferrer">
-              <Phone className="size-5" />
-              (11) 98512-5238
-            </a>
-          </Button>
-        </div>
-      </section>
+          <p className="mt-8 inline-flex items-center gap-2 text-center text-xs text-muted-foreground">
+            <ShieldCheck className="size-4 text-primary-ink" />
+            Motoristas parceiros com documentos e veículo verificados.
+          </p>
+        </>
+      )}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CreditCard, QrCode, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useRoleGuard } from "@/hooks/useRoleGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,7 +51,7 @@ const statusLabels: Record<string, string> = {
 };
 
 function CreditosPage() {
-  const { user, loading } = useAuth();
+  const { user } = useRoleGuard("tutor", "/creditos");
   const { session_id: sessionId } = Route.useSearch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -61,10 +61,6 @@ function CreditosPage() {
   const [checkoutKey, setCheckoutKey] = useState<{ amountCents: number; method: "card" | "pix" } | null>(
     null,
   );
-
-  useEffect(() => {
-    if (!loading && !user) void navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
 
   const { data: transactions, isLoading } = useQuery({
     queryKey: ["credit-transactions", user?.id],

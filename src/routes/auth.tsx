@@ -1,18 +1,26 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Car, Loader2 } from "lucide-react";
+import { z } from "zod";
 import { BrandLogo } from "@/components/BrandLogo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
+import { homeForRole } from "@/hooks/useRoleGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+const searchSchema = z.object({
+  papel: z.enum(["tutor", "motorista"]).optional(),
+  next: z.string().startsWith("/").optional(),
+});
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
       { title: "Entrar ou criar conta | GoPet" },
@@ -33,6 +41,8 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { papel, next } = Route.useSearch();
+  const driverMode = papel === "motorista";
   const { user, profile, loading } = useAuth();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -40,11 +50,13 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // Após o login, o papel do perfil decide a tela — nunca a escolha feita na tela inicial.
   useEffect(() => {
-    if (!loading && user) {
-      void navigate({ to: profile?.role === "driver" ? "/motorista" : "/solicitar" });
-    }
-  }, [loading, user, profile, navigate]);
+    if (loading || !user || !profile) return;
+    const home = homeForRole(profile);
+    const target = profile.role === "tutor" && next ? next : home;
+    void navigate({ to: target, replace: true });
+  }, [loading, user, profile, next, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,20 +103,45 @@ function AuthPage() {
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-10">
       <div className="flex flex-col items-center text-center">
         <BrandLogo size={104} withWordmark={false} className="mb-4" />
-        <h1 className="text-3xl font-semibold">Vamos cuidar do seu pet</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Transporte seguro de animais em toda São Paulo, com motoristas treinados.
-        </p>
+        {driverMode ? (
+          <>
+            <span className="mb-2 inline-flex items-center gap-2 rounded-full bg-foreground px-3 py-1 text-xs font-semibold text-background">
+              <Car className="size-3.5" /> Área do motorista parceiro
+            </span>
+            <h1 className="text-3xl font-semibold">Entrar como motorista</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Use o e-mail e a senha da sua conta GoPet. Seu acesso segue o status do seu cadastro.
+            </p>
+          </>
+        ) : next === "/seja-motorista" ? (
+          <>
+            <h1 className="text-3xl font-semibold">Quero ser motorista</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Entre (ou crie sua conta de tutor) para enviar a solicitação de motorista parceiro.
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className="text-3xl font-semibold">Vamos cuidar do seu pet</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Transporte seguro de animais em toda São Paulo, com motoristas treinados.
+            </p>
+          </>
+        )}
       </div>
 
       <Card className="shadow-soft">
         <CardHeader>
-          <CardTitle>Acesse a GoPet</CardTitle>
-          <CardDescription>Crie sua conta de tutor e peça corridas para o seu pet.</CardDescription>
+          <CardTitle>{driverMode ? "Acesso do motorista" : "Acesse a GoPet"}</CardTitle>
+          <CardDescription>
+            {driverMode
+              ? "Motoristas não criam conta por aqui: a conta de tutor é promovida após aprovação dos documentos."
+              : "Crie sua conta de tutor e peça corridas para o seu pet."}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signup">
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs defaultValue={driverMode ? "signin" : "signup"}>
+            <TabsList className={driverMode ? "hidden" : "grid w-full grid-cols-2"}>
               <TabsTrigger value="signup">Criar conta</TabsTrigger>
               <TabsTrigger value="signin">Entrar</TabsTrigger>
             </TabsList>
@@ -181,6 +218,14 @@ function AuthPage() {
           <Button variant="outline" className="w-full" onClick={handleGoogle}>
             Continuar com Google
           </Button>
+          {driverMode && (
+            <p className="mt-5 text-center text-xs text-muted-foreground">
+              Ainda não é motorista?{" "}
+              <Link to="/auth" search={{ papel: "tutor", next: "/seja-motorista" }} className="font-medium text-foreground underline">
+                Quero ser motorista
+              </Link>
+            </p>
+          )}
         </CardContent>
       </Card>
 

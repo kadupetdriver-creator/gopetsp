@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera, Car, CheckCircle2, FileCheck2, Loader2, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useRoleGuard } from "@/hooks/useRoleGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,14 +101,11 @@ const steps = [
 const currentYear = new Date().getFullYear();
 
 function SejaMotoristaPage() {
-  const { user, profile, loading } = useAuth();
+  // Só tutores solicitam promoção; motoristas aprovados são levados ao painel.
+  const { user, profile, loading } = useRoleGuard("tutor", "/seja-motorista");
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [step, setStep] = useState(1);
-
-  useEffect(() => {
-    if (!loading && !user) void navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
 
   const { data: application, isLoading } = useQuery({
     queryKey: ["driver-application", user?.id],
