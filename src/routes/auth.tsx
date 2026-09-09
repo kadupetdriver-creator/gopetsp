@@ -1,18 +1,26 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Car, Loader2 } from "lucide-react";
+import { z } from "zod";
 import { BrandLogo } from "@/components/BrandLogo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
+import { homeForRole } from "@/hooks/useRoleGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+const searchSchema = z.object({
+  papel: z.enum(["tutor", "motorista"]).optional(),
+  next: z.string().startsWith("/").optional(),
+});
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
       { title: "Entrar ou criar conta | GoPet" },
@@ -33,6 +41,8 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { papel, next } = Route.useSearch();
+  const driverMode = papel === "motorista";
   const { user, profile, loading } = useAuth();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -40,11 +50,13 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // Após o login, o papel do perfil decide a tela — nunca a escolha feita na tela inicial.
   useEffect(() => {
-    if (!loading && user) {
-      void navigate({ to: profile?.role === "driver" ? "/motorista" : "/solicitar" });
-    }
-  }, [loading, user, profile, navigate]);
+    if (loading || !user || !profile) return;
+    const home = homeForRole(profile);
+    const target = profile.role === "tutor" && next ? next : home;
+    void navigate({ to: target, replace: true });
+  }, [loading, user, profile, next, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
