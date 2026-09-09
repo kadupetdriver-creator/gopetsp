@@ -22,6 +22,7 @@ import { Route as SejaMotoristaRouteImport } from './routes/seja-motorista'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminCorridasRouteImport } from './routes/admin/corridas'
 import { Route as AdminMotoristasRouteImport } from './routes/admin/motoristas'
 import { Route as AdminTutoresRouteImport } from './routes/admin/tutores'
 import { Route as PagamentoRideIdRouteImport } from './routes/pagamento.$rideId'
@@ -92,6 +93,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminCorridasRoute = AdminCorridasRouteImport.update({
+  id: '/corridas',
+  path: '/corridas',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminMotoristasRoute = AdminMotoristasRouteImport.update({
   id: '/motoristas',
   path: '/motoristas',
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/admin/corridas'
     | '/admin/motoristas'
     | '/admin/tutores'
     | '/pagamento/$rideId'
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
     | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/admin/corridas'
     | '/admin/motoristas'
     | '/admin/tutores'
     | '/pagamento/$rideId'
@@ -223,6 +234,7 @@ export interface FileRouteTypes {
     | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/admin/corridas'
     | '/admin/motoristas'
     | '/admin/tutores'
     | '/pagamento/$rideId'
@@ -340,6 +352,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/corridas': {
+      id: '/admin/corridas'
+      path: '/corridas'
+      fullPath: '/admin/corridas'
+      preLoaderRoute: typeof AdminCorridasRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/motoristas': {
       id: '/admin/motoristas'
       path: '/motoristas'
@@ -372,12 +391,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteRouteChildren {
+  AdminCorridasRoute: typeof AdminCorridasRoute
   AdminMotoristasRoute: typeof AdminMotoristasRoute
   AdminTutoresRoute: typeof AdminTutoresRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminCorridasRoute: AdminCorridasRoute,
   AdminMotoristasRoute: AdminMotoristasRoute,
   AdminTutoresRoute: AdminTutoresRoute,
   AdminIndexRoute: AdminIndexRoute,
