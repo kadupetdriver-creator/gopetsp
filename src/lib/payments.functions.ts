@@ -299,7 +299,11 @@ export const refundRidePayment = createServerFn({ method: "POST" })
     if (!payment) return { status: "none" };
 
     if (payment.status === "pending") {
-      await supabaseAdmin.from("ride_payments").update({ status: "cancelled" }).eq("id", payment.id);
+      await supabaseAdmin
+        .from("ride_payments")
+        .update({ status: "cancelled" })
+        .eq("id", payment.id)
+        .eq("status", "pending");
       return { status: "cancelled" };
     }
     if (payment.status !== "held") return { status: payment.status };
@@ -311,7 +315,7 @@ export const refundRidePayment = createServerFn({ method: "POST" })
     // Pagamento feito com saldo volta como crédito na carteira, na hora.
     if (payment.payment_method === "credits") {
       if (refundCents > 0) {
-        await supabaseAdmin.from("credit_transactions").insert({
+        const { error: refundError } = await supabaseAdmin.from("credit_transactions").insert({
           user_id: ride.tutor_id,
           kind: "refund",
           amount_cents: refundCents,
@@ -321,6 +325,9 @@ export const refundRidePayment = createServerFn({ method: "POST" })
           ride_id: ride.id,
           completed_at: new Date().toISOString(),
         });
+        // 23505 = estorno já registrado antes; repetir a operação é seguro.
+        if (refundError && refundError.code !== "23505")
+          return { error: "Não foi possível registrar o estorno. Tente novamente." };
       }
       await supabaseAdmin
         .from("ride_payments")
@@ -330,18 +337,22 @@ export const refundRidePayment = createServerFn({ method: "POST" })
           refunded_cents: refundCents,
           refunded_at: new Date().toISOString(),
         })
-        .eq("id", payment.id);
+        .eq("id", payment.id)
+        .eq("status", "held");
       return { status: "refunded" };
     }
 
     try {
-
       const stripe = createStripeClient(data.environment);
       if (payment.stripe_payment_intent && refundCents > 0) {
-        await stripe.refunds.create({
-          payment_intent: payment.stripe_payment_intent,
-          amount: refundCents,
-        });
+        await stripe.refunds.create(
+          {
+            payment_intent: payment.stripe_payment_intent,
+            amount: refundCents,
+          },
+          // Idempotência: uma corrida nunca gera dois estornos.
+          { idempotencyKey: `ride_refund_${ride.id}` },
+        );
       }
       await supabaseAdmin
         .from("ride_payments")
@@ -351,12 +362,14 @@ export const refundRidePayment = createServerFn({ method: "POST" })
           refunded_cents: refundCents,
           refunded_at: new Date().toISOString(),
         })
-        .eq("id", payment.id);
+        .eq("id", payment.id)
+        .eq("status", "held");
       return { status: "refunded" };
     } catch (err) {
       return { error: getStripeErrorMessage(err) };
     }
   });
+
 
 type PayoutStatus = {
   connected: boolean;
