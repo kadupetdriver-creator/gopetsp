@@ -40,15 +40,11 @@ export const Route = createFileRoute("/pagamento/$rideId")({
 function PagamentoCorrida() {
   const { rideId } = Route.useParams();
   const { session_id: sessionId } = Route.useSearch();
-  const { user, loading } = useAuth();
+  const { user, loading } = useRoleGuard("tutor");
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
   const [method, setMethod] = useState<"credits" | "card" | "pix">("pix");
   const [payingWithCredits, setPayingWithCredits] = useState(false);
-
-  useEffect(() => {
-    if (!loading && !user) void navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
 
   const { data: ride, isLoading } = useQuery({
     queryKey: ["ride-payment", rideId],

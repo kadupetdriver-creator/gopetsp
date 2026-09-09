@@ -59,13 +59,8 @@ type Ride = {
 type Payment = { ride_id: string; status: string };
 
 function MinhasCorridas() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useRoleGuard("tutor", "/minhas-corridas");
   const qc = useQueryClient();
-
-  useEffect(() => {
-    if (!loading && !user) void navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
 
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "tutor", user?.id],

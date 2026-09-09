@@ -101,14 +101,11 @@ const steps = [
 const currentYear = new Date().getFullYear();
 
 function SejaMotoristaPage() {
-  const { user, profile, loading } = useAuth();
+  // Só tutores solicitam promoção; motoristas aprovados são levados ao painel.
+  const { user, profile, loading } = useRoleGuard("tutor", "/seja-motorista");
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [step, setStep] = useState(1);
-
-  useEffect(() => {
-    if (!loading && !user) void navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
 
   const { data: application, isLoading } = useQuery({
     queryKey: ["driver-application", user?.id],
