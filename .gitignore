@@ -17,7 +17,7 @@ dist-ssr
 *.local
 
 # Wrangler / Cloudflare
-.wrangler/
+.wrangler
 .dev.vars
 
 # Editor directories and files
@@ -31,13 +31,3 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# Android local files
-.gradle/
-.idea/
-*.iml
-local.properties
