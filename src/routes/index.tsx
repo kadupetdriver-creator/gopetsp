@@ -179,6 +179,13 @@ function Home() {
             <p className="mt-2 text-sm text-muted-foreground">
               Tire dúvidas, faça seu cadastro ou acompanhe seu pet pelo WhatsApp.
             </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Tem carro e ama pets?{" "}
+              <Link to="/seja-motorista" className="font-medium text-foreground underline">
+                Cadastre-se como motorista parceiro
+              </Link>
+              .
+            </p>
           </div>
           <Button asChild size="lg" className="gap-2 rounded-full">
             <a href="https://wa.me/5511985125238" target="_blank" rel="noopener noreferrer">

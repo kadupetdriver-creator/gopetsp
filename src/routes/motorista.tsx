@@ -21,6 +21,8 @@ import {
 } from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { PetDetails, type PetInfo } from "@/components/PetDetails";
+import { StatusCard } from "@/routes/seja-motorista";
+import type { DriverStatus } from "@/lib/drivers";
 
 export const Route = createFileRoute("/motorista")({
   head: () => ({
@@ -68,10 +70,27 @@ function MotoristaPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
+  // Cadastro de motorista (aprovação) para quem ainda não é motorista aprovado.
+  const { data: application, isLoading: appLoading } = useQuery({
+    queryKey: ["driver-application", user?.id],
+    enabled: !!user && !!profile && profile.role !== "driver",
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("drivers")
+        .select("status, rejection_reason")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { status: DriverStatus; rejection_reason: string | null } | null;
+    },
+  });
+
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
-    if (!loading && profile && profile.role !== "driver") void navigate({ to: "/solicitar" });
-  }, [loading, user, profile, navigate]);
+    if (!loading && profile && profile.role !== "driver" && !appLoading && application === null) {
+      void navigate({ to: "/solicitar" });
+    }
+  }, [loading, user, profile, appLoading, application, navigate]);
 
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "driver", user?.id],
@@ -131,6 +150,21 @@ function MotoristaPage() {
   const earnings = mine
     .filter((r) => r.status === "completed")
     .reduce((sum, r) => sum + Math.round(r.price_cents * 0.8), 0);
+
+  if (profile && profile.role !== "driver") {
+    if (!application) return null;
+    return (
+      <div className="mx-auto w-full max-w-2xl px-4 py-8">
+        <h1 className="text-3xl font-semibold">Painel do motorista</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          As chamadas ficam disponíveis assim que seu cadastro for aprovado.
+        </p>
+        <div className="mt-6">
+          <StatusCard driver={application} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">

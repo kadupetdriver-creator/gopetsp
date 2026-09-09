@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -26,11 +26,13 @@ export function SiteHeader() {
           { to: "/creditos", label: "Créditos" },
           { to: "/pagamentos", label: "Pagamentos" },
           { to: "/perfil", label: "Meu perfil" },
+          { to: "/seja-motorista", label: "Seja parceiro" },
         ]
     : [
         { to: "/", label: "Início" },
         { to: "/auth", label: "Entrar" },
       ];
+  if (user && isAdmin) links.push({ to: "/admin/motoristas", label: "Aprovações" });
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur">
