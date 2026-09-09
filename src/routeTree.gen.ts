@@ -17,8 +17,10 @@ import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as PagamentosRouteImport } from './routes/pagamentos'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as RastreioRouteImport } from './routes/rastreio'
+import { Route as SejaMotoristaRouteImport } from './routes/seja-motorista'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
+import { Route as AdminMotoristasRouteImport } from './routes/admin/motoristas'
 import { Route as PagamentoRideIdRouteImport } from './routes/pagamento.$rideId'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
@@ -62,6 +64,11 @@ const RastreioRoute = RastreioRouteImport.update({
   path: '/rastreio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SejaMotoristaRoute = SejaMotoristaRouteImport.update({
+  id: '/seja-motorista',
+  path: '/seja-motorista',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolicitarRoute = SolicitarRouteImport.update({
   id: '/solicitar',
   path: '/solicitar',
@@ -70,6 +77,11 @@ const SolicitarRoute = SolicitarRouteImport.update({
 const AcompanharTokenRoute = AcompanharTokenRouteImport.update({
   id: '/acompanhar/$token',
   path: '/acompanhar/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminMotoristasRoute = AdminMotoristasRouteImport.update({
+  id: '/admin/motoristas',
+  path: '/admin/motoristas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PagamentoRideIdRoute = PagamentoRideIdRouteImport.update({
@@ -93,8 +105,10 @@ export interface FileRoutesByFullPath {
   '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
   '/rastreio': typeof RastreioRoute
+  '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/admin/motoristas': typeof AdminMotoristasRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -107,8 +121,10 @@ export interface FileRoutesByTo {
   '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
   '/rastreio': typeof RastreioRoute
+  '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/admin/motoristas': typeof AdminMotoristasRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -122,8 +138,10 @@ export interface FileRoutesById {
   '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
   '/rastreio': typeof RastreioRoute
+  '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/admin/motoristas': typeof AdminMotoristasRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -138,8 +156,10 @@ export interface FileRouteTypes {
     | '/pagamentos'
     | '/perfil'
     | '/rastreio'
+    | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/admin/motoristas'
     | '/pagamento/$rideId'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -152,8 +172,10 @@ export interface FileRouteTypes {
     | '/pagamentos'
     | '/perfil'
     | '/rastreio'
+    | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/admin/motoristas'
     | '/pagamento/$rideId'
     | '/api/public/payments/webhook'
   id:
@@ -166,8 +188,10 @@ export interface FileRouteTypes {
     | '/pagamentos'
     | '/perfil'
     | '/rastreio'
+    | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/admin/motoristas'
     | '/pagamento/$rideId'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
@@ -181,8 +205,10 @@ export interface RootRouteChildren {
   PagamentosRoute: typeof PagamentosRoute
   PerfilRoute: typeof PerfilRoute
   RastreioRoute: typeof RastreioRoute
+  SejaMotoristaRoute: typeof SejaMotoristaRoute
   SolicitarRoute: typeof SolicitarRoute
   AcompanharTokenRoute: typeof AcompanharTokenRoute
+  AdminMotoristasRoute: typeof AdminMotoristasRoute
   PagamentoRideIdRoute: typeof PagamentoRideIdRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
@@ -245,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RastreioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/seja-motorista': {
+      id: '/seja-motorista'
+      path: '/seja-motorista'
+      fullPath: '/seja-motorista'
+      preLoaderRoute: typeof SejaMotoristaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/solicitar': {
       id: '/solicitar'
       path: '/solicitar'
@@ -257,6 +290,13 @@ declare module '@tanstack/react-router' {
       path: '/acompanhar/$token'
       fullPath: '/acompanhar/$token'
       preLoaderRoute: typeof AcompanharTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/motoristas': {
+      id: '/admin/motoristas'
+      path: '/admin/motoristas'
+      fullPath: '/admin/motoristas'
+      preLoaderRoute: typeof AdminMotoristasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pagamento/$rideId': {
@@ -285,8 +325,10 @@ const rootRouteChildren: RootRouteChildren = {
   PagamentosRoute: PagamentosRoute,
   PerfilRoute: PerfilRoute,
   RastreioRoute: RastreioRoute,
+  SejaMotoristaRoute: SejaMotoristaRoute,
   SolicitarRoute: SolicitarRoute,
   AcompanharTokenRoute: AcompanharTokenRoute,
+  AdminMotoristasRoute: AdminMotoristasRoute,
   PagamentoRideIdRoute: PagamentoRideIdRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
