@@ -32,8 +32,8 @@ dist-ssr
 *.sw?
 
 # Environment variables
-.env
-.env.*
+# .env is auto-generated with public keys only and must be committed for builds
+.env.*.local
 !.env.example
 
 # Android local files
