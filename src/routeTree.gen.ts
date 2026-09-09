@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CreditosRouteImport } from './routes/creditos'
 import { Route as MinhasCorridasRouteImport } from './routes/minhas-corridas'
@@ -20,13 +21,20 @@ import { Route as RastreioRouteImport } from './routes/rastreio'
 import { Route as SejaMotoristaRouteImport } from './routes/seja-motorista'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminMotoristasRouteImport } from './routes/admin/motoristas'
+import { Route as AdminTutoresRouteImport } from './routes/admin/tutores'
 import { Route as PagamentoRideIdRouteImport } from './routes/pagamento.$rideId'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -79,10 +87,20 @@ const AcompanharTokenRoute = AcompanharTokenRouteImport.update({
   path: '/acompanhar/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminMotoristasRoute = AdminMotoristasRouteImport.update({
-  id: '/admin/motoristas',
-  path: '/admin/motoristas',
-  getParentRoute: () => rootRouteImport,
+  id: '/motoristas',
+  path: '/motoristas',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminTutoresRoute = AdminTutoresRouteImport.update({
+  id: '/tutores',
+  path: '/tutores',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const PagamentoRideIdRoute = PagamentoRideIdRouteImport.update({
   id: '/pagamento/$rideId',
@@ -98,6 +116,7 @@ const ApiPublicPaymentsWebhookRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/creditos': typeof CreditosRoute
   '/minhas-corridas': typeof MinhasCorridasRoute
@@ -109,7 +128,9 @@ export interface FileRoutesByFullPath {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
+  '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -125,12 +146,15 @@ export interface FileRoutesByTo {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
+  '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
+  '/admin': typeof AdminIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/creditos': typeof CreditosRoute
   '/minhas-corridas': typeof MinhasCorridasRoute
@@ -142,13 +166,16 @@ export interface FileRoutesById {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
+  '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/creditos'
     | '/minhas-corridas'
@@ -160,7 +187,9 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/admin/motoristas'
+    | '/admin/tutores'
     | '/pagamento/$rideId'
+    | '/admin/'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -176,11 +205,14 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/admin/motoristas'
+    | '/admin/tutores'
     | '/pagamento/$rideId'
+    | '/admin'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/creditos'
     | '/minhas-corridas'
@@ -192,12 +224,15 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/admin/motoristas'
+    | '/admin/tutores'
     | '/pagamento/$rideId'
+    | '/admin/'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CreditosRoute: typeof CreditosRoute
   MinhasCorridasRoute: typeof MinhasCorridasRoute
@@ -208,7 +243,6 @@ export interface RootRouteChildren {
   SejaMotoristaRoute: typeof SejaMotoristaRoute
   SolicitarRoute: typeof SolicitarRoute
   AcompanharTokenRoute: typeof AcompanharTokenRoute
-  AdminMotoristasRoute: typeof AdminMotoristasRoute
   PagamentoRideIdRoute: typeof PagamentoRideIdRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
@@ -220,6 +254,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -292,12 +333,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AcompanharTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/motoristas': {
       id: '/admin/motoristas'
-      path: '/admin/motoristas'
+      path: '/motoristas'
       fullPath: '/admin/motoristas'
       preLoaderRoute: typeof AdminMotoristasRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/tutores': {
+      id: '/admin/tutores'
+      path: '/tutores'
+      fullPath: '/admin/tutores'
+      preLoaderRoute: typeof AdminTutoresRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/pagamento/$rideId': {
       id: '/pagamento/$rideId'
@@ -316,8 +371,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteRouteChildren {
+  AdminMotoristasRoute: typeof AdminMotoristasRoute
+  AdminTutoresRoute: typeof AdminTutoresRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminMotoristasRoute: AdminMotoristasRoute,
+  AdminTutoresRoute: AdminTutoresRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CreditosRoute: CreditosRoute,
   MinhasCorridasRoute: MinhasCorridasRoute,
@@ -328,7 +400,6 @@ const rootRouteChildren: RootRouteChildren = {
   SejaMotoristaRoute: SejaMotoristaRoute,
   SolicitarRoute: SolicitarRoute,
   AcompanharTokenRoute: AcompanharTokenRoute,
-  AdminMotoristasRoute: AdminMotoristasRoute,
   PagamentoRideIdRoute: PagamentoRideIdRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
