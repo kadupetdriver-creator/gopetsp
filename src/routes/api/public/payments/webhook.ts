@@ -140,7 +140,9 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               await supabaseAdmin
                 .from("ride_payments")
                 .update({ status: "refunded", refunded_at: new Date().toISOString() })
-                .eq("stripe_payment_intent", intentId);
+                .eq("stripe_payment_intent", intentId)
+                .eq("status", "held");
+
             }
             break;
           }
