@@ -1,0 +1,1 @@
+ALTER TYPE public.driver_status ADD VALUE IF NOT EXISTS 'suspenso';

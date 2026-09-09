@@ -829,7 +829,12 @@ export type Database = {
       app_role: "tutor" | "driver"
       document_status: "pendente" | "aprovado" | "rejeitado"
       driver_document_type: "cnh" | "crlv" | "comprovante_residencia"
-      driver_status: "pendente" | "em_analise" | "aprovado" | "rejeitado"
+      driver_status:
+        | "pendente"
+        | "em_analise"
+        | "aprovado"
+        | "rejeitado"
+        | "suspenso"
       payment_status:
         | "pending"
         | "held"
@@ -975,7 +980,13 @@ export const Constants = {
       app_role: ["tutor", "driver"],
       document_status: ["pendente", "aprovado", "rejeitado"],
       driver_document_type: ["cnh", "crlv", "comprovante_residencia"],
-      driver_status: ["pendente", "em_analise", "aprovado", "rejeitado"],
+      driver_status: [
+        "pendente",
+        "em_analise",
+        "aprovado",
+        "rejeitado",
+        "suspenso",
+      ],
       payment_status: [
         "pending",
         "held",
