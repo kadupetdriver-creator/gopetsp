@@ -155,7 +155,9 @@ export const syncRidePayment = createServerFn({ method: "POST" })
                 ? session.payment_intent
                 : (session.payment_intent?.id ?? null),
           })
-          .eq("id", payment.id);
+          .eq("id", payment.id)
+          .eq("status", "pending");
+
         return { status: "held", rideId };
       }
 
