@@ -218,6 +218,14 @@ function AuthPage() {
           <Button variant="outline" className="w-full" onClick={handleGoogle}>
             Continuar com Google
           </Button>
+          {driverMode && (
+            <p className="mt-5 text-center text-xs text-muted-foreground">
+              Ainda não é motorista?{" "}
+              <Link to="/auth" search={{ papel: "tutor", next: "/seja-motorista" }} className="font-medium text-foreground underline">
+                Quero ser motorista
+              </Link>
+            </p>
+          )}
         </CardContent>
       </Card>
 
