@@ -227,11 +227,13 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
           city: string
           created_at: string
           full_name: string
           id: string
+          is_active: boolean
           payouts_checked_at: string | null
           payouts_enabled: boolean
           phone: string | null
@@ -242,11 +244,13 @@ export type Database = {
           vehicle_plate: string | null
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
           city?: string
           created_at?: string
           full_name?: string
           id: string
+          is_active?: boolean
           payouts_checked_at?: string | null
           payouts_enabled?: boolean
           phone?: string | null
@@ -257,11 +261,13 @@ export type Database = {
           vehicle_plate?: string | null
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
           city?: string
           created_at?: string
           full_name?: string
           id?: string
+          is_active?: boolean
           payouts_checked_at?: string | null
           payouts_enabled?: boolean
           phone?: string | null
@@ -736,6 +742,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      admin_user_emails: {
+        Args: never
+        Returns: {
+          email: string
+          last_sign_in_at: string
+          user_id: string
+        }[]
       }
       has_role: {
         Args: {
