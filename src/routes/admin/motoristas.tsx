@@ -105,12 +105,12 @@ function AdminMotoristasPage() {
     }: {
       id: string;
       status: DriverStatus;
-      reason?: string;
+      reason?: string | undefined;
     }) => {
       const { error } = await supabase.rpc("review_driver_application", {
         _driver_id: id,
         _status: status,
-        _reason: reason ?? undefined,
+        ...(reason ? { _reason: reason } : {}),
       });
       if (error) throw error;
     },
@@ -122,7 +122,7 @@ function AdminMotoristasPage() {
   });
 
   const reviewDoc = useMutation({
-    mutationFn: async ({ id, status, notes }: { id: string; status: DocumentStatus; notes?: string }) => {
+    mutationFn: async ({ id, status, notes }: { id: string; status: DocumentStatus; notes?: string | undefined }) => {
       const { error } = await supabase
         .from("driver_documents")
         .update({ status, notes: notes ?? null })
