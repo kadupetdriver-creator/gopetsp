@@ -108,7 +108,9 @@ export const syncCreditTopup = createServerFn({ method: "POST" })
                 ? session.payment_intent
                 : (session.payment_intent?.id ?? null),
           })
-          .eq("id", tx.id);
+          .eq("id", tx.id)
+          .eq("status", "pending");
+
         return { status: "completed" };
       }
 
@@ -180,7 +182,11 @@ export const payRideWithCredits = createServerFn({ method: "POST" })
         ride_id: ride.id,
         completed_at: new Date().toISOString(),
       });
+      // 23505 = a corrida já foi debitada antes; nunca cobramos duas vezes.
+      if (spendError && spendError.code === "23505")
+        return { error: "Esta corrida já foi paga" };
       if (spendError) return { error: "Não foi possível debitar o saldo. Tente novamente." };
+
 
       await supabaseAdmin.from("ride_payments").upsert(
         {

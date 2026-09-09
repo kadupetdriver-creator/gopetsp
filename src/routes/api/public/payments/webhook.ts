@@ -34,6 +34,17 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+        // Idempotência: o mesmo evento nunca é aplicado duas vezes.
+        const { error: dedupeError } = await supabaseAdmin
+          .from("stripe_webhook_events")
+          .insert({ event_id: event.id, event_type: event.type, environment });
+        if (dedupeError) {
+          if (dedupeError.code === "23505")
+            return Response.json({ received: true, duplicate: true });
+          return new Response("Webhook storage error", { status: 500 });
+        }
+
+
         const markPaid = async (rideId: string, paymentIntent: string | null) => {
           await supabaseAdmin
             .from("ride_payments")
@@ -129,7 +140,9 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               await supabaseAdmin
                 .from("ride_payments")
                 .update({ status: "refunded", refunded_at: new Date().toISOString() })
-                .eq("stripe_payment_intent", intentId);
+                .eq("stripe_payment_intent", intentId)
+                .eq("status", "held");
+
             }
             break;
           }
