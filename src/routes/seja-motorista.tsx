@@ -145,7 +145,7 @@ function SejaMotoristaPage() {
   const driver = application?.driver ?? null;
   const locked = driver?.status === "em_analise" || driver?.status === "aprovado";
 
-  if (loading || isLoading) {
+  if (loading || isLoading || !user) {
     return (
       <div className="mx-auto w-full max-w-2xl px-4 py-8">
         <Skeleton className="h-64 w-full rounded-2xl" />
