@@ -65,36 +65,55 @@ type Ride = {
 const selectCols =
   "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
+type Application = {
+  id: string;
+  status: DriverStatus;
+  rejection_reason: string | null;
+  vehicles: VehicleInfo[] | null;
+};
+
+type VehicleInfo = {
+  plate: string;
+  model: string;
+  brand: string;
+  year: number;
+  color: string;
+  vehicle_type: string;
+};
+
 function MotoristaPage() {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  // Cadastro de motorista (aprovação) para quem ainda não é motorista aprovado.
+  // Cadastro de motorista: define o status de aprovação e traz o veículo cadastrado.
   const { data: application, isLoading: appLoading } = useQuery({
-    queryKey: ["driver-application", user?.id],
-    enabled: !!user && !!profile && profile.role !== "driver",
+    queryKey: ["driver-application", user?.id, "panel"],
+    enabled: !!user && !!profile,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("drivers")
-        .select("status, rejection_reason")
+        .select("id, status, rejection_reason, vehicles(plate, model, brand, year, color, vehicle_type)")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
-      return data as { status: DriverStatus; rejection_reason: string | null } | null;
+      return (data as unknown as Application | null) ?? null;
     },
   });
 
+  const approved = profile?.role === "driver" && application?.status === "aprovado";
+
   useEffect(() => {
-    if (!loading && !user) void navigate({ to: "/auth" });
+    if (!loading && !user) void navigate({ to: "/auth", search: { papel: "motorista" } });
+    // Tutor sem solicitação de motorista não tem nada a ver aqui: volta para a tela do tutor.
     if (!loading && profile && profile.role !== "driver" && !appLoading && application === null) {
-      void navigate({ to: "/solicitar" });
+      void navigate({ to: "/solicitar", replace: true });
     }
   }, [loading, user, profile, appLoading, application, navigate]);
 
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "driver", user?.id],
-    enabled: !!user && profile?.role === "driver",
+    enabled: !!user && approved,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("rides")
