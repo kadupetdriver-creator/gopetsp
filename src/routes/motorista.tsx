@@ -192,7 +192,7 @@ function MotoristaPage() {
     const fresh = open.filter((r) => !seenRef.current!.has(r.id));
     seenRef.current = new Set(ids);
     if (fresh.length === 0) return;
-    setNewRide(fresh[0]);
+    setNewRide(fresh[0] ?? null);
     try {
       navigator.vibrate?.([400, 150, 400, 150, 600]);
     } catch {
