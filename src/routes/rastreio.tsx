@@ -70,9 +70,20 @@ function RastreioPage() {
   const qc = useQueryClient();
   const isDriver = profile?.role === "driver";
 
+  // O rastreio agora vive dentro de "Minhas corridas" (tutor) e "Chamadas" (motorista).
   useEffect(() => {
-    if (!loading && !user) void navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
+    if (loading) return;
+    if (!user) {
+      void navigate({ to: "/auth" });
+      return;
+    }
+    if (profile) {
+      void navigate({
+        to: profile.role === "driver" ? "/motorista" : "/minhas-corridas",
+        replace: true,
+      });
+    }
+  }, [loading, user, profile, navigate]);
 
   const { data: rides, isLoading } = useQuery({
     queryKey: ["live-rides", user?.id],
