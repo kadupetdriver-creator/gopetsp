@@ -337,31 +337,72 @@ export type AdminReportEntry = {
   description: string | null;
 };
 
+export type AdminReportFilters = {
+  startDate?: string | null;
+  endDate?: string | null;
+};
+
 export type AdminReport = {
   rides: AdminReportRide[];
   entries: AdminReportEntry[];
 };
 
+function startOfDayIso(dateIso: string) {
+  const d = new Date(dateIso);
+  d.setUTCHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
+function endOfDayIso(dateIso: string) {
+  const d = new Date(dateIso);
+  d.setUTCHours(23, 59, 59, 999);
+  return d.toISOString();
+}
+
 /** Relatório consolidado de corridas, bônus e descontos (somente admin). */
 export const adminGetReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<AdminReport> => {
+  .inputValidator((input) =>
+    z
+      .object({
+        startDate: z.string().datetime({ offset: true }).nullable().optional(),
+        endDate: z.string().datetime({ offset: true }).nullable().optional(),
+      })
+      .passthrough()
+      .parse(input),
+  )
+  .handler(async ({ data, context }): Promise<AdminReport> => {
     await assertAdmin(context as Ctx);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    let ridesQuery = supabaseAdmin
+      .from("rides")
+      .select("id, created_at, scheduled_at, status, price_cents, tutor_id, driver_id, ride_payments(status)")
+      .order("created_at", { ascending: false })
+      .limit(500);
+
+    let txsQuery = supabaseAdmin
+      .from("credit_transactions")
+      .select("id, created_at, user_id, kind, amount_cents, description, payment_method, status")
+      .in("payment_method", ["manual", "bonus"])
+      .eq("status", "completed")
+      .order("created_at", { ascending: false })
+      .limit(500);
+
+    if (data.startDate) {
+      const from = startOfDayIso(data.startDate);
+      ridesQuery = ridesQuery.gte("created_at", from);
+      txsQuery = txsQuery.gte("created_at", from);
+    }
+    if (data.endDate) {
+      const to = endOfDayIso(data.endDate);
+      ridesQuery = ridesQuery.lte("created_at", to);
+      txsQuery = txsQuery.lte("created_at", to);
+    }
+
     const [{ data: rides, error: ridesErr }, { data: txs, error: txErr }, { data: profiles }] = await Promise.all([
-      supabaseAdmin
-        .from("rides")
-        .select("id, created_at, scheduled_at, status, price_cents, tutor_id, driver_id, ride_payments(status)")
-        .order("created_at", { ascending: false })
-        .limit(500),
-      supabaseAdmin
-        .from("credit_transactions")
-        .select("id, created_at, user_id, kind, amount_cents, description, payment_method, status")
-        .in("payment_method", ["manual", "bonus"])
-        .eq("status", "completed")
-        .order("created_at", { ascending: false })
-        .limit(500),
+      ridesQuery,
+      txsQuery,
       supabaseAdmin.from("profiles").select("id, full_name, role"),
     ]);
     if (ridesErr) throw new Error(ridesErr.message);
