@@ -5,8 +5,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Search, UserCog } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { adminSetAccountActive, adminUpdateUserEmail } from "@/lib/admin.functions";
+import {
+  adminAdjustCredits,
+  adminGetCreditBalance,
+  adminSetAccountActive,
+  adminUpdateUserEmail,
+} from "@/lib/admin.functions";
 import { maskPhone } from "@/lib/drivers";
+import { formatBRL } from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -176,6 +182,35 @@ function EditTutorDialog({
   });
   const updateEmail = useServerFn(adminUpdateUserEmail);
   const setActive = useServerFn(adminSetAccountActive);
+  const getBalance = useServerFn(adminGetCreditBalance);
+  const adjustCredits = useServerFn(adminAdjustCredits);
+  const [creditInput, setCreditInput] = useState("");
+  const [creditNote, setCreditNote] = useState("");
+
+  const balance = useQuery({
+    queryKey: ["admin-tutor-balance", tutor.id],
+    queryFn: () => getBalance({ data: { userId: tutor.id } }),
+  });
+
+  const parsedCents = Math.round(
+    Number(creditInput.replace(/\./g, "").replace(",", ".").replace(/[^0-9.-]/g, "")) * 100,
+  );
+  const validCredit = Number.isFinite(parsedCents) && parsedCents !== 0 && Math.abs(parsedCents) <= 1000000;
+
+  const addCredits = useMutation({
+    mutationFn: () =>
+      adjustCredits({
+        data: { userId: tutor.id, amountCents: parsedCents, ...(creditNote.trim() ? { note: creditNote.trim() } : {}) },
+      }),
+    onSuccess: (res) => {
+      toast.success("Saldo atualizado.");
+      setCreditInput("");
+      setCreditNote("");
+      balance.refetch();
+      void res;
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível lançar o saldo."),
+  });
 
   const save = useMutation({
     mutationFn: async () => {
@@ -230,6 +265,44 @@ function EditTutorDialog({
           <Field label="Cidade">
             <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
           </Field>
+          <div className="space-y-3 rounded-xl border border-border px-3 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium">Saldo de créditos</p>
+              <span className="text-sm font-semibold">
+                {balance.isLoading ? "…" : formatBRL(balance.data?.balanceCents ?? 0)}
+              </span>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Field label="Valor a lançar (R$)">
+                <Input
+                  inputMode="decimal"
+                  placeholder="50,00"
+                  value={creditInput}
+                  onChange={(e) => setCreditInput(e.target.value)}
+                />
+              </Field>
+              <Field label="Motivo (opcional)">
+                <Input
+                  placeholder="Ex.: cortesia"
+                  value={creditNote}
+                  onChange={(e) => setCreditNote(e.target.value)}
+                />
+              </Field>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Use valor negativo (ex.: -20,00) para retirar saldo. O lançamento aparece no extrato do tutor.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={!validCredit || addCredits.isPending}
+              onClick={() => addCredits.mutate()}
+            >
+              {addCredits.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Lançar saldo
+            </Button>
+          </div>
           <div className="flex items-center justify-between rounded-xl border border-border px-3 py-3">
             <div>
               <p className="text-sm font-medium">Conta ativa</p>
