@@ -30,26 +30,46 @@ const kindLabels: Record<string, string> = {
 
 function AdminRelatoriosPage() {
   const getReport = useServerFn(adminGetReport);
-  const [search, setSearch] = useState("");
+  const [tutorId, setTutorId] = useState("all");
+  const [driverId, setDriverId] = useState("all");
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-report"],
     queryFn: () => getReport({ data: undefined }),
   });
 
-  const q = search.trim().toLowerCase();
+  const tutorOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of data?.rides ?? []) map.set(r.tutorId, r.tutorName);
+    return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  }, [data]);
+
+  const driverOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of data?.rides ?? []) if (r.driverId && r.driverName) map.set(r.driverId, r.driverName);
+    return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  }, [data]);
 
   const rides = useMemo(
     () =>
       (data?.rides ?? []).filter(
-        (r) => !q || r.tutorName.toLowerCase().includes(q) || (r.driverName ?? "").toLowerCase().includes(q),
+        (r) =>
+          (tutorId === "all" || r.tutorId === tutorId) &&
+          (driverId === "all" || r.driverId === driverId),
       ),
-    [data, q],
+    [data, tutorId, driverId],
   );
 
+  const selectedNames = useMemo(() => {
+    const names = new Set<string>();
+    if (tutorId !== "all") names.add(tutorOptions.find((t) => t.id === tutorId)?.name ?? "");
+    if (driverId !== "all") names.add(driverOptions.find((d) => d.id === driverId)?.name ?? "");
+    return names;
+  }, [tutorId, driverId, tutorOptions, driverOptions]);
+
   const entries = useMemo(
-    () => (data?.entries ?? []).filter((e) => !q || e.personName.toLowerCase().includes(q)),
-    [data, q],
+    () => (data?.entries ?? []).filter((e) => selectedNames.size === 0 || selectedNames.has(e.personName)),
+    [data, selectedNames],
   );
 
   const totalRides = rides.reduce((acc, r) => acc + r.priceCents, 0);
