@@ -231,34 +231,20 @@ function EditRideDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const paid = ride.ride_payments?.some((p) => ["held", "released", "refunded"].includes(p.status)) ?? false;
   const closed = ride.status === "completed" || ride.status === "cancelled";
   const [form, setForm] = useState({
     status: ride.status,
-    tutor_id: ride.tutor_id,
     driver_id: ride.driver_id ?? "none",
-    price: (ride.price_cents / 100).toFixed(2),
-    scheduled_at: toLocalInput(ride.scheduled_at),
-    notes: ride.notes ?? "",
   });
   const drivers = people.filter((p) => p.role === "driver");
-  const tutors = people;
 
   const save = useMutation({
     mutationFn: async () => {
-      const priceCents = Math.round(Number(form.price.replace(",", ".")) * 100);
-      if (!Number.isFinite(priceCents) || priceCents < 0) throw new Error("Valor inválido");
-      const scheduled = new Date(form.scheduled_at);
-      if (Number.isNaN(scheduled.getTime())) throw new Error("Data inválida");
       const { error } = await supabase
         .from("rides")
         .update({
           status: form.status,
-          tutor_id: form.tutor_id,
           driver_id: form.driver_id === "none" ? null : form.driver_id,
-          price_cents: paid ? ride.price_cents : priceCents,
-          scheduled_at: scheduled.toISOString(),
-          notes: form.notes.trim() || null,
         })
         .eq("id", ride.id);
       if (error) throw error;
