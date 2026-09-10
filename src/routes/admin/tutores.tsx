@@ -351,6 +351,55 @@ function EditTutorDialog({
               Lançar saldo
             </Button>
           </div>
+
+          <div className="space-y-3 rounded-xl border border-border px-3 py-3">
+            <p className="text-sm font-medium">Cobrança por tempo parado</p>
+            <p className="text-xs text-muted-foreground">
+              O valor é debitado do saldo do tutor e 80% vão para o motorista escolhido.
+            </p>
+            <Field label="Motorista que receberá">
+              <Select value={idleDriver} onValueChange={setIdleDriver}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o motorista" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(drivers.data ?? []).map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.full_name || "Sem nome"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Field label="Valor da cobrança (R$)">
+                <Input
+                  inputMode="decimal"
+                  placeholder="20,00"
+                  value={idleValue}
+                  onChange={(e) => setIdleValue(e.target.value)}
+                />
+              </Field>
+              <Field label="Motivo">
+                <Input
+                  placeholder="Ex.: 30 min de espera"
+                  value={idleReason}
+                  onChange={(e) => setIdleReason(e.target.value)}
+                />
+              </Field>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={!validIdle || idleCharge.isPending}
+              onClick={() => idleCharge.mutate()}
+            >
+              {idleCharge.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Cobrar tempo parado
+            </Button>
+          </div>
+
           <div className="flex items-center justify-between rounded-xl border border-border px-3 py-3">
             <div>
               <p className="text-sm font-medium">Conta ativa</p>
