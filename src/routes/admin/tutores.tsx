@@ -264,6 +264,44 @@ function EditTutorDialog({
           <Field label="Cidade">
             <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
           </Field>
+          <div className="space-y-3 rounded-xl border border-border px-3 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium">Saldo de créditos</p>
+              <span className="text-sm font-semibold">
+                {balance.isLoading ? "…" : formatBRL(balance.data?.balanceCents ?? 0)}
+              </span>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Field label="Valor a lançar (R$)">
+                <Input
+                  inputMode="decimal"
+                  placeholder="50,00"
+                  value={creditInput}
+                  onChange={(e) => setCreditInput(e.target.value)}
+                />
+              </Field>
+              <Field label="Motivo (opcional)">
+                <Input
+                  placeholder="Ex.: cortesia"
+                  value={creditNote}
+                  onChange={(e) => setCreditNote(e.target.value)}
+                />
+              </Field>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Use valor negativo (ex.: -20,00) para retirar saldo. O lançamento aparece no extrato do tutor.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={!validCredit || addCredits.isPending}
+              onClick={() => addCredits.mutate()}
+            >
+              {addCredits.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Lançar saldo
+            </Button>
+          </div>
           <div className="flex items-center justify-between rounded-xl border border-border px-3 py-3">
             <div>
               <p className="text-sm font-medium">Conta ativa</p>
