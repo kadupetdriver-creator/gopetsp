@@ -231,34 +231,20 @@ function EditRideDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const paid = ride.ride_payments?.some((p) => ["held", "released", "refunded"].includes(p.status)) ?? false;
   const closed = ride.status === "completed" || ride.status === "cancelled";
   const [form, setForm] = useState({
     status: ride.status,
-    tutor_id: ride.tutor_id,
     driver_id: ride.driver_id ?? "none",
-    price: (ride.price_cents / 100).toFixed(2),
-    scheduled_at: toLocalInput(ride.scheduled_at),
-    notes: ride.notes ?? "",
   });
   const drivers = people.filter((p) => p.role === "driver");
-  const tutors = people;
 
   const save = useMutation({
     mutationFn: async () => {
-      const priceCents = Math.round(Number(form.price.replace(",", ".")) * 100);
-      if (!Number.isFinite(priceCents) || priceCents < 0) throw new Error("Valor inválido");
-      const scheduled = new Date(form.scheduled_at);
-      if (Number.isNaN(scheduled.getTime())) throw new Error("Data inválida");
       const { error } = await supabase
         .from("rides")
         .update({
           status: form.status,
-          tutor_id: form.tutor_id,
           driver_id: form.driver_id === "none" ? null : form.driver_id,
-          price_cents: paid ? ride.price_cents : priceCents,
-          scheduled_at: scheduled.toISOString(),
-          notes: form.notes.trim() || null,
         })
         .eq("id", ride.id);
       if (error) throw error;
@@ -301,20 +287,6 @@ function EditRideDialog({
               <p className="text-xs text-muted-foreground">Corridas concluídas ou canceladas não mudam de status.</p>
             )}
           </Field>
-          <Field label="Tutor">
-            <Select value={form.tutor_id} onValueChange={(v) => setForm({ ...form, tutor_id: v })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {tutors.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.full_name || p.id.slice(0, 8)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
           <Field label="Motorista">
             <Select value={form.driver_id} onValueChange={(v) => setForm({ ...form, driver_id: v })}>
               <SelectTrigger>
@@ -330,25 +302,16 @@ function EditRideDialog({
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Valor (R$)">
-            <Input
-              inputMode="decimal"
-              value={form.price}
-              disabled={paid}
-              onChange={(e) => setForm({ ...form, price: e.target.value })}
-            />
-            {paid && <p className="text-xs text-muted-foreground">Valor bloqueado: a corrida já foi paga.</p>}
-          </Field>
-          <Field label="Data e horário">
-            <Input
-              type="datetime-local"
-              value={form.scheduled_at}
-              onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
-            />
-          </Field>
-          <Field label="Observações">
-            <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-          </Field>
+          <div className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
+            <p>
+              <strong>Valor:</strong> {formatBRL(ride.price_cents)} · <strong>Tutor:</strong>{" "}
+              {people.find((p) => p.id === ride.tutor_id)?.full_name ?? "—"} · <strong>Data:</strong>{" "}
+              {formatDateTime(ride.scheduled_at)}
+            </p>
+            <p className="mt-1">
+              Valor, pagamento e comissão não são editáveis aqui. Estornos e repasses seguem pelo fluxo de pagamentos.
+            </p>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>
