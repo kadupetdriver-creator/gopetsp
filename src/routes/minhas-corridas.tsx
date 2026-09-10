@@ -224,6 +224,36 @@ function MinhasCorridas() {
                   )}
               </div>
 
+              {isActiveStatus(ride.status) && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">
+                    Motorista a caminho · rastreio ao vivo
+                    <span className="ml-2 font-normal text-muted-foreground">
+                      chegada estimada em {estimateMinutes(Number(ride.distance_km))} min
+                    </span>
+                  </p>
+                  <RideMap
+                    origin={coordsFor(ride.origin_neighborhood, ride.origin_lat, ride.origin_lng)}
+                    destination={coordsFor(
+                      ride.destination_neighborhood,
+                      ride.destination_lat,
+                      ride.destination_lng,
+                    )}
+                    driver={
+                      typeof ride.driver_lat === "number" && typeof ride.driver_lng === "number"
+                        ? [ride.driver_lat, ride.driver_lng]
+                        : null
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Posição atualizada:{" "}
+                    {ride.location_updated_at
+                      ? formatDateTime(ride.location_updated_at)
+                      : "aguardando sinal do motorista"}
+                  </p>
+                </div>
+              )}
+
               <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
                 <p className="flex items-start gap-2">
                   <MapPin className="mt-0.5 size-4 shrink-0 text-primary-ink" />
