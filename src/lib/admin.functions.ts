@@ -192,6 +192,10 @@ export const adminRemoveAdmin = createServerFn({ method: "POST" })
       throw new Error("Você não pode remover o próprio acesso de administrador.");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: targetUser } = await supabaseAdmin.auth.admin.getUserById(data.userId);
+    if (targetUser.user?.email?.toLowerCase() === "kadupetdriver@gmail.com") {
+      throw new Error("Este administrador é protegido e não pode ser removido.");
+    }
     const { count } = await supabaseAdmin
       .from("user_roles")
       .select("id", { count: "exact", head: true })
