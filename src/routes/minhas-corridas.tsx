@@ -58,6 +58,13 @@ type Ride = {
   status: RideStatus;
   driver_id: string | null;
   needs_trunk: boolean;
+  driver_lat: number | null;
+  driver_lng: number | null;
+  location_updated_at: string | null;
+  origin_lat: number | null;
+  origin_lng: number | null;
+  destination_lat: number | null;
+  destination_lng: number | null;
 };
 
 type Payment = { ride_id: string; status: string };
