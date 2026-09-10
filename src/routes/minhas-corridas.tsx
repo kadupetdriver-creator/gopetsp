@@ -180,7 +180,13 @@ function MinhasCorridas() {
         )}
 
         {rides?.map((ride) => (
-          <Card key={ride.id} className="shadow-soft">
+          <Card
+            key={ride.id}
+            className={cn(
+              "shadow-soft transition-colors",
+              isActiveStatus(ride.status) && "border-primary/50 bg-primary/10",
+            )}
+          >
             <CardContent className="space-y-4 py-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
