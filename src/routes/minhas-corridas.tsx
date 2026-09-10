@@ -9,14 +9,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  coordsFor,
+  estimateMinutes,
   formatBRL,
   formatDateTime,
+  isActiveStatus,
   serviceTypes,
   rideWhatsAppUrl,
   statusLabels,
   statusStyles,
   type RideStatus,
 } from "@/lib/rides";
+import { RideMap } from "@/components/RideMap";
 import { cn } from "@/lib/utils";
 import { paymentStatusLabels, paymentStatusStyles, getStripeEnvironment } from "@/lib/stripe";
 import { refundRidePayment } from "@/lib/payments.functions";
@@ -54,6 +58,13 @@ type Ride = {
   status: RideStatus;
   driver_id: string | null;
   needs_trunk: boolean;
+  driver_lat: number | null;
+  driver_lng: number | null;
+  location_updated_at: string | null;
+  origin_lat: number | null;
+  origin_lng: number | null;
+  destination_lat: number | null;
+  destination_lng: number | null;
 };
 
 type Payment = { ride_id: string; status: string };
@@ -65,11 +76,12 @@ function MinhasCorridas() {
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "tutor", user?.id],
     enabled: !!user,
+    refetchInterval: 20000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("rides")
         .select(
-          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk",
+          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng",
         )
         .eq("tutor_id", user!.id)
         .order("scheduled_at", { ascending: false });
@@ -168,7 +180,13 @@ function MinhasCorridas() {
         )}
 
         {rides?.map((ride) => (
-          <Card key={ride.id} className="shadow-soft">
+          <Card
+            key={ride.id}
+            className={cn(
+              "shadow-soft transition-colors",
+              isActiveStatus(ride.status) && "border-primary/50 bg-primary/10",
+            )}
+          >
             <CardContent className="space-y-4 py-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -205,6 +223,36 @@ function MinhasCorridas() {
                     </Button>
                   )}
               </div>
+
+              {isActiveStatus(ride.status) && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">
+                    Motorista a caminho · rastreio ao vivo
+                    <span className="ml-2 font-normal text-muted-foreground">
+                      chegada estimada em {estimateMinutes(Number(ride.distance_km))} min
+                    </span>
+                  </p>
+                  <RideMap
+                    origin={coordsFor(ride.origin_neighborhood, ride.origin_lat, ride.origin_lng)}
+                    destination={coordsFor(
+                      ride.destination_neighborhood,
+                      ride.destination_lat,
+                      ride.destination_lng,
+                    )}
+                    driver={
+                      typeof ride.driver_lat === "number" && typeof ride.driver_lng === "number"
+                        ? [ride.driver_lat, ride.driver_lng]
+                        : null
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Posição atualizada:{" "}
+                    {ride.location_updated_at
+                      ? formatDateTime(ride.location_updated_at)
+                      : "aguardando sinal do motorista"}
+                  </p>
+                </div>
+              )}
 
               <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
                 <p className="flex items-start gap-2">

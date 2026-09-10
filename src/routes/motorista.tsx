@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { releaseRidePayment } from "@/lib/payments.functions";
 import { useAuth } from "@/hooks/useAuth";
+import { useDriverAutoGps } from "@/hooks/useDriverAutoGps";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -167,6 +168,11 @@ function MotoristaPage() {
   const mine = rides?.filter((r) => r.driver_id === user?.id && r.status !== "pending") ?? [];
   const active = mine.filter((r) => r.status !== "completed" && r.status !== "cancelled");
   const completed = mine.filter((r) => r.status === "completed");
+  // Rastreio automático: envia a posição enquanto houver corridas em andamento.
+  useDriverAutoGps(
+    active.map((r) => r.id),
+    !!approved,
+  );
   // Ganhos líquidos: o motorista recebe 80% (a plataforma retém 20% de comissão).
   const netOf = (r: Ride) => Math.round(r.price_cents * 0.8);
   const earnings = completed.reduce((sum, r) => sum + netOf(r), 0);
