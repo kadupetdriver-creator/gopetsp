@@ -116,3 +116,92 @@ export const adminAdjustCredits = createServerFn({ method: "POST" })
     );
     return { balanceCents };
   });
+
+export type AdminUser = {
+  userId: string;
+  email: string;
+  fullName: string | null;
+  createdAt: string;
+};
+
+/** Lista os administradores da plataforma (somente admin). */
+export const adminListAdmins = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ admins: AdminUser[] }> => {
+    await assertAdmin(context as Ctx);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roles, error } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id, created_at")
+      .eq("role", "admin")
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    const ids = (roles ?? []).map((r) => r.user_id);
+    if (ids.length === 0) return { admins: [] };
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", ids);
+    const names = new Map((profiles ?? []).map((p) => [p.id, p.full_name as string | null]));
+    const admins: AdminUser[] = [];
+    for (const r of roles ?? []) {
+      const { data: u } = await supabaseAdmin.auth.admin.getUserById(r.user_id);
+      admins.push({
+        userId: r.user_id,
+        email: u?.user?.email ?? "—",
+        fullName: names.get(r.user_id) ?? null,
+        createdAt: r.created_at as string,
+      });
+    }
+    return { admins };
+  });
+
+/** Promove um usuário existente a administrador pelo e-mail (somente admin). */
+export const adminAddAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ email: z.string().trim().email().max(200) }).parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    await assertAdmin(context as Ctx);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const email = data.email.trim().toLowerCase();
+
+    let userId: string | null = null;
+    for (let page = 1; page <= 20 && !userId; page++) {
+      const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+      if (error) throw new Error(error.message);
+      const found = list.users.find((u) => (u.email ?? "").toLowerCase() === email);
+      if (found) userId = found.id;
+      if (list.users.length < 200) break;
+    }
+    if (!userId) throw new Error("Nenhuma conta encontrada com este e-mail.");
+
+    const { error: insErr } = await supabaseAdmin
+      .from("user_roles")
+      .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
+    if (insErr) throw new Error(insErr.message);
+    return { ok: true };
+  });
+
+/** Remove o acesso de administrador de um usuário (somente admin). */
+export const adminRemoveAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ userId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    await assertAdmin(context as Ctx);
+    if (data.userId === context.userId) {
+      throw new Error("Você não pode remover o próprio acesso de administrador.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { count } = await supabaseAdmin
+      .from("user_roles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "admin");
+    if ((count ?? 0) <= 1) throw new Error("É preciso manter ao menos um administrador.");
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("role", "admin");
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
