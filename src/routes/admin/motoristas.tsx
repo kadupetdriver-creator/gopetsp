@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { adminGetCreditBalance, adminGrantDriverBonus } from "@/lib/admin.functions";
+import { formatBRL } from "@/lib/rides";
 import { Car, ExternalLink, Loader2, Pencil, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
