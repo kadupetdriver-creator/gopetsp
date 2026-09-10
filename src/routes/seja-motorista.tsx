@@ -340,6 +340,7 @@ function PersonalStep({
         throw new Error("E-mail inválido.");
       if (form.city.trim().length < 2) throw new Error("Informe a cidade.");
       if (form.neighborhood.trim().length < 2) throw new Error("Informe o bairro.");
+      if (!avatar && !form.avatar_path) throw new Error("Envie a foto de perfil.");
 
       let avatar_path = form.avatar_path;
       if (avatar) {
@@ -405,7 +406,7 @@ function PersonalStep({
               />
             </label>
             <div className="text-sm">
-              <p className="font-medium">Foto de perfil</p>
+              <p className="font-medium">Foto de perfil (obrigatória)</p>
               <p className="text-muted-foreground">
                 {form.avatar_path && !avatar ? "Foto enviada. Toque para trocar." : "Rosto visível, sem óculos escuros."}
               </p>
@@ -552,7 +553,7 @@ function VehicleStep({
             <Input id="modelo" placeholder="Ex.: Doblò" value={form.model} onChange={(e) => set("model", e.target.value)} required />
           </Field>
           <Field label="Cor" id="cor">
-            <Select value={form.color} onValueChange={(v) => set("color", v)}>
+            <Select value={form.color} onValueChange={(v) => set("color", v)} required>
               <SelectTrigger id="cor"><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 {vehicleColors.map((c) => (
@@ -562,7 +563,7 @@ function VehicleStep({
             </Select>
           </Field>
           <Field label="Tipo de veículo" id="tipo">
-            <Select value={form.vehicle_type} onValueChange={(v) => set("vehicle_type", v)}>
+            <Select value={form.vehicle_type} onValueChange={(v) => set("vehicle_type", v)} required>
               <SelectTrigger id="tipo"><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 {vehicleTypes.map((t) => (

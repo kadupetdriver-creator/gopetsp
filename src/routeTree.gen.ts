@@ -22,6 +22,7 @@ import { Route as SejaMotoristaRouteImport } from './routes/seja-motorista'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminAdministradoresRouteImport } from './routes/admin/administradores'
 import { Route as AdminCorridasRouteImport } from './routes/admin/corridas'
 import { Route as AdminMotoristasRouteImport } from './routes/admin/motoristas'
 import { Route as AdminTutoresRouteImport } from './routes/admin/tutores'
@@ -93,6 +94,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminAdministradoresRoute = AdminAdministradoresRouteImport.update({
+  id: '/administradores',
+  path: '/administradores',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminCorridasRoute = AdminCorridasRouteImport.update({
   id: '/corridas',
   path: '/corridas',
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/admin/administradores': typeof AdminAdministradoresRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/tutores': typeof AdminTutoresRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/admin/administradores': typeof AdminAdministradoresRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/tutores': typeof AdminTutoresRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
+  '/admin/administradores': typeof AdminAdministradoresRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/tutores': typeof AdminTutoresRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/admin/administradores'
     | '/admin/corridas'
     | '/admin/motoristas'
     | '/admin/tutores'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/admin/administradores'
     | '/admin/corridas'
     | '/admin/motoristas'
     | '/admin/tutores'
@@ -234,6 +245,7 @@ export interface FileRouteTypes {
     | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
+    | '/admin/administradores'
     | '/admin/corridas'
     | '/admin/motoristas'
     | '/admin/tutores'
@@ -352,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/administradores': {
+      id: '/admin/administradores'
+      path: '/administradores'
+      fullPath: '/admin/administradores'
+      preLoaderRoute: typeof AdminAdministradoresRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/corridas': {
       id: '/admin/corridas'
       path: '/corridas'
@@ -391,6 +410,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteRouteChildren {
+  AdminAdministradoresRoute: typeof AdminAdministradoresRoute
   AdminCorridasRoute: typeof AdminCorridasRoute
   AdminMotoristasRoute: typeof AdminMotoristasRoute
   AdminTutoresRoute: typeof AdminTutoresRoute
@@ -398,6 +418,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAdministradoresRoute: AdminAdministradoresRoute,
   AdminCorridasRoute: AdminCorridasRoute,
   AdminMotoristasRoute: AdminMotoristasRoute,
   AdminTutoresRoute: AdminTutoresRoute,
