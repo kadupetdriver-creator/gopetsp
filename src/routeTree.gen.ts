@@ -25,6 +25,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAdministradoresRouteImport } from './routes/admin/administradores'
 import { Route as AdminCorridasRouteImport } from './routes/admin/corridas'
 import { Route as AdminMotoristasRouteImport } from './routes/admin/motoristas'
+import { Route as AdminRelatoriosRouteImport } from './routes/admin/relatorios'
 import { Route as AdminTutoresRouteImport } from './routes/admin/tutores'
 import { Route as PagamentoRideIdRouteImport } from './routes/pagamento.$rideId'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
@@ -109,6 +110,11 @@ const AdminMotoristasRoute = AdminMotoristasRouteImport.update({
   path: '/motoristas',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminRelatoriosRoute = AdminRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminTutoresRoute = AdminTutoresRouteImport.update({
   id: '/tutores',
   path: '/tutores',
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/admin/administradores': typeof AdminAdministradoresRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
+  '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/admin/administradores': typeof AdminAdministradoresRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
+  '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/admin': typeof AdminIndexRoute
@@ -184,6 +192,7 @@ export interface FileRoutesById {
   '/admin/administradores': typeof AdminAdministradoresRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
+  '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -207,6 +216,7 @@ export interface FileRouteTypes {
     | '/admin/administradores'
     | '/admin/corridas'
     | '/admin/motoristas'
+    | '/admin/relatorios'
     | '/admin/tutores'
     | '/pagamento/$rideId'
     | '/admin/'
@@ -227,6 +237,7 @@ export interface FileRouteTypes {
     | '/admin/administradores'
     | '/admin/corridas'
     | '/admin/motoristas'
+    | '/admin/relatorios'
     | '/admin/tutores'
     | '/pagamento/$rideId'
     | '/admin'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/admin/administradores'
     | '/admin/corridas'
     | '/admin/motoristas'
+    | '/admin/relatorios'
     | '/admin/tutores'
     | '/pagamento/$rideId'
     | '/admin/'
@@ -385,6 +397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMotoristasRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/relatorios': {
+      id: '/admin/relatorios'
+      path: '/relatorios'
+      fullPath: '/admin/relatorios'
+      preLoaderRoute: typeof AdminRelatoriosRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/tutores': {
       id: '/admin/tutores'
       path: '/tutores'
@@ -413,6 +432,7 @@ interface AdminRouteRouteChildren {
   AdminAdministradoresRoute: typeof AdminAdministradoresRoute
   AdminCorridasRoute: typeof AdminCorridasRoute
   AdminMotoristasRoute: typeof AdminMotoristasRoute
+  AdminRelatoriosRoute: typeof AdminRelatoriosRoute
   AdminTutoresRoute: typeof AdminTutoresRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -421,6 +441,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAdministradoresRoute: AdminAdministradoresRoute,
   AdminCorridasRoute: AdminCorridasRoute,
   AdminMotoristasRoute: AdminMotoristasRoute,
+  AdminRelatoriosRoute: AdminRelatoriosRoute,
   AdminTutoresRoute: AdminTutoresRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
