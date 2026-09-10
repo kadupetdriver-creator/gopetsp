@@ -9,14 +9,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  coordsFor,
+  estimateMinutes,
   formatBRL,
   formatDateTime,
+  isActiveStatus,
   serviceTypes,
   rideWhatsAppUrl,
   statusLabels,
   statusStyles,
   type RideStatus,
 } from "@/lib/rides";
+import { RideMap } from "@/components/RideMap";
 import { cn } from "@/lib/utils";
 import { paymentStatusLabels, paymentStatusStyles, getStripeEnvironment } from "@/lib/stripe";
 import { refundRidePayment } from "@/lib/payments.functions";
