@@ -321,7 +321,9 @@ export type AdminReportRide = {
   status: string;
   priceCents: number;
   paymentStatus: string | null;
+  tutorId: string;
   tutorName: string;
+  driverId: string | null;
   driverName: string | null;
 };
 
@@ -376,7 +378,9 @@ export const adminGetReport = createServerFn({ method: "POST" })
         status: r.status,
         priceCents: r.price_cents,
         paymentStatus: r.ride_payments?.[0]?.status ?? null,
+        tutorId: r.tutor_id,
         tutorName: nameOf(r.tutor_id) ?? "Sem nome",
+        driverId: r.driver_id,
         driverName: nameOf(r.driver_id),
       })),
       entries: (txs ?? []).map((t: any) => ({
