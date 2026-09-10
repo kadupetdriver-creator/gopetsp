@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet } from "lucide-react";
 import { toast } from "sonner";
@@ -177,6 +177,48 @@ function MotoristaPage() {
 
 
   const open = rides?.filter((r) => r.status === "pending") ?? [];
+
+  // Alerta de nova chamada: tela chamativa + vibração quando surge corrida nova.
+  const [newRide, setNewRide] = useState<Ride | null>(null);
+  const seenRef = useRef<Set<string> | null>(null);
+
+  useEffect(() => {
+    if (!rides) return;
+    const ids = open.map((r) => r.id);
+    if (seenRef.current === null) {
+      seenRef.current = new Set(ids);
+      return;
+    }
+    const fresh = open.filter((r) => !seenRef.current!.has(r.id));
+    seenRef.current = new Set(ids);
+    if (fresh.length === 0) return;
+    setNewRide(fresh[0] ?? null);
+    try {
+      navigator.vibrate?.([400, 150, 400, 150, 600]);
+    } catch {
+      /* dispositivo sem vibração */
+    }
+    try {
+      const Ctx =
+        window.AudioContext ??
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (Ctx) {
+        const ctx = new Ctx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = 880;
+        gain.gain.value = 0.15;
+        osc.connect(gain).connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.6);
+        osc.onended = () => void ctx.close();
+      }
+    } catch {
+      /* som bloqueado pelo navegador */
+    }
+  }, [rides, open]);
+
   const mine = rides?.filter((r) => r.driver_id === user?.id && r.status !== "pending") ?? [];
   const active = mine.filter((r) => r.status !== "completed" && r.status !== "cancelled");
   const completed = mine.filter((r) => r.status === "completed");
@@ -376,6 +418,44 @@ function MotoristaPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {newRide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border-4 border-primary bg-primary p-6 text-primary-foreground shadow-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em]">Nova chamada</p>
+            <p className="mt-2 text-2xl font-extrabold">
+              {newRide.pet_name} · {formatBRL(newRide.price_cents)}
+            </p>
+            <p className="mt-3 text-sm font-medium">
+              Embarque: {newRide.origin_address}
+              {newRide.origin_neighborhood ? ` · ${newRide.origin_neighborhood}` : ""}
+            </p>
+            <p className="mt-1 text-sm font-medium">
+              Destino: {newRide.destination_address}
+              {newRide.destination_neighborhood ? ` · ${newRide.destination_neighborhood}` : ""}
+            </p>
+            <p className="mt-1 text-sm">
+              {formatDateTime(newRide.scheduled_at)} · {newRide.distance_km} km
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
+                className="flex-1"
+                disabled={update.isPending}
+                onClick={() => {
+                  update.mutate({ id: newRide.id, status: "accepted" });
+                  setNewRide(null);
+                }}
+              >
+                Aceitar agora
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => setNewRide(null)}>
+                Ver depois
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
