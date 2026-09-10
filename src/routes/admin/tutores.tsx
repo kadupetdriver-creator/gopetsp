@@ -176,6 +176,35 @@ function EditTutorDialog({
   });
   const updateEmail = useServerFn(adminUpdateUserEmail);
   const setActive = useServerFn(adminSetAccountActive);
+  const getBalance = useServerFn(adminGetCreditBalance);
+  const adjustCredits = useServerFn(adminAdjustCredits);
+  const [creditInput, setCreditInput] = useState("");
+  const [creditNote, setCreditNote] = useState("");
+
+  const balance = useQuery({
+    queryKey: ["admin-tutor-balance", tutor.id],
+    queryFn: () => getBalance({ data: { userId: tutor.id } }),
+  });
+
+  const parsedCents = Math.round(
+    Number(creditInput.replace(/\./g, "").replace(",", ".").replace(/[^0-9.-]/g, "")) * 100,
+  );
+  const validCredit = Number.isFinite(parsedCents) && parsedCents !== 0 && Math.abs(parsedCents) <= 1000000;
+
+  const addCredits = useMutation({
+    mutationFn: () =>
+      adjustCredits({
+        data: { userId: tutor.id, amountCents: parsedCents, ...(creditNote.trim() ? { note: creditNote.trim() } : {}) },
+      }),
+    onSuccess: (res) => {
+      toast.success("Saldo atualizado.");
+      setCreditInput("");
+      setCreditNote("");
+      balance.refetch();
+      void res;
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível lançar o saldo."),
+  });
 
   const save = useMutation({
     mutationFn: async () => {
