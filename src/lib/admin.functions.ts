@@ -313,3 +313,80 @@ export const adminRemoveAdmin = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export type AdminReportRide = {
+  id: string;
+  createdAt: string;
+  scheduledAt: string;
+  status: string;
+  priceCents: number;
+  paymentStatus: string | null;
+  tutorName: string;
+  driverName: string | null;
+};
+
+export type AdminReportEntry = {
+  id: string;
+  createdAt: string;
+  personName: string;
+  personRole: string;
+  kind: "bonus" | "credito" | "desconto";
+  amountCents: number;
+  description: string | null;
+};
+
+export type AdminReport = {
+  rides: AdminReportRide[];
+  entries: AdminReportEntry[];
+};
+
+/** Relatório consolidado de corridas, bônus e descontos (somente admin). */
+export const adminGetReport = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<AdminReport> => {
+    await assertAdmin(context as Ctx);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [{ data: rides, error: ridesErr }, { data: txs, error: txErr }, { data: profiles }] = await Promise.all([
+      supabaseAdmin
+        .from("rides")
+        .select("id, created_at, scheduled_at, status, price_cents, tutor_id, driver_id, ride_payments(status)")
+        .order("created_at", { ascending: false })
+        .limit(500),
+      supabaseAdmin
+        .from("credit_transactions")
+        .select("id, created_at, user_id, kind, amount_cents, description, payment_method, status")
+        .in("payment_method", ["manual", "bonus"])
+        .eq("status", "completed")
+        .order("created_at", { ascending: false })
+        .limit(500),
+      supabaseAdmin.from("profiles").select("id, full_name, role"),
+    ]);
+    if (ridesErr) throw new Error(ridesErr.message);
+    if (txErr) throw new Error(txErr.message);
+
+    const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+    const nameOf = (id: string | null) => (id ? (byId.get(id)?.full_name || "Sem nome") : null);
+
+    return {
+      rides: (rides ?? []).map((r: any) => ({
+        id: r.id,
+        createdAt: r.created_at,
+        scheduledAt: r.scheduled_at,
+        status: r.status,
+        priceCents: r.price_cents,
+        paymentStatus: r.ride_payments?.[0]?.status ?? null,
+        tutorName: nameOf(r.tutor_id) ?? "Sem nome",
+        driverName: nameOf(r.driver_id),
+      })),
+      entries: (txs ?? []).map((t: any) => ({
+        id: t.id,
+        createdAt: t.created_at,
+        personName: nameOf(t.user_id) ?? "Sem nome",
+        personRole: byId.get(t.user_id)?.role === "driver" ? "Motorista" : "Tutor",
+        kind: t.payment_method === "bonus" ? "bonus" : t.kind === "spend" ? "desconto" : "credito",
+        amountCents: t.amount_cents,
+        description: t.description,
+      })),
+    };
+  });
