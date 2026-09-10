@@ -117,6 +117,110 @@ export const adminAdjustCredits = createServerFn({ method: "POST" })
     return { balanceCents };
   });
 
+async function balanceOf(admin: any, userId: string): Promise<number> {
+  const { data: rows, error } = await admin
+    .from("credit_transactions")
+    .select("kind, amount_cents")
+    .eq("user_id", userId)
+    .eq("status", "completed");
+  if (error) throw new Error(error.message);
+  return (rows ?? []).reduce(
+    (acc: number, r: { kind: string; amount_cents: number }) =>
+      acc + (r.kind === "spend" ? -r.amount_cents : r.amount_cents),
+    0,
+  );
+}
+
+/** Concede um bônus ao motorista, com o motivo registrado no extrato (somente admin). */
+export const adminGrantDriverBonus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z
+      .object({
+        driverUserId: z.string().uuid(),
+        amountCents: z.number().int().min(1).max(1000000),
+        reason: z.string().trim().min(3).max(200),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }): Promise<{ balanceCents: number }> => {
+    await assertAdmin(context as Ctx);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("credit_transactions").insert({
+      user_id: data.driverUserId,
+      kind: "topup",
+      amount_cents: data.amountCents,
+      status: "completed",
+      payment_method: "bonus",
+      description: `Bônus: ${data.reason}`,
+      completed_at: new Date().toISOString(),
+    });
+    if (error) throw new Error(error.message);
+    return { balanceCents: await balanceOf(supabaseAdmin, data.driverUserId) };
+  });
+
+/**
+ * Cobrança por tempo parado: debita o tutor e repassa 80% ao motorista
+ * (20% ficam como comissão da plataforma). Somente admin.
+ */
+export const adminChargeIdleTime = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z
+      .object({
+        tutorUserId: z.string().uuid(),
+        driverUserId: z.string().uuid(),
+        amountCents: z.number().int().min(1).max(1000000),
+        reason: z.string().trim().min(3).max(200),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }): Promise<{ tutorBalanceCents: number; driverAmountCents: number }> => {
+    await assertAdmin(context as Ctx);
+    if (data.tutorUserId === data.driverUserId) throw new Error("Tutor e motorista devem ser contas diferentes.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: driverProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("role")
+      .eq("id", data.driverUserId)
+      .maybeSingle();
+    if (driverProfile?.role !== "driver") throw new Error("A conta selecionada não é de um motorista.");
+
+    const tutorBalance = await balanceOf(supabaseAdmin, data.tutorUserId);
+    if (tutorBalance < data.amountCents) throw new Error("Saldo do tutor insuficiente para esta cobrança.");
+
+    const driverAmountCents = Math.round(data.amountCents * 0.8);
+    const now = new Date().toISOString();
+
+    const { error: spendErr } = await supabaseAdmin.from("credit_transactions").insert({
+      user_id: data.tutorUserId,
+      kind: "spend",
+      amount_cents: data.amountCents,
+      status: "completed",
+      payment_method: "manual",
+      description: `Tempo parado: ${data.reason}`,
+      completed_at: now,
+    });
+    if (spendErr) throw new Error(spendErr.message);
+
+    const { error: creditErr } = await supabaseAdmin.from("credit_transactions").insert({
+      user_id: data.driverUserId,
+      kind: "topup",
+      amount_cents: driverAmountCents,
+      status: "completed",
+      payment_method: "manual",
+      description: `Repasse por tempo parado: ${data.reason}`,
+      completed_at: now,
+    });
+    if (creditErr) throw new Error(creditErr.message);
+
+    return {
+      tutorBalanceCents: await balanceOf(supabaseAdmin, data.tutorUserId),
+      driverAmountCents,
+    };
+  });
+
 export type AdminUser = {
   userId: string;
   email: string;
