@@ -24,7 +24,6 @@ export function SiteHeader() {
           { to: "/creditos", label: "Créditos" },
           { to: "/pagamentos", label: "Pagamentos" },
           { to: "/perfil", label: "Meu perfil" },
-          { to: "/seja-motorista", label: "Seja parceiro" },
         ]
     : [
         { to: "/", label: "Início" },
