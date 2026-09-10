@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.guard_protected_admin() FROM PUBLIC, anon, authenticated;
