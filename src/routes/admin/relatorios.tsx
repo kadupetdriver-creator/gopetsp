@@ -78,14 +78,29 @@ function AdminRelatoriosPage() {
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Filtrar pelo nome do tutor ou motorista"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Select value={tutorId} onValueChange={setTutorId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Todos os tutores" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os tutores</SelectItem>
+            {tutorOptions.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={driverId} onValueChange={setDriverId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Todos os motoristas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os motoristas</SelectItem>
+            {driverOptions.map((d) => (
+              <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading && <Skeleton className="h-64 w-full rounded-2xl" />}
