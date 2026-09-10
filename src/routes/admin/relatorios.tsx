@@ -2,12 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
 import { adminGetReport } from "@/lib/admin.functions";
 import { formatBRL, formatDateTime, statusLabels, type RideStatus } from "@/lib/rides";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/relatorios")({
   head: () => ({
@@ -32,10 +39,18 @@ function AdminRelatoriosPage() {
   const getReport = useServerFn(adminGetReport);
   const [tutorId, setTutorId] = useState("all");
   const [driverId, setDriverId] = useState("all");
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-report"],
-    queryFn: () => getReport({ data: undefined }),
+    queryKey: ["admin-report", startDate?.toISOString(), endDate?.toISOString()],
+    queryFn: () =>
+      getReport({
+        data: {
+          startDate: startDate ? startDate.toISOString() : null,
+          endDate: endDate ? endDate.toISOString() : null,
+        },
+      }),
   });
 
   const tutorOptions = useMemo(() => {
@@ -78,7 +93,9 @@ function AdminRelatoriosPage() {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <DatePicker label="De" date={startDate} setDate={setStartDate} />
+        <DatePicker label="Até" date={endDate} setDate={setEndDate} />
         <Select value={tutorId} onValueChange={setTutorId}>
           <SelectTrigger>
             <SelectValue placeholder="Todos os tutores" />
@@ -166,6 +183,46 @@ function AdminRelatoriosPage() {
         </>
       )}
     </div>
+  );
+}
+
+function DatePicker({
+  label,
+  date,
+  setDate,
+}: {
+  label: string;
+  date: Date | undefined;
+  setDate: (d: Date | undefined) => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal",
+            !date && "text-muted-foreground",
+          )}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {date ? (
+            <span>{format(date, "dd/MM/yyyy", { locale: ptBR })}</span>
+          ) : (
+            <span>{label}</span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          initialFocus
+          className={cn("p-3 pointer-events-auto")}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }
 
