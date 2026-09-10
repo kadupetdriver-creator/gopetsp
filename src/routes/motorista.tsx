@@ -12,14 +12,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  coordsFor,
+  estimateMinutes,
   formatBRL,
   formatDateTime,
+  isActiveStatus,
   petSizes,
   serviceTypes,
   statusLabels,
   statusStyles,
   type RideStatus,
 } from "@/lib/rides";
+import { RideMap } from "@/components/RideMap";
 import { cn } from "@/lib/utils";
 import { PetDetails, type PetInfo } from "@/components/PetDetails";
 import { StatusCard } from "@/routes/seja-motorista";
@@ -60,11 +64,18 @@ type Ride = {
   status: RideStatus;
   driver_id: string | null;
   needs_trunk: boolean;
+  driver_lat: number | null;
+  driver_lng: number | null;
+  location_updated_at: string | null;
+  origin_lat: number | null;
+  origin_lng: number | null;
+  destination_lat: number | null;
+  destination_lng: number | null;
   ride_pets: { pets: PetInfo | null }[] | null;
 };
 
 const selectCols =
-  "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
+  "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
 type Application = {
   id: string;
@@ -115,6 +126,7 @@ function MotoristaPage() {
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "driver", user?.id],
     enabled: !!user && approved,
+    refetchInterval: 15000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("rides")
