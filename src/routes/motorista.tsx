@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { releaseRidePayment } from "@/lib/payments.functions";
 import { useAuth } from "@/hooks/useAuth";
-import { useDriverAutoGps } from "@/hooks/useDriverAutoGps";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
