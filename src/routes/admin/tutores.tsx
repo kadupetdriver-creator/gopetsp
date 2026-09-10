@@ -5,7 +5,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Search, UserCog } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { adminSetAccountActive, adminUpdateUserEmail } from "@/lib/admin.functions";
+import {
+  adminAdjustCredits,
+  adminGetCreditBalance,
+  adminSetAccountActive,
+  adminUpdateUserEmail,
+} from "@/lib/admin.functions";
 import { maskPhone } from "@/lib/drivers";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
