@@ -12,6 +12,7 @@ import {
   adminUpdateUserEmail,
 } from "@/lib/admin.functions";
 import { maskPhone } from "@/lib/drivers";
+import { formatBRL } from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
