@@ -177,6 +177,48 @@ function MotoristaPage() {
 
 
   const open = rides?.filter((r) => r.status === "pending") ?? [];
+
+  // Alerta de nova chamada: tela chamativa + vibração quando surge corrida nova.
+  const [newRide, setNewRide] = useState<Ride | null>(null);
+  const seenRef = useRef<Set<string> | null>(null);
+
+  useEffect(() => {
+    if (!rides) return;
+    const ids = open.map((r) => r.id);
+    if (seenRef.current === null) {
+      seenRef.current = new Set(ids);
+      return;
+    }
+    const fresh = open.filter((r) => !seenRef.current!.has(r.id));
+    seenRef.current = new Set(ids);
+    if (fresh.length === 0) return;
+    setNewRide(fresh[0]);
+    try {
+      navigator.vibrate?.([400, 150, 400, 150, 600]);
+    } catch {
+      /* dispositivo sem vibração */
+    }
+    try {
+      const Ctx =
+        window.AudioContext ??
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (Ctx) {
+        const ctx = new Ctx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = 880;
+        gain.gain.value = 0.15;
+        osc.connect(gain).connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.6);
+        osc.onended = () => void ctx.close();
+      }
+    } catch {
+      /* som bloqueado pelo navegador */
+    }
+  }, [rides, open]);
+
   const mine = rides?.filter((r) => r.driver_id === user?.id && r.status !== "pending") ?? [];
   const active = mine.filter((r) => r.status !== "completed" && r.status !== "cancelled");
   const completed = mine.filter((r) => r.status === "completed");
