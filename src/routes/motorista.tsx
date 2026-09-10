@@ -418,6 +418,44 @@ function MotoristaPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {newRide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md animate-pulse-none rounded-3xl border-4 border-primary bg-primary p-6 text-primary-foreground shadow-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em]">Nova chamada</p>
+            <p className="mt-2 text-2xl font-extrabold">
+              {newRide.pet_name} · {formatBRL(newRide.price_cents)}
+            </p>
+            <p className="mt-3 text-sm font-medium">
+              Embarque: {newRide.origin_address}
+              {newRide.origin_neighborhood ? ` · ${newRide.origin_neighborhood}` : ""}
+            </p>
+            <p className="mt-1 text-sm font-medium">
+              Destino: {newRide.destination_address}
+              {newRide.destination_neighborhood ? ` · ${newRide.destination_neighborhood}` : ""}
+            </p>
+            <p className="mt-1 text-sm">
+              {formatDateTime(newRide.scheduled_at)} · {newRide.distance_km} km
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
+                className="flex-1"
+                disabled={update.isPending}
+                onClick={() => {
+                  update.mutate({ id: newRide.id, status: "accepted" });
+                  setNewRide(null);
+                }}
+              >
+                Aceitar agora
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => setNewRide(null)}>
+                Ver depois
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
