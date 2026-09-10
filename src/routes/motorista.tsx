@@ -259,7 +259,7 @@ function MotoristaPage() {
             <EmptyState text="Nenhuma corrida em andamento. As concluídas ficam em Relatórios." />
           )}
           {active.map((ride) => (
-            <RideCard key={ride.id} ride={ride}>
+            <RideCard key={ride.id} ride={ride} showMap>
               {ride.status === "accepted" && (
                 <Button
                   onClick={() => update.mutate({ id: ride.id, status: "in_progress" })}
@@ -412,9 +412,22 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
-function RideCard({ ride, children }: { ride: Ride; children?: React.ReactNode }) {
+function RideCard({
+  ride,
+  children,
+  showMap = false,
+}: {
+  ride: Ride;
+  children?: React.ReactNode;
+  showMap?: boolean;
+}) {
   return (
-    <Card className="shadow-soft">
+    <Card
+      className={cn(
+        "shadow-soft transition-colors",
+        showMap && isActiveStatus(ride.status) && "border-primary/50 bg-primary/10",
+      )}
+    >
       <CardContent className="space-y-4 py-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
