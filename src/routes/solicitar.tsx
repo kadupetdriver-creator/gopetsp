@@ -30,6 +30,7 @@ import {
 } from "@/lib/rides";
 import { AddressAutocomplete, type SelectedPlace } from "@/components/AddressAutocomplete";
 import { RideMap } from "@/components/RideMap";
+import { ActiveRideTracker } from "@/components/ActiveRideTracker";
 
 export const Route = createFileRoute("/solicitar")({
   head: () => ({
@@ -204,6 +205,10 @@ function SolicitarPage() {
         Conte pra gente o trajeto e cuidamos do resto — motoristas verificados e caixa de transporte
         higienizada.
       </p>
+
+      <div className="mt-6">
+        <ActiveRideTracker />
+      </div>
 
       <form
         className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]"
