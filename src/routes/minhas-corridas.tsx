@@ -76,11 +76,12 @@ function MinhasCorridas() {
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "tutor", user?.id],
     enabled: !!user,
+    refetchInterval: 20000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("rides")
         .select(
-          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk",
+          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng",
         )
         .eq("tutor_id", user!.id)
         .order("scheduled_at", { ascending: false });
