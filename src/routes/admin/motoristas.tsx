@@ -594,6 +594,43 @@ function EditDriverDialog({
             </Select>
           </Field>
         </div>
+
+        <div className="mt-3 space-y-3 rounded-xl border border-border px-3 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-medium">Bônus do motorista</p>
+            <span className="text-sm font-semibold">
+              {balance.isLoading ? "…" : formatBRL(balance.data?.balanceCents ?? 0)}
+            </span>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Field label="Valor do bônus (R$)">
+              <Input
+                inputMode="decimal"
+                placeholder="30,00"
+                value={bonusValue}
+                onChange={(e) => setBonusValue(e.target.value)}
+              />
+            </Field>
+            <Field label="Motivo do bônus">
+              <Input
+                placeholder="Ex.: corrida longa em dia de chuva"
+                value={bonusReason}
+                onChange={(e) => setBonusReason(e.target.value)}
+              />
+            </Field>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={!validBonus || bonus.isPending}
+            onClick={() => bonus.mutate()}
+          >
+            {bonus.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            Lançar bônus
+          </Button>
+        </div>
+
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>
             Cancelar
