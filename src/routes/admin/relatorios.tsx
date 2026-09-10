@@ -2,13 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Search } from "lucide-react";
 import { adminGetReport } from "@/lib/admin.functions";
 import { formatBRL, formatDateTime, statusLabels, type RideStatus } from "@/lib/rides";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/admin/relatorios")({
   head: () => ({
@@ -31,26 +30,46 @@ const kindLabels: Record<string, string> = {
 
 function AdminRelatoriosPage() {
   const getReport = useServerFn(adminGetReport);
-  const [search, setSearch] = useState("");
+  const [tutorId, setTutorId] = useState("all");
+  const [driverId, setDriverId] = useState("all");
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-report"],
     queryFn: () => getReport({ data: undefined }),
   });
 
-  const q = search.trim().toLowerCase();
+  const tutorOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of data?.rides ?? []) map.set(r.tutorId, r.tutorName);
+    return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  }, [data]);
+
+  const driverOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of data?.rides ?? []) if (r.driverId && r.driverName) map.set(r.driverId, r.driverName);
+    return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  }, [data]);
 
   const rides = useMemo(
     () =>
       (data?.rides ?? []).filter(
-        (r) => !q || r.tutorName.toLowerCase().includes(q) || (r.driverName ?? "").toLowerCase().includes(q),
+        (r) =>
+          (tutorId === "all" || r.tutorId === tutorId) &&
+          (driverId === "all" || r.driverId === driverId),
       ),
-    [data, q],
+    [data, tutorId, driverId],
   );
 
+  const selectedNames = useMemo(() => {
+    const names = new Set<string>();
+    if (tutorId !== "all") names.add(tutorOptions.find((t) => t.id === tutorId)?.name ?? "");
+    if (driverId !== "all") names.add(driverOptions.find((d) => d.id === driverId)?.name ?? "");
+    return names;
+  }, [tutorId, driverId, tutorOptions, driverOptions]);
+
   const entries = useMemo(
-    () => (data?.entries ?? []).filter((e) => !q || e.personName.toLowerCase().includes(q)),
-    [data, q],
+    () => (data?.entries ?? []).filter((e) => selectedNames.size === 0 || selectedNames.has(e.personName)),
+    [data, selectedNames],
   );
 
   const totalRides = rides.reduce((acc, r) => acc + r.priceCents, 0);
@@ -59,14 +78,29 @@ function AdminRelatoriosPage() {
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Filtrar pelo nome do tutor ou motorista"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Select value={tutorId} onValueChange={setTutorId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Todos os tutores" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os tutores</SelectItem>
+            {tutorOptions.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={driverId} onValueChange={setDriverId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Todos os motoristas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os motoristas</SelectItem>
+            {driverOptions.map((d) => (
+              <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading && <Skeleton className="h-64 w-full rounded-2xl" />}
