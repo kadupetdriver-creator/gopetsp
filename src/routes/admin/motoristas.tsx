@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { adminGetCreditBalance, adminGrantDriverBonus } from "@/lib/admin.functions";
+import { formatBRL } from "@/lib/rides";
 import { Car, ExternalLink, Loader2, Pencil, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -498,6 +501,33 @@ function EditDriverDialog({
     onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível salvar."),
   });
 
+  const getBalance = useServerFn(adminGetCreditBalance);
+  const grantBonus = useServerFn(adminGrantDriverBonus);
+  const [bonusValue, setBonusValue] = useState("");
+  const [bonusReason, setBonusReason] = useState("");
+
+  const balance = useQuery({
+    queryKey: ["admin-driver-balance", app.user_id],
+    queryFn: () => getBalance({ data: { userId: app.user_id } }),
+  });
+
+  const bonusCents = Math.round(
+    Number(bonusValue.replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) * 100,
+  );
+  const validBonus = Number.isFinite(bonusCents) && bonusCents > 0 && bonusCents <= 1000000 && bonusReason.trim().length >= 3;
+
+  const bonus = useMutation({
+    mutationFn: () =>
+      grantBonus({ data: { driverUserId: app.user_id, amountCents: bonusCents, reason: bonusReason.trim() } }),
+    onSuccess: () => {
+      toast.success("Bônus lançado para o motorista.");
+      setBonusValue("");
+      setBonusReason("");
+      void balance.refetch();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível lançar o bônus."),
+  });
+
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [k]: e.target.value });
 
@@ -564,6 +594,43 @@ function EditDriverDialog({
             </Select>
           </Field>
         </div>
+
+        <div className="mt-3 space-y-3 rounded-xl border border-border px-3 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-medium">Bônus do motorista</p>
+            <span className="text-sm font-semibold">
+              {balance.isLoading ? "…" : formatBRL(balance.data?.balanceCents ?? 0)}
+            </span>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Field label="Valor do bônus (R$)">
+              <Input
+                inputMode="decimal"
+                placeholder="30,00"
+                value={bonusValue}
+                onChange={(e) => setBonusValue(e.target.value)}
+              />
+            </Field>
+            <Field label="Motivo do bônus">
+              <Input
+                placeholder="Ex.: corrida longa em dia de chuva"
+                value={bonusReason}
+                onChange={(e) => setBonusReason(e.target.value)}
+              />
+            </Field>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={!validBonus || bonus.isPending}
+            onClick={() => bonus.mutate()}
+          >
+            {bonus.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            Lançar bônus
+          </Button>
+        </div>
+
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>
             Cancelar

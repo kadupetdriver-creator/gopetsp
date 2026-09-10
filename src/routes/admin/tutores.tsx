@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   adminAdjustCredits,
+  adminChargeIdleTime,
   adminGetCreditBalance,
   adminSetAccountActive,
   adminUpdateUserEmail,
@@ -212,6 +213,53 @@ function EditTutorDialog({
     onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível lançar o saldo."),
   });
 
+  const chargeIdle = useServerFn(adminChargeIdleTime);
+  const [idleValue, setIdleValue] = useState("");
+  const [idleReason, setIdleReason] = useState("");
+  const [idleDriver, setIdleDriver] = useState("");
+
+  const drivers = useQuery({
+    queryKey: ["admin-driver-options"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .eq("role", "driver")
+        .order("full_name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const idleCents = Math.round(
+    Number(idleValue.replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) * 100,
+  );
+  const validIdle =
+    Number.isFinite(idleCents) &&
+    idleCents > 0 &&
+    idleCents <= 1000000 &&
+    !!idleDriver &&
+    idleReason.trim().length >= 3;
+
+  const idleCharge = useMutation({
+    mutationFn: () =>
+      chargeIdle({
+        data: {
+          tutorUserId: tutor.id,
+          driverUserId: idleDriver,
+          amountCents: idleCents,
+          reason: idleReason.trim(),
+        },
+      }),
+    onSuccess: (res) => {
+      toast.success(`Cobrança lançada. Motorista recebeu ${formatBRL(res.driverAmountCents)}.`);
+      setIdleValue("");
+      setIdleReason("");
+      void balance.refetch();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível lançar a cobrança."),
+  });
+
   const save = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -303,6 +351,55 @@ function EditTutorDialog({
               Lançar saldo
             </Button>
           </div>
+
+          <div className="space-y-3 rounded-xl border border-border px-3 py-3">
+            <p className="text-sm font-medium">Cobrança por tempo parado</p>
+            <p className="text-xs text-muted-foreground">
+              O valor é debitado do saldo do tutor e 80% vão para o motorista escolhido.
+            </p>
+            <Field label="Motorista que receberá">
+              <Select value={idleDriver} onValueChange={setIdleDriver}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o motorista" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(drivers.data ?? []).map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.full_name || "Sem nome"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Field label="Valor da cobrança (R$)">
+                <Input
+                  inputMode="decimal"
+                  placeholder="20,00"
+                  value={idleValue}
+                  onChange={(e) => setIdleValue(e.target.value)}
+                />
+              </Field>
+              <Field label="Motivo">
+                <Input
+                  placeholder="Ex.: 30 min de espera"
+                  value={idleReason}
+                  onChange={(e) => setIdleReason(e.target.value)}
+                />
+              </Field>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={!validIdle || idleCharge.isPending}
+              onClick={() => idleCharge.mutate()}
+            >
+              {idleCharge.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Cobrar tempo parado
+            </Button>
+          </div>
+
           <div className="flex items-center justify-between rounded-xl border border-border px-3 py-3">
             <div>
               <p className="text-sm font-medium">Conta ativa</p>
