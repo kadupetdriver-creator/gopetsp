@@ -12,14 +12,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  coordsFor,
+  estimateMinutes,
   formatBRL,
   formatDateTime,
+  isActiveStatus,
   petSizes,
   serviceTypes,
   statusLabels,
   statusStyles,
   type RideStatus,
 } from "@/lib/rides";
+import { RideMap } from "@/components/RideMap";
 import { cn } from "@/lib/utils";
 import { PetDetails, type PetInfo } from "@/components/PetDetails";
 import { StatusCard } from "@/routes/seja-motorista";
@@ -60,11 +64,18 @@ type Ride = {
   status: RideStatus;
   driver_id: string | null;
   needs_trunk: boolean;
+  driver_lat: number | null;
+  driver_lng: number | null;
+  location_updated_at: string | null;
+  origin_lat: number | null;
+  origin_lng: number | null;
+  destination_lat: number | null;
+  destination_lng: number | null;
   ride_pets: { pets: PetInfo | null }[] | null;
 };
 
 const selectCols =
-  "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
+  "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
 type Application = {
   id: string;
@@ -115,6 +126,7 @@ function MotoristaPage() {
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "driver", user?.id],
     enabled: !!user && approved,
+    refetchInterval: 15000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("rides")
@@ -247,7 +259,7 @@ function MotoristaPage() {
             <EmptyState text="Nenhuma corrida em andamento. As concluídas ficam em Relatórios." />
           )}
           {active.map((ride) => (
-            <RideCard key={ride.id} ride={ride}>
+            <RideCard key={ride.id} ride={ride} showMap>
               {ride.status === "accepted" && (
                 <Button
                   onClick={() => update.mutate({ id: ride.id, status: "in_progress" })}
@@ -400,9 +412,22 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
-function RideCard({ ride, children }: { ride: Ride; children?: React.ReactNode }) {
+function RideCard({
+  ride,
+  children,
+  showMap = false,
+}: {
+  ride: Ride;
+  children?: React.ReactNode;
+  showMap?: boolean;
+}) {
   return (
-    <Card className="shadow-soft">
+    <Card
+      className={cn(
+        "shadow-soft transition-colors",
+        showMap && isActiveStatus(ride.status) && "border-primary/50 bg-primary/10",
+      )}
+    >
       <CardContent className="space-y-4 py-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -422,6 +447,37 @@ function RideCard({ ride, children }: { ride: Ride; children?: React.ReactNode }
             {statusLabels[ride.status]}
           </span>
         </div>
+
+        {showMap && isActiveStatus(ride.status) && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium">
+              Rastreio ao vivo
+              <span className="ml-2 font-normal text-muted-foreground">
+                trajeto estimado em {estimateMinutes(Number(ride.distance_km))} min
+              </span>
+            </p>
+            <RideMap
+              origin={coordsFor(ride.origin_neighborhood, ride.origin_lat, ride.origin_lng)}
+              destination={coordsFor(
+                ride.destination_neighborhood,
+                ride.destination_lat,
+                ride.destination_lng,
+              )}
+              driver={
+                typeof ride.driver_lat === "number" && typeof ride.driver_lng === "number"
+                  ? [ride.driver_lat, ride.driver_lng]
+                  : null
+              }
+            />
+            <p className="text-xs text-muted-foreground">
+              Sua posição é enviada automaticamente enquanto a corrida estiver ativa. Última
+              atualização:{" "}
+              {ride.location_updated_at
+                ? formatDateTime(ride.location_updated_at)
+                : "aguardando sinal de GPS"}
+            </p>
+          </div>
+        )}
 
         <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
           <p className="flex items-start gap-2">
