@@ -498,6 +498,33 @@ function EditDriverDialog({
     onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível salvar."),
   });
 
+  const getBalance = useServerFn(adminGetCreditBalance);
+  const grantBonus = useServerFn(adminGrantDriverBonus);
+  const [bonusValue, setBonusValue] = useState("");
+  const [bonusReason, setBonusReason] = useState("");
+
+  const balance = useQuery({
+    queryKey: ["admin-driver-balance", app.user_id],
+    queryFn: () => getBalance({ data: { userId: app.user_id } }),
+  });
+
+  const bonusCents = Math.round(
+    Number(bonusValue.replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) * 100,
+  );
+  const validBonus = Number.isFinite(bonusCents) && bonusCents > 0 && bonusCents <= 1000000 && bonusReason.trim().length >= 3;
+
+  const bonus = useMutation({
+    mutationFn: () =>
+      grantBonus({ data: { driverUserId: app.user_id, amountCents: bonusCents, reason: bonusReason.trim() } }),
+    onSuccess: () => {
+      toast.success("Bônus lançado para o motorista.");
+      setBonusValue("");
+      setBonusReason("");
+      void balance.refetch();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível lançar o bônus."),
+  });
+
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [k]: e.target.value });
 
