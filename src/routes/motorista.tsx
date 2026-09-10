@@ -421,7 +421,7 @@ function MotoristaPage() {
 
       {newRide && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md animate-pulse-none rounded-3xl border-4 border-primary bg-primary p-6 text-primary-foreground shadow-2xl">
+          <div className="w-full max-w-md rounded-3xl border-4 border-primary bg-primary p-6 text-primary-foreground shadow-2xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em]">Nova chamada</p>
             <p className="mt-2 text-2xl font-extrabold">
               {newRide.pet_name} · {formatBRL(newRide.price_cents)}
