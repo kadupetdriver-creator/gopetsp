@@ -67,6 +67,7 @@ function SolicitarPage() {
   const [origin, setOrigin] = useState<SelectedPlace | null>(null);
   const [destinationAddress, setDestinationAddress] = useState("");
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
+  const [stops, setStops] = useState<{ text: string; place: SelectedPlace | null }[]>([]);
   const [scheduledAt, setScheduledAt] = useState(defaultDateTime());
   const [notes, setNotes] = useState("");
   const [needsTrunk, setNeedsTrunk] = useState<boolean | null>(null);
@@ -388,6 +389,50 @@ function SolicitarPage() {
                   onSelect={setOrigin}
                   required
                 />
+              </div>
+              <div className="space-y-3 sm:col-span-2">
+                {stops.map((stop, index) => (
+                  <div key={index} className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <AddressAutocomplete
+                        label={`Parada ${index + 1}`}
+                        placeholder="coloque o endereço aqui"
+                        value={stop.text}
+                        onValueChange={(v) =>
+                          setStops((prev) =>
+                            prev.map((s, i) => (i === index ? { text: v, place: null } : s)),
+                          )
+                        }
+                        onSelect={(place) =>
+                          setStops((prev) =>
+                            prev.map((s, i) => (i === index ? { ...s, place } : s)),
+                          )
+                        }
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label={`Remover parada ${index + 1}`}
+                      onClick={() => setStops((prev) => prev.filter((_, i) => i !== index))}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                ))}
+                {stops.length < 3 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setStops((prev) => [...prev, { text: "", place: null }])}
+                  >
+                    <Plus className="mr-2 size-4" />
+                    Adicionar parada no trajeto
+                  </Button>
+                )}
               </div>
               <div className="sm:col-span-2">
                 <AddressAutocomplete
