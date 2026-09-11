@@ -70,6 +70,10 @@ function SolicitarPage() {
   const [scheduledAt, setScheduledAt] = useState(defaultDateTime());
   const [notes, setNotes] = useState("");
   const [needsTrunk, setNeedsTrunk] = useState<boolean | null>(null);
+  const [hasReturn, setHasReturn] = useState<boolean | null>(null);
+  const [returnAt, setReturnAt] = useState("");
+  const [driverWaits, setDriverWaits] = useState<boolean | null>(null);
+
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
@@ -119,6 +123,9 @@ function SolicitarPage() {
     ? [destination.lat, destination.lng]
     : null;
 
+  const returnAnswered =
+    hasReturn === false || (hasReturn === true && !!returnAt && driverWaits !== null);
+
   // Orçamento oficial: distância e preço são calculados e validados no backend.
   const quoteQuery = useQuery({
     queryKey: [
@@ -129,8 +136,17 @@ function SolicitarPage() {
       destinationPoint?.[1],
       selectedPetIds.join(","),
       needsTrunk,
+      scheduledAt,
+      hasReturn,
+      returnAt,
+      driverWaits,
     ],
-    enabled: !!originPoint && !!destinationPoint && selectedPets.length > 0 && needsTrunk !== null,
+    enabled:
+      !!originPoint &&
+      !!destinationPoint &&
+      selectedPets.length > 0 &&
+      needsTrunk !== null &&
+      returnAnswered,
     staleTime: 60 * 1000,
     retry: false,
     queryFn: () =>
@@ -140,6 +156,10 @@ function SolicitarPage() {
           destination: { lat: destinationPoint![0], lng: destinationPoint![1] },
           petIds: selectedPetIds,
           needsTrunk: needsTrunk === true,
+          scheduledAt: new Date(scheduledAt).toISOString(),
+          hasReturn: hasReturn === true,
+          returnScheduledAt: hasReturn && returnAt ? new Date(returnAt).toISOString() : null,
+          driverWaits: driverWaits === true,
         },
       }),
   });
@@ -149,12 +169,18 @@ function SolicitarPage() {
   const mapReady = !!originPoint && !!destinationPoint;
   const routeReady = !!quoteQuery.data;
 
+
   const create = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Sessão expirada");
       if (!origin || !destination) throw new Error("Selecione origem e destino nas sugestões");
       if (selectedPets.length === 0) throw new Error("Selecione ao menos um pet cadastrado");
       if (needsTrunk === null) throw new Error("Informe se deseja utilizar o porta-malas");
+      if (hasReturn === null) throw new Error("Informe se haverá corrida de retorno");
+      if (hasReturn && !returnAt) throw new Error("Informe o horário do retorno");
+      if (hasReturn && driverWaits === null)
+        throw new Error("Informe se o motorista deve aguardar no local");
+
       const result = await submitRide({
         data: {
           origin: {
@@ -174,6 +200,10 @@ function SolicitarPage() {
           scheduledAt: new Date(scheduledAt).toISOString(),
           notes: notes || null,
           needsTrunk: needsTrunk === true,
+          hasReturn: hasReturn === true,
+          returnScheduledAt: hasReturn && returnAt ? new Date(returnAt).toISOString() : null,
+          driverWaits: driverWaits === true,
+
         },
       });
       return result.rideId;
@@ -440,6 +470,141 @@ function SolicitarPage() {
                   </label>
                 </RadioGroup>
               </div>
+
+              <div className="space-y-3 sm:col-span-2">
+                <Label>
+                  Haverá corrida de retorno? <span className="text-destructive">*</span>
+                </Label>
+                <RadioGroup
+                  value={hasReturn === null ? "" : hasReturn ? "sim" : "nao"}
+                  onValueChange={(v) => {
+                    const yes = v === "sim";
+                    setHasReturn(yes);
+                    if (!yes) {
+                      setReturnAt("");
+                      setDriverWaits(null);
+                    }
+                  }}
+                  className="grid gap-2 sm:grid-cols-2"
+                  required
+                >
+                  <label
+                    htmlFor="retorno-sim"
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
+                      hasReturn === true
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-muted"
+                    }`}
+                  >
+                    <RadioGroupItem id="retorno-sim" value="sim" />
+                    <span className="grid gap-0.5 leading-none">
+                      <span className="font-medium">Sim</span>
+                      <span className="text-xs text-muted-foreground">
+                        O trecho de volta é somado ao valor da corrida.
+                      </span>
+                    </span>
+                  </label>
+                  <label
+                    htmlFor="retorno-nao"
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
+                      hasReturn === false
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-muted"
+                    }`}
+                  >
+                    <RadioGroupItem id="retorno-nao" value="nao" />
+                    <span className="font-medium">Não</span>
+                  </label>
+                </RadioGroup>
+              </div>
+
+              {hasReturn === true && (
+                <div className="space-y-4 rounded-2xl border border-primary/40 bg-primary/5 p-4 sm:col-span-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="retorno-horario">
+                      Qual o horário do retorno? <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="retorno-horario"
+                      type="datetime-local"
+                      value={returnAt}
+                      min={scheduledAt}
+                      onChange={(e) => setReturnAt(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label>
+                      Deseja que o motorista aguarde no local até o retorno?{" "}
+                      <span className="text-destructive">*</span>
+                    </Label>
+                    <RadioGroup
+                      value={driverWaits === null ? "" : driverWaits ? "sim" : "nao"}
+                      onValueChange={(v) => setDriverWaits(v === "sim")}
+                      className="grid gap-2 sm:grid-cols-2"
+                      required
+                    >
+                      <label
+                        htmlFor="espera-sim"
+                        className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
+                          driverWaits === true
+                            ? "border-primary bg-primary/10"
+                            : "border-border bg-card hover:bg-muted"
+                        }`}
+                      >
+                        <RadioGroupItem id="espera-sim" value="sim" className="mt-0.5" />
+                        <span className="grid gap-0.5 leading-snug">
+                          <span className="font-medium">Sim</span>
+                          <span className="text-xs text-muted-foreground">
+                            Sim, haverá cobrança de R$ 40,00 para o período de 1 hora. Após esse
+                            período, R$ 0,75 por minuto.
+                          </span>
+                        </span>
+                      </label>
+                      <label
+                        htmlFor="espera-nao"
+                        className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
+                          driverWaits === false
+                            ? "border-primary bg-primary/10"
+                            : "border-border bg-card hover:bg-muted"
+                        }`}
+                      >
+                        <RadioGroupItem id="espera-nao" value="nao" />
+                        <span className="font-medium">Não</span>
+                      </label>
+                    </RadioGroup>
+                  </div>
+
+                  {routeReady && (
+                    <div className="space-y-1 text-sm">
+                      <p className="flex justify-between">
+                        <span className="text-muted-foreground">Ida</span>
+                        <span className="font-medium">
+                          {formatBRL(quoteQuery.data!.oneWayCents)}
+                        </span>
+                      </p>
+                      <p className="flex justify-between">
+                        <span className="text-muted-foreground">Retorno</span>
+                        <span className="font-medium">
+                          {formatBRL(quoteQuery.data!.returnFeeCents)}
+                        </span>
+                      </p>
+                      {driverWaits === true && (
+                        <p className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Espera ({quoteQuery.data!.waitingMinutes} min)
+                          </span>
+                          <span className="font-medium">
+                            {formatBRL(quoteQuery.data!.waitingFeeCents)}
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="obs">Observações para o motorista</Label>
                 <Textarea

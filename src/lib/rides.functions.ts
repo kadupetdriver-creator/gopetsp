@@ -47,10 +47,53 @@ async function loadOwnedPets(
   return pets;
 }
 
+export type RideExtrasInput = {
+  scheduledAt: string;
+  hasReturn: boolean;
+  returnScheduledAt: string | null;
+  driverWaits: boolean;
+};
+
+/** Valida agendamento, retorno e espera enviados pelo cliente. */
+function validExtras(input: Partial<RideExtrasInput> | undefined) {
+  const scheduled = new Date(String(input?.scheduledAt ?? ""));
+  if (Number.isNaN(scheduled.getTime())) throw new Error("Data e horário inválidos");
+  const hasReturn = input?.hasReturn === true;
+  let returnAt: Date | null = null;
+  if (hasReturn) {
+    returnAt = new Date(String(input?.returnScheduledAt ?? ""));
+    if (Number.isNaN(returnAt.getTime())) throw new Error("Informe o horário do retorno");
+    if (returnAt.getTime() <= scheduled.getTime()) {
+      throw new Error("O horário do retorno deve ser depois da ida");
+    }
+  }
+  return {
+    scheduledAt: scheduled.toISOString(),
+    hasReturn,
+    returnScheduledAt: returnAt ? returnAt.toISOString() : null,
+    driverWaits: hasReturn && input?.driverWaits === true,
+  };
+}
+
+/** Minutos de espera do motorista entre a chegada e o retorno. */
+function waitingMinutesFor(
+  extras: ReturnType<typeof validExtras>,
+  durationMinutes: number,
+): number {
+  if (!extras.hasReturn || !extras.driverWaits || !extras.returnScheduledAt) return 0;
+  const gap =
+    (new Date(extras.returnScheduledAt).getTime() - new Date(extras.scheduledAt).getTime()) / 60000;
+  return Math.max(0, Math.ceil(gap - durationMinutes));
+}
+
 export type RideQuote = {
   distanceKm: number;
   durationMinutes: number;
   priceCents: number;
+  oneWayCents: number;
+  returnFeeCents: number;
+  waitingFeeCents: number;
+  waitingMinutes: number;
   trunkFeeCents: number;
   groupSize: string;
   petCount: number;
@@ -59,12 +102,20 @@ export type RideQuote = {
 /** Orçamento oficial da corrida: distância por vias e preço calculados no backend. */
 export const quoteRide = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { origin: Point; destination: Point; petIds: string[]; needsTrunk: boolean }) => ({
-    origin: validPoint(input?.origin),
-    destination: validPoint(input?.destination),
-    petIds: validPetIds(input?.petIds),
-    needsTrunk: input?.needsTrunk === true,
-  }))
+  .inputValidator(
+    (input: {
+      origin: Point;
+      destination: Point;
+      petIds: string[];
+      needsTrunk: boolean;
+    } & Partial<RideExtrasInput>) => ({
+      origin: validPoint(input?.origin),
+      destination: validPoint(input?.destination),
+      petIds: validPetIds(input?.petIds),
+      needsTrunk: input?.needsTrunk === true,
+      extras: validExtras(input),
+    }),
+  )
   .handler(async ({ data, context }): Promise<RideQuote> => {
     const pets = await loadOwnedPets(context.supabase as any, context.userId, data.petIds);
     const { drivingDistance } = await import("./routing.server");
@@ -76,6 +127,10 @@ export const quoteRide = createServerFn({ method: "POST" })
       route.distanceKm,
       pets.map((p) => p.size),
       data.needsTrunk,
+      {
+        hasReturn: data.extras.hasReturn,
+        waitingMinutes: waitingMinutesFor(data.extras, route.durationMinutes),
+      },
     );
     return {
       distanceKm: route.distanceKm,
@@ -83,6 +138,7 @@ export const quoteRide = createServerFn({ method: "POST" })
       ...price,
     };
   });
+
 
 export type CreateRideInput = {
   origin: Point & { address: string; neighborhood: string | null };
@@ -92,7 +148,11 @@ export type CreateRideInput = {
   scheduledAt: string;
   notes: string | null;
   needsTrunk: boolean;
+  hasReturn?: boolean;
+  returnScheduledAt?: string | null;
+  driverWaits?: boolean;
 };
+
 
 const SERVICE_TYPES = ["veterinario", "banho_tosa", "creche", "aeroporto", "outro"];
 
@@ -110,8 +170,7 @@ export const createRide = createServerFn({ method: "POST" })
     if (!originAddress || !destinationAddress) throw new Error("Informe origem e destino");
     const serviceType = String(input?.serviceType ?? "");
     if (!SERVICE_TYPES.includes(serviceType)) throw new Error("Motivo da viagem inválido");
-    const scheduled = new Date(String(input?.scheduledAt ?? ""));
-    if (Number.isNaN(scheduled.getTime())) throw new Error("Data e horário inválidos");
+    const extras = validExtras(input);
     const notes = input?.notes ? String(input.notes).slice(0, 1000) : null;
     return {
       origin: { ...origin, address: originAddress.slice(0, 300), neighborhood: input?.origin?.neighborhood ?? null },
@@ -122,11 +181,13 @@ export const createRide = createServerFn({ method: "POST" })
       },
       petIds: validPetIds(input?.petIds),
       serviceType,
-      scheduledAt: scheduled.toISOString(),
+      scheduledAt: extras.scheduledAt,
       notes,
       needsTrunk: input?.needsTrunk === true,
+      extras,
     };
   })
+
   .handler(async ({ data, context }): Promise<{ rideId: string; priceCents: number }> => {
     const { data: me } = await context.supabase
       .from("profiles")
@@ -146,7 +207,12 @@ export const createRide = createServerFn({ method: "POST" })
       route.distanceKm,
       pets.map((p) => p.size),
       data.needsTrunk,
+      {
+        hasReturn: data.extras.hasReturn,
+        waitingMinutes: waitingMinutesFor(data.extras, route.durationMinutes),
+      },
     );
+
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // ordena os nomes seguindo a mesma ordem de precificação (maior porte primeiro)
@@ -177,6 +243,13 @@ export const createRide = createServerFn({ method: "POST" })
         price_cents: price.priceCents,
         needs_trunk: data.needsTrunk,
         trunk_fee_cents: price.trunkFeeCents,
+        has_return: data.extras.hasReturn,
+        return_scheduled_at: data.extras.returnScheduledAt,
+        return_fee_cents: price.returnFeeCents,
+        driver_waits: data.extras.driverWaits,
+        waiting_minutes: price.waitingMinutes,
+        waiting_fee_cents: price.waitingFeeCents,
+
       })
       .select("id")
       .single();
