@@ -176,6 +176,11 @@ function SolicitarPage() {
       if (!origin || !destination) throw new Error("Selecione origem e destino nas sugestões");
       if (selectedPets.length === 0) throw new Error("Selecione ao menos um pet cadastrado");
       if (needsTrunk === null) throw new Error("Informe se deseja utilizar o porta-malas");
+      if (hasReturn === null) throw new Error("Informe se haverá corrida de retorno");
+      if (hasReturn && !returnAt) throw new Error("Informe o horário do retorno");
+      if (hasReturn && driverWaits === null)
+        throw new Error("Informe se o motorista deve aguardar no local");
+
       const result = await submitRide({
         data: {
           origin: {
