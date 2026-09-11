@@ -26,16 +26,13 @@ export function fullPetPriceCents(distanceKm: number, size: string): number {
   return Math.round((PRICE_BASE_CENTS + distanceKm * PRICE_PER_KM_CENTS) * sizeFactor(size));
 }
 
-/** Espera do motorista no local: R$ 40,00 pela primeira hora. */
-export const WAITING_FIRST_HOUR_CENTS = 4000;
-/** Após a primeira hora, R$ 0,75 por minuto. */
-export const WAITING_EXTRA_PER_MINUTE_CENTS = 75;
+/** Espera do motorista no local: R$ 0,75 por minuto entre a ida e o retorno. */
+export const WAITING_PER_MINUTE_CENTS = 75;
 
 /** Valor da espera do motorista até o retorno. */
 export function waitingFeeCents(minutes: number): number {
   const m = Math.max(0, Math.ceil(minutes));
-  if (m === 0) return 0;
-  return WAITING_FIRST_HOUR_CENTS + Math.max(0, m - 60) * WAITING_EXTRA_PER_MINUTE_CENTS;
+  return m * WAITING_PER_MINUTE_CENTS;
 }
 
 export type PriceBreakdown = {
@@ -60,7 +57,7 @@ export type RideExtras = {
  * Preço final: pets ordenados do maior para o menor porte; o primeiro paga o
  * valor integral e cada pet seguinte paga 40% do valor integral do seu porte.
  * Porta-malas soma uma taxa fixa. Retorno cobra novamente o mesmo trecho e a
- * espera do motorista é cobrada por hora/minuto.
+ * espera do motorista é cobrada por minuto.
  */
 export function calculateRidePrice(
   distanceKm: number,
