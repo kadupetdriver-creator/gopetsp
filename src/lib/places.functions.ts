@@ -24,6 +24,23 @@ async function readError(response: Response): Promise<never> {
 
 export type PlaceSuggestion = { placeId: string; primary: string; secondary: string };
 
+/** Limites da cidade de São Paulo (retângulo de restrição). */
+const SP_RECT = {
+  rectangle: {
+    low: { latitude: -24.0088, longitude: -46.8272 },
+    high: { latitude: -23.3565, longitude: -46.365 },
+  },
+};
+
+function isInSaoPaulo(lat: number, lng: number): boolean {
+  return (
+    lat >= SP_RECT.rectangle.low.latitude &&
+    lat <= SP_RECT.rectangle.high.latitude &&
+    lng >= SP_RECT.rectangle.low.longitude &&
+    lng <= SP_RECT.rectangle.high.longitude
+  );
+}
+
 export const searchAddresses = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { query: string }) => {
@@ -39,6 +56,8 @@ export const searchAddresses = createServerFn({ method: "POST" })
         input: data.query,
         languageCode: "pt-BR",
         regionCode: "BR",
+        includedRegionCodes: ["br"],
+        locationRestriction: SP_RECT,
       }),
     });
     if (!response.ok) await readError(response);
