@@ -123,6 +123,9 @@ function SolicitarPage() {
     ? [destination.lat, destination.lng]
     : null;
 
+  const returnAnswered =
+    hasReturn === false || (hasReturn === true && !!returnAt && driverWaits !== null);
+
   // Orçamento oficial: distância e preço são calculados e validados no backend.
   const quoteQuery = useQuery({
     queryKey: [
@@ -133,8 +136,17 @@ function SolicitarPage() {
       destinationPoint?.[1],
       selectedPetIds.join(","),
       needsTrunk,
+      scheduledAt,
+      hasReturn,
+      returnAt,
+      driverWaits,
     ],
-    enabled: !!originPoint && !!destinationPoint && selectedPets.length > 0 && needsTrunk !== null,
+    enabled:
+      !!originPoint &&
+      !!destinationPoint &&
+      selectedPets.length > 0 &&
+      needsTrunk !== null &&
+      returnAnswered,
     staleTime: 60 * 1000,
     retry: false,
     queryFn: () =>
@@ -144,6 +156,10 @@ function SolicitarPage() {
           destination: { lat: destinationPoint![0], lng: destinationPoint![1] },
           petIds: selectedPetIds,
           needsTrunk: needsTrunk === true,
+          scheduledAt: new Date(scheduledAt).toISOString(),
+          hasReturn: hasReturn === true,
+          returnScheduledAt: hasReturn && returnAt ? new Date(returnAt).toISOString() : null,
+          driverWaits: driverWaits === true,
         },
       }),
   });
@@ -152,6 +168,7 @@ function SolicitarPage() {
   const price = quoteQuery.data?.priceCents ?? 0;
   const mapReady = !!originPoint && !!destinationPoint;
   const routeReady = !!quoteQuery.data;
+
 
   const create = useMutation({
     mutationFn: async () => {
