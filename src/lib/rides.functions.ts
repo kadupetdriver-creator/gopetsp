@@ -218,6 +218,7 @@ export const createRide = createServerFn({ method: "POST" })
     const route = await drivingDistance(
       [data.origin.lat, data.origin.lng],
       [data.destination.lat, data.destination.lng],
+      data.stops.map((s) => [s.lat, s.lng] as [number, number]),
     );
     const price = calculateRidePrice(
       route.distanceKm,
@@ -225,7 +226,7 @@ export const createRide = createServerFn({ method: "POST" })
       data.needsTrunk,
       {
         hasReturn: data.extras.hasReturn,
-        waitingMinutes: waitingMinutesFor(data.extras, route.durationMinutes),
+        waitingMinutes: waitingMinutesFor(data.extras),
       },
     );
 
