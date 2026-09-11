@@ -70,6 +70,10 @@ function SolicitarPage() {
   const [scheduledAt, setScheduledAt] = useState(defaultDateTime());
   const [notes, setNotes] = useState("");
   const [needsTrunk, setNeedsTrunk] = useState<boolean | null>(null);
+  const [hasReturn, setHasReturn] = useState<boolean | null>(null);
+  const [returnAt, setReturnAt] = useState("");
+  const [driverWaits, setDriverWaits] = useState<boolean | null>(null);
+
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
