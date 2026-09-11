@@ -127,6 +127,11 @@ function SolicitarPage() {
   const returnAnswered =
     hasReturn === false || (hasReturn === true && !!returnAt && driverWaits !== null);
 
+  const resolvedStops = stops
+    .map((s) => s.place)
+    .filter((p): p is SelectedPlace => !!p && !!p.address);
+  const stopsReady = stops.every((s) => !!s.place);
+
   // Orçamento oficial: distância e preço são calculados e validados no backend.
   const quoteQuery = useQuery({
     queryKey: [
@@ -135,6 +140,7 @@ function SolicitarPage() {
       originPoint?.[1],
       destinationPoint?.[0],
       destinationPoint?.[1],
+      resolvedStops.map((s) => `${s.lat},${s.lng}`).join("|"),
       selectedPetIds.join(","),
       needsTrunk,
       scheduledAt,
@@ -145,6 +151,7 @@ function SolicitarPage() {
     enabled:
       !!originPoint &&
       !!destinationPoint &&
+      stopsReady &&
       selectedPets.length > 0 &&
       needsTrunk !== null &&
       returnAnswered,
@@ -155,6 +162,7 @@ function SolicitarPage() {
         data: {
           origin: { lat: originPoint![0], lng: originPoint![1] },
           destination: { lat: destinationPoint![0], lng: destinationPoint![1] },
+          stops: resolvedStops.map((s) => ({ lat: s.lat, lng: s.lng, address: s.address })),
           petIds: selectedPetIds,
           needsTrunk: needsTrunk === true,
           scheduledAt: new Date(scheduledAt).toISOString(),
@@ -163,6 +171,7 @@ function SolicitarPage() {
           driverWaits: driverWaits === true,
         },
       }),
+  });
   });
 
   const distance = quoteQuery.data?.distanceKm ?? 0;
