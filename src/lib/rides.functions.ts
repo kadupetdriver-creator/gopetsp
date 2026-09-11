@@ -117,11 +117,13 @@ export const quoteRide = createServerFn({ method: "POST" })
     (input: {
       origin: Point;
       destination: Point;
+      stops?: StopInput[];
       petIds: string[];
       needsTrunk: boolean;
     } & Partial<RideExtrasInput>) => ({
       origin: validPoint(input?.origin),
       destination: validPoint(input?.destination),
+      stops: validStops(input?.stops),
       petIds: validPetIds(input?.petIds),
       needsTrunk: input?.needsTrunk === true,
       extras: validExtras(input),
@@ -133,6 +135,7 @@ export const quoteRide = createServerFn({ method: "POST" })
     const route = await drivingDistance(
       [data.origin.lat, data.origin.lng],
       [data.destination.lat, data.destination.lng],
+      data.stops.map((s) => [s.lat, s.lng] as [number, number]),
     );
     const price = calculateRidePrice(
       route.distanceKm,
@@ -140,7 +143,7 @@ export const quoteRide = createServerFn({ method: "POST" })
       data.needsTrunk,
       {
         hasReturn: data.extras.hasReturn,
-        waitingMinutes: waitingMinutesFor(data.extras, route.durationMinutes),
+        waitingMinutes: waitingMinutesFor(data.extras),
       },
     );
     return {
