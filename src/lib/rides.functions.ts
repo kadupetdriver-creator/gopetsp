@@ -254,6 +254,7 @@ export const createRide = createServerFn({ method: "POST" })
         destination_neighborhood: data.destination.neighborhood,
         destination_lat: data.destination.lat,
         destination_lng: data.destination.lng,
+        stops: data.stops,
         scheduled_at: data.scheduledAt,
         notes: data.notes,
         distance_km: route.distanceKm,
