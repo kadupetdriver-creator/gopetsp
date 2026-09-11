@@ -612,8 +612,8 @@ function SolicitarPage() {
                         <span className="grid gap-0.5 leading-snug">
                           <span className="font-medium">Sim</span>
                           <span className="text-xs text-muted-foreground">
-                            Sim, haverá cobrança de R$ 40,00 para o período de 1 hora. Após esse
-                            período, R$ 0,75 por minuto.
+                            Sim, haverá cobrança de R$ 0,75 por minuto de espera, contados entre o
+                            horário da ida e o horário do retorno.
                           </span>
                         </span>
                       </label>
