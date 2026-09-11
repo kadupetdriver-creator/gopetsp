@@ -148,7 +148,11 @@ export type CreateRideInput = {
   scheduledAt: string;
   notes: string | null;
   needsTrunk: boolean;
+  hasReturn?: boolean;
+  returnScheduledAt?: string | null;
+  driverWaits?: boolean;
 };
+
 
 const SERVICE_TYPES = ["veterinario", "banho_tosa", "creche", "aeroporto", "outro"];
 
