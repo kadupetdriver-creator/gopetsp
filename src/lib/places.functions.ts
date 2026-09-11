@@ -117,6 +117,9 @@ export const getPlaceDetails = createServerFn({ method: "POST" })
     if (typeof lat !== "number" || typeof lng !== "number") {
       throw new Error("Não foi possível obter as coordenadas do endereço.");
     }
+    if (!isInSaoPaulo(lat, lng)) {
+      throw new Error("No momento, o GoPet atende apenas endereços na cidade de São Paulo.");
+    }
     const comps = json.addressComponents ?? [];
     const neighborhood =
       comps.find((c) => c.types?.includes("sublocality_level_1"))?.longText ??
