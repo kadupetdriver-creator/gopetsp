@@ -200,6 +200,10 @@ function SolicitarPage() {
           scheduledAt: new Date(scheduledAt).toISOString(),
           notes: notes || null,
           needsTrunk: needsTrunk === true,
+          hasReturn: hasReturn === true,
+          returnScheduledAt: hasReturn && returnAt ? new Date(returnAt).toISOString() : null,
+          driverWaits: driverWaits === true,
+
         },
       });
       return result.rideId;
