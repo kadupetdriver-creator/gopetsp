@@ -75,15 +75,26 @@ function validExtras(input: Partial<RideExtrasInput> | undefined) {
   };
 }
 
-/** Minutos de espera do motorista entre a chegada e o retorno. */
-function waitingMinutesFor(
-  extras: ReturnType<typeof validExtras>,
-  durationMinutes: number,
-): number {
+/** Minutos de espera do motorista entre a ida e o retorno. */
+function waitingMinutesFor(extras: ReturnType<typeof validExtras>): number {
   if (!extras.hasReturn || !extras.driverWaits || !extras.returnScheduledAt) return 0;
   const gap =
     (new Date(extras.returnScheduledAt).getTime() - new Date(extras.scheduledAt).getTime()) / 60000;
-  return Math.max(0, Math.ceil(gap - durationMinutes));
+  return Math.max(0, Math.ceil(gap));
+}
+
+export type StopInput = Point & { address: string };
+
+/** Valida as paradas intermediárias (no máximo 3). */
+function validStops(input: unknown): (Point & { address: string })[] {
+  const list = Array.isArray(input) ? input : [];
+  if (list.length > 3) throw new Error("Máximo de 3 paradas por corrida");
+  return list.map((s) => {
+    const point = validPoint(s);
+    const address = String((s as StopInput)?.address ?? "").trim();
+    if (!address) throw new Error("Informe o endereço da parada");
+    return { ...point, address: address.slice(0, 300) };
+  });
 }
 
 export type RideQuote = {
