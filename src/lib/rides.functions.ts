@@ -157,6 +157,7 @@ export const quoteRide = createServerFn({ method: "POST" })
 export type CreateRideInput = {
   origin: Point & { address: string; neighborhood: string | null };
   destination: Point & { address: string; neighborhood: string | null };
+  stops?: StopInput[];
   petIds: string[];
   serviceType: string;
   scheduledAt: string;
@@ -193,6 +194,7 @@ export const createRide = createServerFn({ method: "POST" })
         address: destinationAddress.slice(0, 300),
         neighborhood: input?.destination?.neighborhood ?? null,
       },
+      stops: validStops(input?.stops),
       petIds: validPetIds(input?.petIds),
       serviceType,
       scheduledAt: extras.scheduledAt,
