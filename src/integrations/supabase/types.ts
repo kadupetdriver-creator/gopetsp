@@ -520,6 +520,8 @@ export type Database = {
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null
+          driver_waits: boolean
+          has_return: boolean
           id: string
           location_updated_at: string | null
           needs_trunk: boolean
@@ -532,6 +534,8 @@ export type Database = {
           pet_name: string
           pet_size: string
           price_cents: number
+          return_fee_cents: number
+          return_scheduled_at: string | null
           scheduled_at: string
           service_type: string
           share_token: string
@@ -539,6 +543,8 @@ export type Database = {
           trunk_fee_cents: number
           tutor_id: string
           updated_at: string
+          waiting_fee_cents: number
+          waiting_minutes: number
         }
         Insert: {
           created_at?: string
@@ -550,6 +556,8 @@ export type Database = {
           driver_id?: string | null
           driver_lat?: number | null
           driver_lng?: number | null
+          driver_waits?: boolean
+          has_return?: boolean
           id?: string
           location_updated_at?: string | null
           needs_trunk?: boolean
@@ -562,6 +570,8 @@ export type Database = {
           pet_name: string
           pet_size?: string
           price_cents?: number
+          return_fee_cents?: number
+          return_scheduled_at?: string | null
           scheduled_at?: string
           service_type?: string
           share_token?: string
@@ -569,6 +579,8 @@ export type Database = {
           trunk_fee_cents?: number
           tutor_id: string
           updated_at?: string
+          waiting_fee_cents?: number
+          waiting_minutes?: number
         }
         Update: {
           created_at?: string
@@ -580,6 +592,8 @@ export type Database = {
           driver_id?: string | null
           driver_lat?: number | null
           driver_lng?: number | null
+          driver_waits?: boolean
+          has_return?: boolean
           id?: string
           location_updated_at?: string | null
           needs_trunk?: boolean
@@ -592,6 +606,8 @@ export type Database = {
           pet_name?: string
           pet_size?: string
           price_cents?: number
+          return_fee_cents?: number
+          return_scheduled_at?: string | null
           scheduled_at?: string
           service_type?: string
           share_token?: string
@@ -599,6 +615,8 @@ export type Database = {
           trunk_fee_cents?: number
           tutor_id?: string
           updated_at?: string
+          waiting_fee_cents?: number
+          waiting_minutes?: number
         }
         Relationships: [
           {
@@ -716,6 +734,8 @@ export type Database = {
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null
+          driver_waits: boolean
+          has_return: boolean
           id: string
           location_updated_at: string | null
           needs_trunk: boolean
@@ -728,6 +748,8 @@ export type Database = {
           pet_name: string
           pet_size: string
           price_cents: number
+          return_fee_cents: number
+          return_scheduled_at: string | null
           scheduled_at: string
           service_type: string
           share_token: string
@@ -735,6 +757,8 @@ export type Database = {
           trunk_fee_cents: number
           tutor_id: string
           updated_at: string
+          waiting_fee_cents: number
+          waiting_minutes: number
         }
         SetofOptions: {
           from: "*"
@@ -811,6 +835,8 @@ export type Database = {
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null
+          driver_waits: boolean
+          has_return: boolean
           id: string
           location_updated_at: string | null
           needs_trunk: boolean
@@ -823,6 +849,8 @@ export type Database = {
           pet_name: string
           pet_size: string
           price_cents: number
+          return_fee_cents: number
+          return_scheduled_at: string | null
           scheduled_at: string
           service_type: string
           share_token: string
@@ -830,6 +858,8 @@ export type Database = {
           trunk_fee_cents: number
           tutor_id: string
           updated_at: string
+          waiting_fee_cents: number
+          waiting_minutes: number
         }
         SetofOptions: {
           from: "*"
