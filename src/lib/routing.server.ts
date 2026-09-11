@@ -68,6 +68,10 @@ export async function drivingDistance(
       // cai no fallback abaixo
     }
   }
-  const approx = Math.max(1, Math.round(haversineKm(origin, destination) * 1.35 * 10) / 10);
+  const path: [number, number][] = [origin, ...stops, destination];
+  const raw = path
+    .slice(1)
+    .reduce((sum, point, i) => sum + haversineKm(path[i]!, point), 0);
+  const approx = Math.max(1, Math.round(raw * 1.35 * 10) / 10);
   return { distanceKm: approx, durationMinutes: Math.max(5, Math.round((approx / 22) * 60)) };
 }
