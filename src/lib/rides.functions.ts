@@ -170,8 +170,7 @@ export const createRide = createServerFn({ method: "POST" })
     if (!originAddress || !destinationAddress) throw new Error("Informe origem e destino");
     const serviceType = String(input?.serviceType ?? "");
     if (!SERVICE_TYPES.includes(serviceType)) throw new Error("Motivo da viagem inválido");
-    const scheduled = new Date(String(input?.scheduledAt ?? ""));
-    if (Number.isNaN(scheduled.getTime())) throw new Error("Data e horário inválidos");
+    const extras = validExtras(input);
     const notes = input?.notes ? String(input.notes).slice(0, 1000) : null;
     return {
       origin: { ...origin, address: originAddress.slice(0, 300), neighborhood: input?.origin?.neighborhood ?? null },
@@ -182,11 +181,13 @@ export const createRide = createServerFn({ method: "POST" })
       },
       petIds: validPetIds(input?.petIds),
       serviceType,
-      scheduledAt: scheduled.toISOString(),
+      scheduledAt: extras.scheduledAt,
       notes,
       needsTrunk: input?.needsTrunk === true,
+      extras,
     };
   })
+
   .handler(async ({ data, context }): Promise<{ rideId: string; priceCents: number }> => {
     const { data: me } = await context.supabase
       .from("profiles")
