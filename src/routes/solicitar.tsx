@@ -172,7 +172,6 @@ function SolicitarPage() {
         },
       }),
   });
-  });
 
   const distance = quoteQuery.data?.distanceKm ?? 0;
   const price = quoteQuery.data?.priceCents ?? 0;
