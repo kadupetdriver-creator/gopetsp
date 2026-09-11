@@ -243,6 +243,13 @@ export const createRide = createServerFn({ method: "POST" })
         price_cents: price.priceCents,
         needs_trunk: data.needsTrunk,
         trunk_fee_cents: price.trunkFeeCents,
+        has_return: data.extras.hasReturn,
+        return_scheduled_at: data.extras.returnScheduledAt,
+        return_fee_cents: price.returnFeeCents,
+        driver_waits: data.extras.driverWaits,
+        waiting_minutes: price.waitingMinutes,
+        waiting_fee_cents: price.waitingFeeCents,
+
       })
       .select("id")
       .single();
