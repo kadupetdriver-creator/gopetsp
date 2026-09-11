@@ -67,6 +67,7 @@ function SolicitarPage() {
   const [origin, setOrigin] = useState<SelectedPlace | null>(null);
   const [destinationAddress, setDestinationAddress] = useState("");
   const [destination, setDestination] = useState<SelectedPlace | null>(null);
+  const [stops, setStops] = useState<{ text: string; place: SelectedPlace | null }[]>([]);
   const [scheduledAt, setScheduledAt] = useState(defaultDateTime());
   const [notes, setNotes] = useState("");
   const [needsTrunk, setNeedsTrunk] = useState<boolean | null>(null);
@@ -126,6 +127,11 @@ function SolicitarPage() {
   const returnAnswered =
     hasReturn === false || (hasReturn === true && !!returnAt && driverWaits !== null);
 
+  const resolvedStops = stops
+    .map((s) => s.place)
+    .filter((p): p is SelectedPlace => !!p && !!p.address);
+  const stopsReady = stops.every((s) => !!s.place);
+
   // Orçamento oficial: distância e preço são calculados e validados no backend.
   const quoteQuery = useQuery({
     queryKey: [
@@ -134,6 +140,7 @@ function SolicitarPage() {
       originPoint?.[1],
       destinationPoint?.[0],
       destinationPoint?.[1],
+      resolvedStops.map((s) => `${s.lat},${s.lng}`).join("|"),
       selectedPetIds.join(","),
       needsTrunk,
       scheduledAt,
@@ -144,6 +151,7 @@ function SolicitarPage() {
     enabled:
       !!originPoint &&
       !!destinationPoint &&
+      stopsReady &&
       selectedPets.length > 0 &&
       needsTrunk !== null &&
       returnAnswered,
@@ -154,6 +162,7 @@ function SolicitarPage() {
         data: {
           origin: { lat: originPoint![0], lng: originPoint![1] },
           destination: { lat: destinationPoint![0], lng: destinationPoint![1] },
+          stops: resolvedStops.map((s) => ({ lat: s.lat, lng: s.lng, address: s.address })),
           petIds: selectedPetIds,
           needsTrunk: needsTrunk === true,
           scheduledAt: new Date(scheduledAt).toISOString(),
@@ -180,6 +189,7 @@ function SolicitarPage() {
       if (hasReturn && !returnAt) throw new Error("Informe o horário do retorno");
       if (hasReturn && driverWaits === null)
         throw new Error("Informe se o motorista deve aguardar no local");
+      if (!stopsReady) throw new Error("Escolha as paradas nas sugestões de endereço");
 
       const result = await submitRide({
         data: {
@@ -195,6 +205,7 @@ function SolicitarPage() {
             address: destination.address,
             neighborhood: destination.neighborhood,
           },
+          stops: resolvedStops.map((s) => ({ lat: s.lat, lng: s.lng, address: s.address })),
           petIds: selectedPetIds,
           serviceType,
           scheduledAt: new Date(scheduledAt).toISOString(),
@@ -389,6 +400,50 @@ function SolicitarPage() {
                   required
                 />
               </div>
+              <div className="space-y-3 sm:col-span-2">
+                {stops.map((stop, index) => (
+                  <div key={index} className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <AddressAutocomplete
+                        label={`Parada ${index + 1}`}
+                        placeholder="coloque o endereço aqui"
+                        value={stop.text}
+                        onValueChange={(v) =>
+                          setStops((prev) =>
+                            prev.map((s, i) => (i === index ? { text: v, place: null } : s)),
+                          )
+                        }
+                        onSelect={(place) =>
+                          setStops((prev) =>
+                            prev.map((s, i) => (i === index ? { ...s, place } : s)),
+                          )
+                        }
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label={`Remover parada ${index + 1}`}
+                      onClick={() => setStops((prev) => prev.filter((_, i) => i !== index))}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                ))}
+                {stops.length < 3 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setStops((prev) => [...prev, { text: "", place: null }])}
+                  >
+                    <Plus className="mr-2 size-4" />
+                    Adicionar parada no trajeto
+                  </Button>
+                )}
+              </div>
               <div className="sm:col-span-2">
                 <AddressAutocomplete
                   label="Endereço de destino"
@@ -557,8 +612,8 @@ function SolicitarPage() {
                         <span className="grid gap-0.5 leading-snug">
                           <span className="font-medium">Sim</span>
                           <span className="text-xs text-muted-foreground">
-                            Sim, haverá cobrança de R$ 40,00 para o período de 1 hora. Após esse
-                            período, R$ 0,75 por minuto.
+                            Sim, haverá cobrança de R$ 0,75 por minuto de espera, contados entre o
+                            horário da ida e o horário do retorno.
                           </span>
                         </span>
                       </label>

@@ -75,15 +75,26 @@ function validExtras(input: Partial<RideExtrasInput> | undefined) {
   };
 }
 
-/** Minutos de espera do motorista entre a chegada e o retorno. */
-function waitingMinutesFor(
-  extras: ReturnType<typeof validExtras>,
-  durationMinutes: number,
-): number {
+/** Minutos de espera do motorista entre a ida e o retorno. */
+function waitingMinutesFor(extras: ReturnType<typeof validExtras>): number {
   if (!extras.hasReturn || !extras.driverWaits || !extras.returnScheduledAt) return 0;
   const gap =
     (new Date(extras.returnScheduledAt).getTime() - new Date(extras.scheduledAt).getTime()) / 60000;
-  return Math.max(0, Math.ceil(gap - durationMinutes));
+  return Math.max(0, Math.ceil(gap));
+}
+
+export type StopInput = Point & { address: string };
+
+/** Valida as paradas intermediárias (no máximo 3). */
+function validStops(input: unknown): (Point & { address: string })[] {
+  const list = Array.isArray(input) ? input : [];
+  if (list.length > 3) throw new Error("Máximo de 3 paradas por corrida");
+  return list.map((s) => {
+    const point = validPoint(s);
+    const address = String((s as StopInput)?.address ?? "").trim();
+    if (!address) throw new Error("Informe o endereço da parada");
+    return { ...point, address: address.slice(0, 300) };
+  });
 }
 
 export type RideQuote = {
@@ -106,11 +117,13 @@ export const quoteRide = createServerFn({ method: "POST" })
     (input: {
       origin: Point;
       destination: Point;
+      stops?: StopInput[];
       petIds: string[];
       needsTrunk: boolean;
     } & Partial<RideExtrasInput>) => ({
       origin: validPoint(input?.origin),
       destination: validPoint(input?.destination),
+      stops: validStops(input?.stops),
       petIds: validPetIds(input?.petIds),
       needsTrunk: input?.needsTrunk === true,
       extras: validExtras(input),
@@ -122,6 +135,7 @@ export const quoteRide = createServerFn({ method: "POST" })
     const route = await drivingDistance(
       [data.origin.lat, data.origin.lng],
       [data.destination.lat, data.destination.lng],
+      data.stops.map((s) => [s.lat, s.lng] as [number, number]),
     );
     const price = calculateRidePrice(
       route.distanceKm,
@@ -129,7 +143,7 @@ export const quoteRide = createServerFn({ method: "POST" })
       data.needsTrunk,
       {
         hasReturn: data.extras.hasReturn,
-        waitingMinutes: waitingMinutesFor(data.extras, route.durationMinutes),
+        waitingMinutes: waitingMinutesFor(data.extras),
       },
     );
     return {
@@ -143,6 +157,7 @@ export const quoteRide = createServerFn({ method: "POST" })
 export type CreateRideInput = {
   origin: Point & { address: string; neighborhood: string | null };
   destination: Point & { address: string; neighborhood: string | null };
+  stops?: StopInput[];
   petIds: string[];
   serviceType: string;
   scheduledAt: string;
@@ -179,6 +194,7 @@ export const createRide = createServerFn({ method: "POST" })
         address: destinationAddress.slice(0, 300),
         neighborhood: input?.destination?.neighborhood ?? null,
       },
+      stops: validStops(input?.stops),
       petIds: validPetIds(input?.petIds),
       serviceType,
       scheduledAt: extras.scheduledAt,
@@ -202,6 +218,7 @@ export const createRide = createServerFn({ method: "POST" })
     const route = await drivingDistance(
       [data.origin.lat, data.origin.lng],
       [data.destination.lat, data.destination.lng],
+      data.stops.map((s) => [s.lat, s.lng] as [number, number]),
     );
     const price = calculateRidePrice(
       route.distanceKm,
@@ -209,7 +226,7 @@ export const createRide = createServerFn({ method: "POST" })
       data.needsTrunk,
       {
         hasReturn: data.extras.hasReturn,
-        waitingMinutes: waitingMinutesFor(data.extras, route.durationMinutes),
+        waitingMinutes: waitingMinutesFor(data.extras),
       },
     );
 
@@ -237,6 +254,7 @@ export const createRide = createServerFn({ method: "POST" })
         destination_neighborhood: data.destination.neighborhood,
         destination_lat: data.destination.lat,
         destination_lng: data.destination.lng,
+        stops: data.stops,
         scheduled_at: data.scheduledAt,
         notes: data.notes,
         distance_km: route.distanceKm,

@@ -540,6 +540,7 @@ export type Database = {
           service_type: string
           share_token: string
           status: Database["public"]["Enums"]["ride_status"]
+          stops: Json
           trunk_fee_cents: number
           tutor_id: string
           updated_at: string
@@ -576,6 +577,7 @@ export type Database = {
           service_type?: string
           share_token?: string
           status?: Database["public"]["Enums"]["ride_status"]
+          stops?: Json
           trunk_fee_cents?: number
           tutor_id: string
           updated_at?: string
@@ -612,6 +614,7 @@ export type Database = {
           service_type?: string
           share_token?: string
           status?: Database["public"]["Enums"]["ride_status"]
+          stops?: Json
           trunk_fee_cents?: number
           tutor_id?: string
           updated_at?: string
@@ -754,6 +757,7 @@ export type Database = {
           service_type: string
           share_token: string
           status: Database["public"]["Enums"]["ride_status"]
+          stops: Json
           trunk_fee_cents: number
           tutor_id: string
           updated_at: string
@@ -855,6 +859,7 @@ export type Database = {
           service_type: string
           share_token: string
           status: Database["public"]["Enums"]["ride_status"]
+          stops: Json
           trunk_fee_cents: number
           tutor_id: string
           updated_at: string

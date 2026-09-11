@@ -22,6 +22,7 @@ function haversineKm(a: [number, number], b: [number, number]): number {
 export async function drivingDistance(
   origin: [number, number],
   destination: [number, number],
+  stops: [number, number][] = [],
 ): Promise<DrivingDistance> {
   const lovableKey = process.env["LOVABLE_API_KEY"];
   const mapsKey = process.env["GOOGLE_MAPS_API_KEY"];
@@ -40,6 +41,9 @@ export async function drivingDistance(
           destination: {
             location: { latLng: { latitude: destination[0], longitude: destination[1] } },
           },
+          intermediates: stops.map((s) => ({
+            location: { latLng: { latitude: s[0], longitude: s[1] } },
+          })),
           travelMode: "DRIVE",
           routingPreference: "TRAFFIC_AWARE",
           languageCode: "pt-BR",
@@ -64,6 +68,10 @@ export async function drivingDistance(
       // cai no fallback abaixo
     }
   }
-  const approx = Math.max(1, Math.round(haversineKm(origin, destination) * 1.35 * 10) / 10);
+  const path: [number, number][] = [origin, ...stops, destination];
+  const raw = path
+    .slice(1)
+    .reduce((sum, point, i) => sum + haversineKm(path[i]!, point), 0);
+  const approx = Math.max(1, Math.round(raw * 1.35 * 10) / 10);
   return { distanceKm: approx, durationMinutes: Math.max(5, Math.round((approx / 22) * 60)) };
 }
