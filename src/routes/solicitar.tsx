@@ -189,6 +189,7 @@ function SolicitarPage() {
       if (hasReturn && !returnAt) throw new Error("Informe o horário do retorno");
       if (hasReturn && driverWaits === null)
         throw new Error("Informe se o motorista deve aguardar no local");
+      if (!stopsReady) throw new Error("Escolha as paradas nas sugestões de endereço");
 
       const result = await submitRide({
         data: {
@@ -204,6 +205,7 @@ function SolicitarPage() {
             address: destination.address,
             neighborhood: destination.neighborhood,
           },
+          stops: resolvedStops.map((s) => ({ lat: s.lat, lng: s.lng, address: s.address })),
           petIds: selectedPetIds,
           serviceType,
           scheduledAt: new Date(scheduledAt).toISOString(),
