@@ -23,16 +23,16 @@ export const Route = createFileRoute("/creditos")({
   }),
   head: () => ({
     meta: [
-      { title: "Créditos GoPet | Recarregue com cartão ou Pix" },
+      { title: "Créditos GoPet | Recarregue com cartão" },
       {
         name: "description",
         content:
-          "Adicione créditos na sua conta GoPet com cartão ou Pix e use o saldo nas corridas de transporte de pets em São Paulo.",
+          "Adicione créditos na sua conta GoPet com cartão e use o saldo nas corridas de transporte de pets em São Paulo.",
       },
-      { property: "og:title", content: "Créditos GoPet | Recarregue com cartão ou Pix" },
+      { property: "og:title", content: "Créditos GoPet | Recarregue com cartão" },
       {
         property: "og:description",
-        content: "Recarregue seu saldo GoPet com cartão ou Pix e acompanhe o extrato de créditos.",
+        content: "Recarregue seu saldo GoPet com cartão e acompanhe o extrato de créditos.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -120,7 +120,7 @@ function CreditosPage() {
       <div>
         <h1 className="text-3xl font-semibold">Meus créditos</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Adicione saldo com cartão ou Pix e use nas corridas do seu pet.
+          Adicione saldo com cartão e use nas corridas do seu pet.
         </p>
       </div>
 
@@ -173,11 +173,10 @@ function CreditosPage() {
 
           <div className="space-y-2">
             <Label>Forma de pagamento</Label>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2">
               {(
                 [
                   { id: "card", label: "Cartão", icon: CreditCard, hint: "Crédito, confirmação na hora" },
-                  { id: "pix", label: "Pix", icon: QrCode, hint: "QR Code, confirmação em segundos" },
                 ] as const
               ).map((option) => (
                 <button

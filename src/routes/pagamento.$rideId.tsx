@@ -43,7 +43,7 @@ function PagamentoCorrida() {
   const { user, loading } = useRoleGuard("tutor");
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
-  const [method, setMethod] = useState<"credits" | "card" | "pix">("pix");
+  const [method, setMethod] = useState<"credits" | "card" | "pix">("card");
   const [payingWithCredits, setPayingWithCredits] = useState(false);
 
   const { data: ride, isLoading } = useQuery({
@@ -119,7 +119,7 @@ function PagamentoCorrida() {
               transporte.
             </p>
             <div className="mt-3 rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-ink">
-              Não aceitamos dinheiro em espécie. O pagamento é feito pelo app (saldo GoPet, Pix ou
+              Não aceitamos dinheiro em espécie. O pagamento é feito pelo app (saldo GoPet ou
               cartão) antes do início do transporte.
             </div>
           </CardContent>
@@ -155,9 +155,9 @@ function PagamentoCorrida() {
             <Card className="shadow-soft">
               <CardHeader>
                 <CardTitle className="text-lg">Como você quer pagar?</CardTitle>
-                <CardDescription>Use seu saldo GoPet, Pix ou cartão de crédito.</CardDescription>
+                <CardDescription>Use seu saldo GoPet ou cartão de crédito.</CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <CardContent className="grid grid-cols-2 gap-3">
                 {(
                   [
                     {
@@ -166,7 +166,6 @@ function PagamentoCorrida() {
                       icon: Wallet,
                       hint: `Disponível ${formatBRL(balanceCents)}`,
                     },
-                    { id: "pix", label: "Pix", icon: QrCode, hint: "QR Code, aprovação rápida" },
                     { id: "card", label: "Cartão", icon: CreditCard, hint: "Crédito à vista" },
                   ] as const
                 ).map((option) => (
