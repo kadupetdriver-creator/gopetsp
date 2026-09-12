@@ -702,7 +702,7 @@ function SolicitarPage() {
                 <span>Motoristas com curso de manejo animal e veículo higienizado.</span>
               </div>
               <div className="rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-ink">
-                Não aceitamos dinheiro em espécie. O pagamento é feito pelo app (saldo GoPet, Pix ou
+                Não aceitamos dinheiro em espécie. O pagamento é feito pelo app (saldo GoPet ou
                 cartão) antes do início do transporte.
               </div>
               <Button type="submit" className="w-full" disabled={create.isPending || !routeReady}>
