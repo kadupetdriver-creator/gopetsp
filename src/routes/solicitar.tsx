@@ -100,9 +100,21 @@ function SolicitarPage() {
 
   const selectedPets = (pets ?? []).filter((p) => selectedPetIds.includes(p.id));
 
+  // Bloqueia a rolagem da página até que o tutor selecione pelo menos um pet.
+  useEffect(() => {
+    if (pets !== undefined && selectedPets.length === 0) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [pets, selectedPets.length]);
 
   const maxPets = 3;
   const sizeRank = ["pequeno", "medio", "grande"];
+
   // Precificação: maior porte primeiro (grande > médio > pequeno).
   const groupSize =
     selectedPets.length > 0
