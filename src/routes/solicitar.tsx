@@ -473,7 +473,7 @@ function SolicitarPage() {
                         value={stop.text}
                         onValueChange={(v) =>
                           setStops((prev) =>
-                            prev.map((s, i) => (i === index ? { text: v, place: null } : s)),
+                            prev.map((s, i) => (i === index ? { ...s, text: v } : s)),
                           )
                         }
                         onSelect={(place) =>
@@ -483,6 +483,7 @@ function SolicitarPage() {
                         }
                         required
                       />
+
                     </div>
                     <Button
                       type="button"
