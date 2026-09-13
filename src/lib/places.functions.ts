@@ -128,12 +128,20 @@ export const getPlaceDetails = createServerFn({ method: "POST" })
       comps.find((c) => c.types?.includes("sublocality"))?.longText ??
       comps.find((c) => c.types?.includes("neighborhood"))?.longText ??
       null;
+    const hasStreetNumber = comps.some(
+      (c) =>
+        c.types?.includes("street_number") ||
+        c.types?.includes("premise") ||
+        c.types?.includes("subpremise"),
+    );
     return {
       address: json.formattedAddress ?? "",
       neighborhood,
       lat,
       lng,
+      hasStreetNumber,
     };
+
   });
 
 export type DrivingRoute = { distanceKm: number; durationMinutes: number };
