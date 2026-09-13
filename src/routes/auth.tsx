@@ -202,9 +202,8 @@ function AuthPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password-in">Senha</Label>
-                  <Input
+                  <PasswordInput
                     id="password-in"
-                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
