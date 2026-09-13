@@ -86,7 +86,9 @@ export type PlaceDetails = {
   neighborhood: string | null;
   lat: number;
   lng: number;
+  hasStreetNumber: boolean;
 };
+
 
 export const getPlaceDetails = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
