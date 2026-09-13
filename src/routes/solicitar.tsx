@@ -34,7 +34,130 @@ import { AddressAutocomplete, type SelectedPlace } from "@/components/AddressAut
 import { RideMap } from "@/components/RideMap";
 import { ActiveRideTracker } from "@/components/ActiveRideTracker";
 
+type PetItem = {
+  id: string;
+  name: string;
+  size: string;
+  species: string;
+  breed: string | null;
+  photo_url: string | null;
+};
+
+type PetSelectorProps = {
+  pets: PetItem[] | undefined;
+  selectedIds: string[];
+  toggle: (id: string) => void;
+  maxPets: number;
+};
+
+function PetSelector({ pets, selectedIds, toggle, maxPets }: PetSelectorProps) {
+  const selected = (pets ?? []).filter((p) => selectedIds.includes(p.id));
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Label>
+          SELECIONAR PET CADASTRADO <span className="text-destructive">*</span>
+        </Label>
+        <span
+          className={`text-xs font-medium ${
+            selectedIds.length >= maxPets ? "text-primary-ink" : "text-muted-foreground"
+          }`}
+        >
+          {selectedIds.length} de {maxPets} selecionados
+        </span>
+      </div>
+      <div className="rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-ink">
+        <div className="flex items-center gap-2">
+          <PawPrint className="size-4 shrink-0" />
+          <span className="normal-case">Capacidade máxima do veículo:</span>
+        </div>
+        <ul className="mt-1 list-disc pl-6 normal-case">
+          <li>1 pet + 2 pessoas</li>
+          <li>2 pets + 1 pessoa</li>
+          <li>3 pets</li>
+        </ul>
+        <p className="mt-1 font-extrabold normal-case">
+          Cobrança adicional por passageiro ou excesso de bagagem.
+        </p>
+      </div>
+      {pets && pets.length > 0 ? (
+        <div className="grid max-h-[55vh] gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+          {pets.map((p) => {
+            const active = selectedIds.includes(p.id);
+            const blocked = !active && selectedIds.length >= maxPets;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                aria-pressed={active}
+                disabled={blocked}
+                onClick={() => toggle(p.id)}
+                className={`flex items-center gap-3 rounded-xl border p-3 text-left transition ${
+                  active ? "border-primary bg-primary/10" : "border-border hover:bg-muted"
+                } ${blocked ? "cursor-not-allowed opacity-50" : ""}`}
+              >
+                {p.photo_url ? (
+                  <img
+                    src={p.photo_url}
+                    alt={`Foto de ${p.name}`}
+                    className="size-10 shrink-0 rounded-lg object-cover"
+                  />
+                ) : (
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                    <PawPrint className="size-4 text-primary-ink" />
+                  </span>
+                )}
+                <span className="min-w-0">
+                  <span className="block truncate font-medium">{p.name}</span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {[p.breed, petSizes.find((s) => s.value === p.size)?.label]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                </span>
+                {active ? (
+                  <X className="ml-auto size-4 text-muted-foreground" />
+                ) : (
+                  <Plus className="ml-auto size-4 text-muted-foreground" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Você ainda não cadastrou pets.{" "}
+          <a href="/perfil" className="font-medium text-primary-ink underline">
+            Cadastre seu pet no seu perfil
+          </a>{" "}
+          para solicitar uma corrida.
+        </p>
+      )}
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {selected.map((p) => (
+            <span
+              key={p.id}
+              className="flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground"
+            >
+              {p.name}
+              <button
+                type="button"
+                aria-label={`Remover ${p.name} da corrida`}
+                onClick={() => toggle(p.id)}
+              >
+                <X className="size-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/solicitar")({
+
   head: () => ({
     meta: [
       { title: "Solicitar transporte do pet em São Paulo | GoPet" },
