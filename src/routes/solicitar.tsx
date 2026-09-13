@@ -723,17 +723,16 @@ function SolicitarPage() {
               )}
 
               <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="obs">
-                  Observações para o motorista <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor="obs">Observações para o motorista</Label>
                 <Textarea
                   id="obs"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
-                  required
+                  placeholder="Ex.: portão branco, cachorro ansioso, caixa de transporte necessária..."
                 />
               </div>
+
             </CardContent>
           </Card>
         </div>
