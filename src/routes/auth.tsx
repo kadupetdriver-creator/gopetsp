@@ -169,14 +169,18 @@ function AuthPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Senha</Label>
-                  <Input
+                  <PasswordInput
                     id="password"
-                    type="password"
-                    minLength={6}
+                    minLength={8}
+                    pattern="^(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$"
+                    title="A senha deve ter no mínimo 8 caracteres, incluindo uma letra maiúscula, um número e um caractere especial."
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    A senha deverá conter no mínimo 8 dígitos, devendo conter pelo menos uma letra maiúscula, um carácter especial e um número.
+                  </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={busy}>
                   {busy && <Loader2 className="mr-2 size-4 animate-spin" />} Criar conta
