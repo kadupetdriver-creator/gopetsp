@@ -190,6 +190,15 @@ function SolicitarPage() {
       if (hasReturn && driverWaits === null)
         throw new Error("Informe se o motorista deve aguardar no local");
       if (!stopsReady) throw new Error("Escolha as paradas nas sugestões de endereço");
+      if (!notes.trim()) throw new Error("Preencha as observações para o motorista");
+      if (!addressHasNumber(origin.address) || !addressHasNumber(destination.address))
+        throw new Error(
+          "Informe o número nos endereços. Se não houver número, escreva S/N.",
+        );
+      if (resolvedStops.some((s) => !addressHasNumber(s.address)))
+        throw new Error(
+          "Informe o número em todas as paradas. Se não houver número, escreva S/N.",
+        );
 
       const result = await submitRide({
         data: {
@@ -267,7 +276,9 @@ function SolicitarPage() {
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-3 sm:col-span-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <Label>Pets desta corrida</Label>
+                  <Label>
+                    SELECIONAR PET CADASTRADO <span className="text-destructive">*</span>
+                  </Label>
                   <span
                     className={`text-xs font-medium ${
                       selectedPetIds.length >= maxPets ? "text-primary-ink" : "text-muted-foreground"
