@@ -513,13 +513,11 @@ function SolicitarPage() {
                   label="Endereço de destino"
                   placeholder="coloque o endereço aqui"
                   value={destinationAddress}
-                  onValueChange={(v) => {
-                    setDestinationAddress(v);
-                    setDestination(null);
-                  }}
+                  onValueChange={setDestinationAddress}
                   onSelect={setDestination}
                   required
                 />
+
               </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="quando">Data e horário</Label>
