@@ -457,13 +457,11 @@ function SolicitarPage() {
                   label="Endereço de embarque"
                   placeholder="coloque o endereço aqui"
                   value={originAddress}
-                  onValueChange={(v) => {
-                    setOriginAddress(v);
-                    setOrigin(null);
-                  }}
+                  onValueChange={setOriginAddress}
                   onSelect={setOrigin}
                   required
                 />
+
               </div>
               <div className="space-y-3 sm:col-span-2">
                 {stops.map((stop, index) => (
