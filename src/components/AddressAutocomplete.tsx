@@ -5,12 +5,14 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getPlaceDetails, searchAddresses, type PlaceSuggestion } from "@/lib/places.functions";
+import { addressHasNumber } from "@/lib/address";
 
 export type SelectedPlace = {
   address: string;
   neighborhood: string | null;
   lat: number;
   lng: number;
+  hasStreetNumber: boolean;
 };
 
 type Props = {
@@ -18,7 +20,7 @@ type Props = {
   placeholder?: string;
   value: string;
   onValueChange: (value: string) => void;
-  onSelect: (place: SelectedPlace) => void;
+  onSelect: (place: SelectedPlace | null) => void;
   required?: boolean;
 };
 
@@ -38,6 +40,7 @@ export function AddressAutocomplete({
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState<SelectedPlace | null>(null);
   const skipNext = useRef(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
@@ -82,23 +85,51 @@ export function AddressAutocomplete({
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
+  const clearSelection = () => {
+    setSelected(null);
+    onSelect(null);
+  };
+
   const choose = async (s: PlaceSuggestion) => {
     setOpen(false);
     setLoading(true);
     try {
       const place = await details({ data: { placeId: s.placeId } });
+      setSelected(place);
       skipNext.current = true;
-      onValueChange(place.address || `${s.primary} ${s.secondary}`.trim());
+      onValueChange(place.address);
       onSelect(place);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Não conseguimos carregar esse endereço. Tente outro.";
       toast.error(message);
+      clearSelection();
       onValueChange("");
-      onSelect({ address: "", neighborhood: null, lat: 0, lng: 0 });
     } finally {
       setLoading(false);
     }
   };
+
+  const handleChange = (next: string) => {
+    if (!selected) {
+      onValueChange(next);
+      return;
+    }
+
+    // Permite que o usuário adicione apenas o número/S/N ao endereço selecionado
+    // sem perder as coordenadas. Se ele mudar o logradouro, limpamos a seleção.
+    const streetCore = selected.address.split(",")[0]?.trim().toLowerCase() ?? "";
+    if (streetCore && next.toLowerCase().includes(streetCore)) {
+      const updated = { ...selected, address: next };
+      setSelected(updated);
+      onValueChange(next);
+      onSelect(updated);
+    } else {
+      clearSelection();
+      onValueChange(next);
+    }
+  };
+
+  const missingNumber = !!value && !addressHasNumber(value);
 
   return (
     <div className="space-y-2" ref={wrapRef}>
@@ -110,7 +141,7 @@ export function AddressAutocomplete({
           placeholder={placeholder}
           required={required}
           autoComplete="off"
-          onChange={(e) => onValueChange(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
           onFocus={() => suggestions.length > 0 && setOpen(true)}
         />
         {loading && (
@@ -136,6 +167,11 @@ export function AddressAutocomplete({
           </ul>
         )}
       </div>
+      {missingNumber && (
+        <p className="text-xs text-destructive">
+          Informe o número do endereço. Se não houver número, escreva S/N.
+        </p>
+      )}
     </div>
   );
 }

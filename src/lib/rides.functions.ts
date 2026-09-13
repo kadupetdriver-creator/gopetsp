@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { calculateRidePrice } from "./pricing";
+import { addressHasNumber } from "./address";
+
 
 type Point = { lat: number; lng: number };
 
@@ -183,10 +185,19 @@ export const createRide = createServerFn({ method: "POST" })
     const originAddress = String(input?.origin?.address ?? "").trim();
     const destinationAddress = String(input?.destination?.address ?? "").trim();
     if (!originAddress || !destinationAddress) throw new Error("Informe origem e destino");
+    if (!addressHasNumber(originAddress) || !addressHasNumber(destinationAddress)) {
+      throw new Error("Informe o número nos endereços. Se não houver número, escreva S/N.");
+    }
     const serviceType = String(input?.serviceType ?? "");
     if (!SERVICE_TYPES.includes(serviceType)) throw new Error("Motivo da viagem inválido");
     const extras = validExtras(input);
     const notes = input?.notes ? String(input.notes).slice(0, 1000) : null;
+
+    const stops = validStops(input?.stops);
+    if (stops.some((s) => !addressHasNumber(s.address))) {
+      throw new Error("Informe o número em todas as paradas. Se não houver número, escreva S/N.");
+    }
+
     return {
       origin: { ...origin, address: originAddress.slice(0, 300), neighborhood: input?.origin?.neighborhood ?? null },
       destination: {
@@ -194,7 +205,7 @@ export const createRide = createServerFn({ method: "POST" })
         address: destinationAddress.slice(0, 300),
         neighborhood: input?.destination?.neighborhood ?? null,
       },
-      stops: validStops(input?.stops),
+      stops,
       petIds: validPetIds(input?.petIds),
       serviceType,
       scheduledAt: extras.scheduledAt,
@@ -202,6 +213,7 @@ export const createRide = createServerFn({ method: "POST" })
       needsTrunk: input?.needsTrunk === true,
       extras,
     };
+
   })
 
   .handler(async ({ data, context }): Promise<{ rideId: string; priceCents: number }> => {
