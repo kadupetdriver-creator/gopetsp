@@ -83,15 +83,6 @@ function SolicitarPage() {
     if (!loading && profile?.role === "driver") void navigate({ to: "/motorista" });
   }, [loading, user, profile, navigate]);
 
-  // Bloqueia a rolagem da página até que o tutor selecione pelo menos um pet.
-  useEffect(() => {
-    if (!loading && pets !== undefined && selectedPets.length === 0) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
-  }, [loading, pets, selectedPets.length]);
 
 
   const { data: pets } = useQuery({
