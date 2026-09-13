@@ -777,14 +777,36 @@ function SolicitarPage() {
           </Card>
         </div>
       </form>
+
+      {pets !== undefined && selectedPets.length === 0 && (
+        <div className="fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto bg-background/95 px-4 py-6 backdrop-blur-sm">
+          <Card className="mx-auto max-w-2xl shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-lg">Quem vai viajar?</CardTitle>
+              <CardDescription>
+                Selecione o(s) pet(s) cadastrado(s) para montar a corrida.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PetSelector
+                pets={pets}
+                selectedIds={selectedPetIds}
+                toggle={togglePet}
+                maxPets={maxPets}
+              />
+              {pets.length === 0 && (
+                <Button asChild className="mt-6 w-full">
+                  <a href="/perfil">Cadastrar pet</a>
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
 
-/** Endereço precisa conter número ou "S/N". */
-function addressHasNumber(address: string) {
-  return /\d/.test(address) || /\bs\/n\b/i.test(address);
-}
 
 function defaultDateTime() {
   const d = new Date(Date.now() + 60 * 60 * 1000);
