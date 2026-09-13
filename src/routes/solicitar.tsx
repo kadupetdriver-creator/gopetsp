@@ -396,6 +396,10 @@ function SolicitarPage() {
           <Card className="shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg">Trajeto</CardTitle>
+              <CardDescription>
+                É obrigatório informar o número do endereço. Caso o endereço não possua número,
+                escreva S/N (ex.: Avenida Paulista, S/N).
+              </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
@@ -672,12 +676,15 @@ function SolicitarPage() {
               )}
 
               <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="obs">Observações para o motorista</Label>
+                <Label htmlFor="obs">
+                  Observações para o motorista <span className="text-destructive">*</span>
+                </Label>
                 <Textarea
                   id="obs"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
+                  required
                 />
               </div>
             </CardContent>
@@ -726,6 +733,11 @@ function SolicitarPage() {
       </form>
     </div>
   );
+}
+
+/** Endereço precisa conter número ou "S/N". */
+function addressHasNumber(address: string) {
+  return /\d/.test(address) || /\bs\/n\b/i.test(address);
 }
 
 function defaultDateTime() {
