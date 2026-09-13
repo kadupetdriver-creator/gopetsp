@@ -98,7 +98,18 @@ function SolicitarPage() {
     },
   });
 
+  // Bloqueia a rolagem da página até que o tutor selecione pelo menos um pet.
+  useEffect(() => {
+    if (pets !== undefined && selectedPets.length === 0) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [pets, selectedPets.length]);
+
   const selectedPets = (pets ?? []).filter((p) => selectedPetIds.includes(p.id));
+
   const maxPets = 3;
   const sizeRank = ["pequeno", "medio", "grande"];
   // Precificação: maior porte primeiro (grande > médio > pequeno).
