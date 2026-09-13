@@ -331,8 +331,8 @@ function SolicitarPage() {
       if (hasReturn && driverWaits === null)
         throw new Error("Informe se o motorista deve aguardar no local");
       if (!stopsReady) throw new Error("Escolha as paradas nas sugestões de endereço");
-      if (!notes.trim()) throw new Error("Preencha as observações para o motorista");
       if (!addressHasNumber(origin.address) || !addressHasNumber(destination.address))
+
         throw new Error(
           "Informe o número nos endereços. Se não houver número, escreva S/N.",
         );
