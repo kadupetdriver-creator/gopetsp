@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { releaseRidePayment } from "@/lib/payments.functions";
+
 import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
@@ -158,10 +158,7 @@ function MotoristaPage() {
           ? await supabase.rpc("accept_ride", { _ride_id: id })
           : await supabase.rpc("set_ride_status", { _ride_id: id, _status: status });
       if (error) throw error;
-      if (status === "completed") {
-        const result = await releaseRidePayment({ data: { rideId: id } });
-        if ("error" in result) throw new Error(result.error);
-      }
+      // O repasse é feito manualmente pelos administradores, pelos relatórios de repasse.
     },
     onSuccess: () => {
       toast.success("Corrida atualizada.");
