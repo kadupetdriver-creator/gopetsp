@@ -382,15 +382,15 @@ function SolicitarPage() {
     onSuccess: ({ rideId, returnRideId }) => {
       toast.success(
         returnRideId
-          ? "Criamos duas corridas: ida e volta. Cada uma pode ser aceita por um motorista diferente."
-          : "Chamada criada! Confirme o pagamento para buscarmos um motorista.",
+          ? "Criamos duas corridas: ida e volta. Acompanhe os detalhes e realize o pagamento."
+          : "Chamada criada! Acompanhe os detalhes e realize o pagamento.",
       );
       // Envia automaticamente o arquivo/resumo da corrida para a central no WhatsApp.
       for (const id of [rideId, returnRideId].filter((v): v is string => !!v)) {
         void dispatchRide({ data: { rideId: id } }).catch(() => undefined);
       }
       void qc.invalidateQueries({ queryKey: ["rides"] });
-      void navigate({ to: "/pagamento/$rideId", params: { rideId } });
+      void navigate({ to: "/minhas-corridas/$rideId", params: { rideId } });
     },
     onError: (error) =>
       toast.error(
