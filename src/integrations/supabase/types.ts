@@ -511,6 +511,7 @@ export type Database = {
       }
       rides: {
         Row: {
+          arrived_at: string | null
           created_at: string
           destination_address: string
           destination_lat: number | null
@@ -549,6 +550,7 @@ export type Database = {
           waiting_minutes: number
         }
         Insert: {
+          arrived_at?: string | null
           created_at?: string
           destination_address: string
           destination_lat?: number | null
@@ -587,6 +589,7 @@ export type Database = {
           waiting_minutes?: number
         }
         Update: {
+          arrived_at?: string | null
           created_at?: string
           destination_address?: string
           destination_lat?: number | null
@@ -738,6 +741,7 @@ export type Database = {
       accept_ride: {
         Args: { _ride_id: string }
         Returns: {
+          arrived_at: string | null
           created_at: string
           destination_address: string
           destination_lat: number | null
@@ -802,6 +806,54 @@ export type Database = {
         Args: { _ride_id: string; _user_id: string }
         Returns: boolean
       }
+      mark_driver_arrived: {
+        Args: { _ride_id: string }
+        Returns: {
+          arrived_at: string | null
+          created_at: string
+          destination_address: string
+          destination_lat: number | null
+          destination_lng: number | null
+          destination_neighborhood: string | null
+          distance_km: number
+          driver_id: string | null
+          driver_lat: number | null
+          driver_lng: number | null
+          driver_waits: boolean
+          has_return: boolean
+          id: string
+          location_updated_at: string | null
+          needs_trunk: boolean
+          notes: string | null
+          origin_address: string
+          origin_lat: number | null
+          origin_lng: number | null
+          origin_neighborhood: string | null
+          pet_id: string | null
+          pet_name: string
+          pet_size: string
+          price_cents: number
+          return_fee_cents: number
+          return_of_ride_id: string | null
+          return_scheduled_at: string | null
+          scheduled_at: string
+          service_type: string
+          share_token: string
+          status: Database["public"]["Enums"]["ride_status"]
+          stops: Json
+          trunk_fee_cents: number
+          tutor_id: string
+          updated_at: string
+          waiting_fee_cents: number
+          waiting_minutes: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rides"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       my_credit_balance_cents: { Args: never; Returns: number }
       review_driver_application: {
         Args: {
@@ -841,6 +893,7 @@ export type Database = {
           _status: Database["public"]["Enums"]["ride_status"]
         }
         Returns: {
+          arrived_at: string | null
           created_at: string
           destination_address: string
           destination_lat: number | null
