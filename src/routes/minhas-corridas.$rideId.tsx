@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
   ArrowLeft,
+  BellRing,
   CalendarClock,
   MapPin,
   MessageCircle,
@@ -79,10 +80,11 @@ type Ride = {
   destination_lng: number | null;
   stops: Stop[] | null;
   notes: string | null;
+  arrived_at: string | null;
 };
 
 const RIDE_SELECT =
-  "id, tutor_id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, stops, notes";
+  "id, tutor_id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, stops, notes, arrived_at";
 
 function RideDetails() {
   const { rideId } = Route.useParams();
@@ -230,6 +232,17 @@ function RideDetails() {
           </span>
         </div>
       </div>
+
+      {ride.arrived_at && ride.status !== "completed" && ride.status !== "cancelled" && (
+        <Alert className="mt-6 rounded-2xl border-success bg-success/15">
+          <BellRing className="size-5 shrink-0 text-success" />
+          <AlertTitle className="text-success">Seu motorista chegou!</AlertTitle>
+          <AlertDescription>
+            Ele está aguardando na portaria ou na entrada desde {formatDateTime(ride.arrived_at)}.
+            Desça com o pet — a espera é de, no máximo, 10 minutos.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {(isActiveStatus(ride.status) || ride.status === "pending") && (
         <Alert variant="warning" className="mt-6 rounded-2xl">
