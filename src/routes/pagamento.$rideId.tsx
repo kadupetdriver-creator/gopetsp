@@ -173,7 +173,12 @@ function PagamentoCorrida() {
                 </Button>
               )}
               <Button asChild variant={returnRide ? "secondary" : "default"} className="rounded-full">
-                <Link to="/minhas-corridas">Ver minhas corridas</Link>
+                <Link to="/minhas-corridas/$rideId" params={{ rideId }}>
+                  Acompanhar minha corrida
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" className="rounded-full">
+                <Link to="/minhas-corridas">Ver todas as corridas</Link>
               </Button>
               {ride && (
                 <Button asChild variant="secondary" className="rounded-full">
@@ -256,8 +261,11 @@ function PagamentoCorrida() {
                           return;
                         }
                         void refetchBalance();
-                        setConfirmed(true);
                         toast.success("Corrida paga com seu saldo GoPet.");
+                        void navigate({
+                          to: "/minhas-corridas/$rideId",
+                          params: { rideId },
+                        });
                       }}
                     >
                       Pagar {formatBRL(amount)} com saldo
