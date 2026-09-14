@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CalendarClock, MapPin, MessageCircle, PawPrint } from "lucide-react";
@@ -73,6 +73,7 @@ type Payment = { ride_id: string; status: string };
 function MinhasCorridas() {
   const { user } = useRoleGuard("tutor", "/minhas-corridas");
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "tutor", user?.id],
@@ -183,8 +184,17 @@ function MinhasCorridas() {
         {rides?.map((ride) => (
           <Card
             key={ride.id}
+            role="link"
+            tabIndex={0}
+            onClick={() =>
+              navigate({ to: "/minhas-corridas/$rideId", params: { rideId: ride.id } })
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter")
+                navigate({ to: "/minhas-corridas/$rideId", params: { rideId: ride.id } });
+            }}
             className={cn(
-              "shadow-soft transition-colors",
+              "cursor-pointer shadow-soft transition-colors hover:border-primary/60",
               isActiveStatus(ride.status) && "border-primary/50 bg-primary/10",
             )}
           >
@@ -206,7 +216,10 @@ function MinhasCorridas() {
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div
+                className="flex flex-wrap items-center gap-2"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <span
                   className={cn(
                     "rounded-full px-3 py-1 text-xs font-semibold",
@@ -308,7 +321,7 @@ function MinhasCorridas() {
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
                 {ride.status !== "cancelled" && (
                   <Button asChild variant="secondary" size="sm" className="rounded-full">
                     <a
