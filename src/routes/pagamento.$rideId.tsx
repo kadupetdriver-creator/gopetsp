@@ -53,9 +53,25 @@ function PagamentoCorrida() {
       const { data, error } = await supabase
         .from("rides")
         .select(
-          "id, pet_name, service_type, origin_address, destination_address, scheduled_at, price_cents, distance_km, status",
+          "id, pet_name, service_type, origin_address, destination_address, scheduled_at, price_cents, distance_km, status, return_of_ride_id",
         )
         .eq("id", rideId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Quando o motorista não aguarda no local, a viagem vira duas corridas:
+  // esta (ida) e a de volta, que também precisa ser paga.
+  const { data: returnRide } = useQuery({
+    queryKey: ["ride-return-pair", rideId],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("rides")
+        .select("id, price_cents, scheduled_at")
+        .eq("return_of_ride_id", rideId)
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -67,6 +83,7 @@ function PagamentoCorrida() {
     enabled: !!user,
     queryFn: async () => (await getCreditBalance({ data: undefined })).balanceCents,
   });
+
 
   useEffect(() => {
     if (!sessionId || !user) return;
@@ -100,6 +117,19 @@ function PagamentoCorrida() {
         A cobrança é feita agora e o valor fica retido com segurança. O repasse ao motorista só
         acontece depois que a corrida é concluída.
       </p>
+
+      {returnRide && (
+        <div className="rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
+          Esta viagem foi dividida em <strong>duas corridas</strong>: a ida (esta) e a volta
+          ({formatBRL(returnRide.price_cents)}). Cada uma pode ser aceita por um motorista
+          diferente e é paga separadamente.
+        </div>
+      )}
+      {ride?.return_of_ride_id && (
+        <div className="rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
+          Esta é a <strong>corrida de volta</strong>, separada da ida e com motorista próprio.
+        </div>
+      )}
 
       {isLoading && <Skeleton className="h-40 w-full rounded-2xl" />}
 
@@ -135,7 +165,14 @@ function PagamentoCorrida() {
               Já estamos procurando um motorista parceiro. Você acompanha tudo em tempo real.
             </p>
             <div className="mt-2 flex flex-wrap justify-center gap-2">
-              <Button asChild className="rounded-full">
+              {returnRide && (
+                <Button asChild className="rounded-full">
+                  <Link to="/pagamento/$rideId" params={{ rideId: returnRide.id }}>
+                    Pagar corrida de volta ({formatBRL(returnRide.price_cents)})
+                  </Link>
+                </Button>
+              )}
+              <Button asChild variant={returnRide ? "secondary" : "default"} className="rounded-full">
                 <Link to="/minhas-corridas">Ver minhas corridas</Link>
               </Button>
               {ride && (
