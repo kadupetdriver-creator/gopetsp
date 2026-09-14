@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { RideMap } from "@/components/RideMap";
 import {
   activeStatuses,
@@ -94,6 +96,8 @@ export function ActiveRideTracker() {
                 {statusLabels[ride.status]}
               </span>
             </div>
+
+            <TutorWaitingAlert />
 
             <RideMap
               origin={coordsFor(ride.origin_neighborhood, ride.origin_lat, ride.origin_lng)}
