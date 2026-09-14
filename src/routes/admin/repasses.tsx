@@ -18,16 +18,16 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/admin/repasses")({
   head: () => ({
     meta: [
-      { title: "Repasses | GoPet Admin" },
+      { title: "Ganhos | GoPet Admin" },
       { name: "robots", content: "noindex" },
       {
         name: "description",
-        content: "Relatórios de repasse aos motoristas parceiros da GoPet.",
+        content: "Relatórios de ganhos dos motoristas parceiros da GoPet.",
       },
-      { property: "og:title", content: "Repasses | GoPet Admin" },
+      { property: "og:title", content: "Ganhos | GoPet Admin" },
       {
         property: "og:description",
-        content: "Relatórios de repasse aos motoristas parceiros da GoPet.",
+        content: "Relatórios de ganhos dos motoristas parceiros da GoPet.",
       },
     ],
   }),
@@ -37,6 +37,11 @@ export const Route = createFileRoute("/admin/repasses")({
 const descriptions: Record<PayoutKind, string> = {
   repasse1: "Gerado às sextas-feiras · corridas concluídas de segunda a quinta-feira.",
   repasse2: "Gerado às segundas-feiras · corridas de sexta, sábado e domingo anteriores.",
+};
+
+const labels: Record<PayoutKind, string> = {
+  repasse1: "Ganhos Seg-Qui",
+  repasse2: "Ganhos Sex-Dom",
 };
 
 function AdminRepassesPage() {
@@ -55,8 +60,8 @@ function AdminRepassesPage() {
 
       <Tabs defaultValue="repasse1">
         <TabsList>
-          <TabsTrigger value="repasse1">Repasse 1 (seg a qui)</TabsTrigger>
-          <TabsTrigger value="repasse2">Repasse 2 (sex a dom)</TabsTrigger>
+          <TabsTrigger value="repasse1">{labels.repasse1}</TabsTrigger>
+          <TabsTrigger value="repasse2">{labels.repasse2}</TabsTrigger>
         </TabsList>
         <TabsContent value="repasse1" className="mt-4">
           <PayoutPanel kind="repasse1" reference={reference} />
