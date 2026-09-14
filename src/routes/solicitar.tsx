@@ -710,6 +710,16 @@ function SolicitarPage() {
                     </RadioGroup>
                   </div>
 
+                  {driverWaits === false && (
+                    <div className="rounded-xl border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium">
+                      Como o motorista não vai aguardar, a viagem será dividida em duas corridas
+                      (ida e volta). Motoristas diferentes podem aceitar cada uma, e o pagamento é
+                      feito separadamente.
+                    </div>
+                  )}
+
+
+
                   {routeReady && (
                     <div className="space-y-1 text-sm">
                       <p className="flex justify-between">
