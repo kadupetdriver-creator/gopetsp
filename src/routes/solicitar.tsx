@@ -265,8 +265,15 @@ function SolicitarPage() {
     ? [destination.lat, destination.lng]
     : null;
 
+  const returnIsAfterDeparture =
+    hasReturn !== true ||
+    (!!returnAt &&
+      !Number.isNaN(new Date(returnAt).getTime()) &&
+      new Date(returnAt).getTime() > new Date(scheduledAt).getTime());
+
   const returnAnswered =
-    hasReturn === false || (hasReturn === true && !!returnAt && driverWaits !== null);
+    hasReturn === false ||
+    (hasReturn === true && !!returnAt && returnIsAfterDeparture && driverWaits !== null);
 
   const resolvedStops = stops
     .map((s) => s.place)
