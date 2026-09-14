@@ -91,8 +91,7 @@ function PayoutPanel({ kind, reference }: { kind: PayoutKind; reference: Date | 
               Período do relatório
             </p>
             <p className="mt-1 font-semibold">
-              {format(new Date(data.startIso), "dd/MM/yyyy", { locale: ptBR })} até{" "}
-              {format(new Date(data.endIso), "dd/MM/yyyy", { locale: ptBR })}
+              {spDate(data.startIso)} até {spDate(data.endIso)}
             </p>
             <p className="text-xs text-muted-foreground">{descriptions[kind]}</p>
           </div>
@@ -168,6 +167,16 @@ function PayoutPanel({ kind, reference }: { kind: PayoutKind; reference: Date | 
       ))}
     </div>
   );
+}
+
+/** Datas sempre no fuso de São Paulo, independentemente do aparelho. */
+function spDate(iso: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(iso));
 }
 
 function downloadCsv(report: PayoutReport) {
