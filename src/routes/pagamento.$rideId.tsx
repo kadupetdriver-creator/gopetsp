@@ -118,6 +118,19 @@ function PagamentoCorrida() {
         acontece depois que a corrida é concluída.
       </p>
 
+      {returnRide && (
+        <div className="rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
+          Esta viagem foi dividida em <strong>duas corridas</strong>: a ida (esta) e a volta
+          ({formatBRL(returnRide.price_cents)}). Cada uma pode ser aceita por um motorista
+          diferente e é paga separadamente.
+        </div>
+      )}
+      {ride?.return_of_ride_id && (
+        <div className="rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
+          Esta é a <strong>corrida de volta</strong>, separada da ida e com motorista próprio.
+        </div>
+      )}
+
       {isLoading && <Skeleton className="h-40 w-full rounded-2xl" />}
 
       {ride && (
