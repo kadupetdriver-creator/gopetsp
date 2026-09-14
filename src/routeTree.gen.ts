@@ -26,6 +26,7 @@ import { Route as AdminAdministradoresRouteImport } from './routes/admin/adminis
 import { Route as AdminCorridasRouteImport } from './routes/admin/corridas'
 import { Route as AdminMotoristasRouteImport } from './routes/admin/motoristas'
 import { Route as AdminRelatoriosRouteImport } from './routes/admin/relatorios'
+import { Route as AdminRepassesRouteImport } from './routes/admin/repasses'
 import { Route as AdminTutoresRouteImport } from './routes/admin/tutores'
 import { Route as PagamentoRideIdRouteImport } from './routes/pagamento.$rideId'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
@@ -115,6 +116,11 @@ const AdminRelatoriosRoute = AdminRelatoriosRouteImport.update({
   path: '/relatorios',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminRepassesRoute = AdminRepassesRouteImport.update({
+  id: '/repasses',
+  path: '/repasses',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminTutoresRoute = AdminTutoresRouteImport.update({
   id: '/tutores',
   path: '/tutores',
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
+  '/admin/repasses': typeof AdminRepassesRoute
   '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByTo {
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
+  '/admin/repasses': typeof AdminRepassesRoute
   '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/admin': typeof AdminIndexRoute
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
+  '/admin/repasses': typeof AdminRepassesRoute
   '/admin/tutores': typeof AdminTutoresRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/admin/corridas'
     | '/admin/motoristas'
     | '/admin/relatorios'
+    | '/admin/repasses'
     | '/admin/tutores'
     | '/pagamento/$rideId'
     | '/admin/'
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
     | '/admin/corridas'
     | '/admin/motoristas'
     | '/admin/relatorios'
+    | '/admin/repasses'
     | '/admin/tutores'
     | '/pagamento/$rideId'
     | '/admin'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/admin/corridas'
     | '/admin/motoristas'
     | '/admin/relatorios'
+    | '/admin/repasses'
     | '/admin/tutores'
     | '/pagamento/$rideId'
     | '/admin/'
@@ -404,6 +416,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRelatoriosRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/repasses': {
+      id: '/admin/repasses'
+      path: '/repasses'
+      fullPath: '/admin/repasses'
+      preLoaderRoute: typeof AdminRepassesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/tutores': {
       id: '/admin/tutores'
       path: '/tutores'
@@ -433,6 +452,7 @@ interface AdminRouteRouteChildren {
   AdminCorridasRoute: typeof AdminCorridasRoute
   AdminMotoristasRoute: typeof AdminMotoristasRoute
   AdminRelatoriosRoute: typeof AdminRelatoriosRoute
+  AdminRepassesRoute: typeof AdminRepassesRoute
   AdminTutoresRoute: typeof AdminTutoresRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -442,6 +462,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminCorridasRoute: AdminCorridasRoute,
   AdminMotoristasRoute: AdminMotoristasRoute,
   AdminRelatoriosRoute: AdminRelatoriosRoute,
+  AdminRepassesRoute: AdminRepassesRoute,
   AdminTutoresRoute: AdminTutoresRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
