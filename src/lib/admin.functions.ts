@@ -437,9 +437,9 @@ export const adminGetReport = createServerFn({ method: "POST" })
   });
 
 /* ==========================================================================
- * Relatórios de repasse (pagamento manual feito pelos administradores)
- * Repasse 1 (gerado às sextas): corridas de segunda a quinta da semana.
- * Repasse 2 (gerado às segundas): corridas de sexta, sábado e domingo anteriores.
+ * Relatórios de ganhos (pagamento manual feito pelos administradores)
+ * Ganhos Seg-Qui (gerado às sextas): corridas de segunda a quinta da semana.
+ * Ganhos Sex-Dom (gerado às segundas): corridas de sexta, sábado e domingo anteriores.
  * ======================================================================= */
 
 const SP_OFFSET_HOURS = 3; // São Paulo = UTC-3
@@ -510,7 +510,7 @@ export function payoutWindow(kind: PayoutKind, reference: Date) {
   };
 }
 
-/** Relatório de repasse por motorista em um período fechado (somente admin). */
+/** Relatório de ganhos por motorista em um período fechado (somente admin). */
 export const adminGetPayoutReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
