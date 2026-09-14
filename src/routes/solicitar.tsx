@@ -656,7 +656,13 @@ function SolicitarPage() {
                       onChange={(e) => setReturnAt(e.target.value)}
                       required
                     />
+                    {!!returnAt && !returnIsAfterDeparture && (
+                      <p className="text-sm text-destructive">
+                        O horário do retorno deve ser depois da ida.
+                      </p>
+                    )}
                   </div>
+
 
                   <div className="space-y-3">
                     <Label>
