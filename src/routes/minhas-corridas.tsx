@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, MapPin, MessageCircle, PawPrint } from "lucide-react";
+import { AlertTriangle, CalendarClock, MapPin, MessageCircle, PawPrint } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleGuard } from "@/hooks/useRoleGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   coordsFor,
   estimateMinutes,
@@ -225,13 +226,34 @@ function MinhasCorridas() {
               </div>
 
               {isActiveStatus(ride.status) && (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <p className="text-sm font-medium">
                     Motorista a caminho · rastreio ao vivo
                     <span className="ml-2 font-normal text-muted-foreground">
                       chegada estimada em {estimateMinutes(Number(ride.distance_km))} min
                     </span>
                   </p>
+
+                  <Alert variant="warning" className="rounded-2xl">
+                    <AlertTriangle className="size-5 shrink-0" />
+                    <AlertTitle>Importante sobre o embarque</AlertTitle>
+                    <AlertDescription className="space-y-1">
+                      <p>Qualquer cancelamento acarretará na retenção de 20% do valor da corrida.</p>
+                      <p>
+                        Caso o cancelamento seja realizado com o motorista na porta da residência,
+                        o valor retido será de 100%.
+                      </p>
+                      <p>
+                        O tutor deverá aguardar o motorista na portaria ou na entrada da
+                        residência.
+                      </p>
+                      <p>
+                        O motorista deverá aguardar, no máximo, 10 minutos. Após esse período, a
+                        viagem será cancelada e o valor retido será de 100%.
+                      </p>
+                    </AlertDescription>
+                  </Alert>
+
                   <RideMap
                     origin={coordsFor(ride.origin_neighborhood, ride.origin_lat, ride.origin_lng)}
                     destination={coordsFor(
