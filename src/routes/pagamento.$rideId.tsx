@@ -165,7 +165,14 @@ function PagamentoCorrida() {
               Já estamos procurando um motorista parceiro. Você acompanha tudo em tempo real.
             </p>
             <div className="mt-2 flex flex-wrap justify-center gap-2">
-              <Button asChild className="rounded-full">
+              {returnRide && (
+                <Button asChild className="rounded-full">
+                  <Link to="/pagamento/$rideId" params={{ rideId: returnRide.id }}>
+                    Pagar corrida de volta ({formatBRL(returnRide.price_cents)})
+                  </Link>
+                </Button>
+              )}
+              <Button asChild variant={returnRide ? "secondary" : "default"} className="rounded-full">
                 <Link to="/minhas-corridas">Ver minhas corridas</Link>
               </Button>
               {ride && (
