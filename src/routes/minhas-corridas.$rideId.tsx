@@ -231,7 +231,7 @@ function RideDetails() {
         </div>
       </div>
 
-      {isActiveStatus(ride.status) && (
+      {(isActiveStatus(ride.status) || ride.status === "pending") && (
         <Alert variant="warning" className="mt-6 rounded-2xl">
           <AlertTriangle className="size-5 shrink-0" />
           <AlertTitle>Importante sobre o embarque</AlertTitle>
