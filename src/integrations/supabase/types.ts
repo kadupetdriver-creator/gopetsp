@@ -535,6 +535,7 @@ export type Database = {
           pet_size: string
           price_cents: number
           return_fee_cents: number
+          return_of_ride_id: string | null
           return_scheduled_at: string | null
           scheduled_at: string
           service_type: string
@@ -572,6 +573,7 @@ export type Database = {
           pet_size?: string
           price_cents?: number
           return_fee_cents?: number
+          return_of_ride_id?: string | null
           return_scheduled_at?: string | null
           scheduled_at?: string
           service_type?: string
@@ -609,6 +611,7 @@ export type Database = {
           pet_size?: string
           price_cents?: number
           return_fee_cents?: number
+          return_of_ride_id?: string | null
           return_scheduled_at?: string | null
           scheduled_at?: string
           service_type?: string
@@ -627,6 +630,13 @@ export type Database = {
             columns: ["pet_id"]
             isOneToOne: false
             referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rides_return_of_ride_id_fkey"
+            columns: ["return_of_ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
             referencedColumns: ["id"]
           },
         ]
@@ -752,6 +762,7 @@ export type Database = {
           pet_size: string
           price_cents: number
           return_fee_cents: number
+          return_of_ride_id: string | null
           return_scheduled_at: string | null
           scheduled_at: string
           service_type: string
@@ -854,6 +865,7 @@ export type Database = {
           pet_size: string
           price_cents: number
           return_fee_cents: number
+          return_of_ride_id: string | null
           return_scheduled_at: string | null
           scheduled_at: string
           service_type: string
