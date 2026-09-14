@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { RideMap } from "@/components/RideMap";
 import {
   activeStatuses,
@@ -95,6 +97,8 @@ export function ActiveRideTracker() {
               </span>
             </div>
 
+            <TutorWaitingAlert />
+
             <RideMap
               origin={coordsFor(ride.origin_neighborhood, ride.origin_lat, ride.origin_lng)}
               destination={coordsFor(
@@ -125,6 +129,27 @@ export function ActiveRideTracker() {
         </Card>
       ))}
     </div>
+  );
+}
+
+function TutorWaitingAlert() {
+  return (
+    <Alert variant="warning" className="rounded-2xl">
+      <AlertTriangle className="size-5 shrink-0" />
+      <AlertTitle>Importante sobre o embarque</AlertTitle>
+      <AlertDescription className="space-y-1">
+        <p>Qualquer cancelamento acarretará na retenção de 20% do valor da corrida.</p>
+        <p>
+          Caso o cancelamento seja realizado com o motorista na porta da residência, o valor
+          retido será de 100%.
+        </p>
+        <p>O tutor deverá aguardar o motorista na portaria ou na entrada da residência.</p>
+        <p>
+          O motorista deverá aguardar, no máximo, 10 minutos. Após esse período, a viagem será
+          cancelada e o valor retido será de 100%.
+        </p>
+      </AlertDescription>
+    </Alert>
   );
 }
 
