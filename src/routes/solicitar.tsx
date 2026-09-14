@@ -335,6 +335,8 @@ function SolicitarPage() {
       if (needsTrunk === null) throw new Error("Informe se deseja utilizar o porta-malas");
       if (hasReturn === null) throw new Error("Informe se haverá corrida de retorno");
       if (hasReturn && !returnAt) throw new Error("Informe o horário do retorno");
+      if (hasReturn && !returnIsAfterDeparture)
+        throw new Error("O horário do retorno deve ser depois da ida");
       if (hasReturn && driverWaits === null)
         throw new Error("Informe se o motorista deve aguardar no local");
       if (!stopsReady) throw new Error("Escolha as paradas nas sugestões de endereço");
