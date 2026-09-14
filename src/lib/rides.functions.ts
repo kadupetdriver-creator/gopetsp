@@ -216,48 +216,81 @@ export const createRide = createServerFn({ method: "POST" })
 
   })
 
-  .handler(async ({ data, context }): Promise<{ rideId: string; priceCents: number }> => {
-    const { data: me } = await context.supabase
-      .from("profiles")
-      .select("is_active")
-      .eq("id", context.userId)
-      .maybeSingle();
-    if (me && me.is_active === false) {
-      throw new Error("Sua conta está desativada. Fale com o suporte GoPet.");
-    }
-    const pets = await loadOwnedPets(context.supabase as any, context.userId, data.petIds);
-    const { drivingDistance } = await import("./routing.server");
-    const route = await drivingDistance(
-      [data.origin.lat, data.origin.lng],
-      [data.destination.lat, data.destination.lng],
-      data.stops.map((s) => [s.lat, s.lng] as [number, number]),
-    );
-    const price = calculateRidePrice(
-      route.distanceKm,
-      pets.map((p) => p.size),
-      data.needsTrunk,
-      {
-        hasReturn: data.extras.hasReturn,
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{
+      rideId: string;
+      priceCents: number;
+      returnRideId: string | null;
+      returnPriceCents: number;
+    }> => {
+      const { data: me } = await context.supabase
+        .from("profiles")
+        .select("is_active")
+        .eq("id", context.userId)
+        .maybeSingle();
+      if (me && me.is_active === false) {
+        throw new Error("Sua conta está desativada. Fale com o suporte GoPet.");
+      }
+      const pets = await loadOwnedPets(context.supabase as any, context.userId, data.petIds);
+      const { drivingDistance } = await import("./routing.server");
+      const route = await drivingDistance(
+        [data.origin.lat, data.origin.lng],
+        [data.destination.lat, data.destination.lng],
+        data.stops.map((s) => [s.lat, s.lng] as [number, number]),
+      );
+
+      // Retorno sem espera do motorista: a viagem vira DUAS corridas independentes
+      // (ida e volta), para que motoristas diferentes possam aceitar cada uma.
+      const splitReturn = data.extras.hasReturn && !data.extras.driverWaits;
+
+      const price = calculateRidePrice(route.distanceKm, pets.map((p) => p.size), data.needsTrunk, {
+        hasReturn: splitReturn ? false : data.extras.hasReturn,
         waitingMinutes: waitingMinutesFor(data.extras),
-      },
-    );
+      });
 
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      // ordena os nomes seguindo a mesma ordem de precificação (maior porte primeiro)
+      const orderedPets = [...pets].sort(
+        (a, b) =>
+          ["pequeno", "medio", "grande"].indexOf(b.size) -
+          ["pequeno", "medio", "grande"].indexOf(a.size),
+      );
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // ordena os nomes seguindo a mesma ordem de precificação (maior porte primeiro)
-    const orderedPets = [...pets].sort(
-      (a, b) =>
-        ["pequeno", "medio", "grande"].indexOf(b.size) -
-        ["pequeno", "medio", "grande"].indexOf(a.size),
-    );
-    const { data: ride, error } = await supabaseAdmin
-      .from("rides")
-      .insert({
+      const baseRow = {
         tutor_id: context.userId,
         pet_id: orderedPets[0]?.id ?? null,
         pet_name: orderedPets.map((p) => p.name).join(", "),
         pet_size: price.groupSize,
         service_type: data.serviceType,
+        notes: data.notes,
+        distance_km: route.distanceKm,
+        needs_trunk: data.needsTrunk,
+        trunk_fee_cents: price.trunkFeeCents,
+      };
+
+      const insertRide = async (row: Record<string, unknown>) => {
+        const { data: created, error } = await supabaseAdmin
+          .from("rides")
+          .insert(row as never)
+          .select("id")
+          .single();
+        if (error || !created) throw new Error(error?.message ?? "Não foi possível criar a corrida");
+        const rideId = created.id as string;
+        const { error: linkError } = await supabaseAdmin
+          .from("ride_pets")
+          .insert(orderedPets.map((p) => ({ ride_id: rideId, pet_id: p.id })));
+        if (linkError) {
+          await supabaseAdmin.from("rides").delete().eq("id", rideId);
+          throw new Error(linkError.message);
+        }
+        return rideId;
+      };
+
+      const rideId = await insertRide({
+        ...baseRow,
         origin_address: data.origin.address,
         origin_neighborhood: data.origin.neighborhood,
         origin_lat: data.origin.lat,
@@ -268,30 +301,46 @@ export const createRide = createServerFn({ method: "POST" })
         destination_lng: data.destination.lng,
         stops: data.stops,
         scheduled_at: data.scheduledAt,
-        notes: data.notes,
-        distance_km: route.distanceKm,
         price_cents: price.priceCents,
-        needs_trunk: data.needsTrunk,
-        trunk_fee_cents: price.trunkFeeCents,
-        has_return: data.extras.hasReturn,
-        return_scheduled_at: data.extras.returnScheduledAt,
+        has_return: splitReturn ? false : data.extras.hasReturn,
+        return_scheduled_at: splitReturn ? null : data.extras.returnScheduledAt,
         return_fee_cents: price.returnFeeCents,
         driver_waits: data.extras.driverWaits,
         waiting_minutes: price.waitingMinutes,
         waiting_fee_cents: price.waitingFeeCents,
+      });
 
-      })
-      .select("id")
-      .single();
-    if (error || !ride) throw new Error(error?.message ?? "Não foi possível criar a corrida");
+      let returnRideId: string | null = null;
+      if (splitReturn) {
+        returnRideId = await insertRide({
+          ...baseRow,
+          origin_address: data.destination.address,
+          origin_neighborhood: data.destination.neighborhood,
+          origin_lat: data.destination.lat,
+          origin_lng: data.destination.lng,
+          destination_address: data.origin.address,
+          destination_neighborhood: data.origin.neighborhood,
+          destination_lat: data.origin.lat,
+          destination_lng: data.origin.lng,
+          stops: [...data.stops].reverse(),
+          scheduled_at: data.extras.returnScheduledAt ?? data.scheduledAt,
+          price_cents: price.priceCents,
+          has_return: false,
+          return_scheduled_at: null,
+          return_fee_cents: 0,
+          driver_waits: false,
+          waiting_minutes: 0,
+          waiting_fee_cents: 0,
+          return_of_ride_id: rideId,
+        });
+      }
 
-    const { error: linkError } = await supabaseAdmin
-      .from("ride_pets")
-      .insert(orderedPets.map((p) => ({ ride_id: ride.id, pet_id: p.id })));
-    if (linkError) {
-      await supabaseAdmin.from("rides").delete().eq("id", ride.id);
-      throw new Error(linkError.message);
-    }
+      return {
+        rideId,
+        priceCents: price.priceCents,
+        returnRideId,
+        returnPriceCents: returnRideId ? price.priceCents : 0,
+      };
+    },
+  );
 
-    return { rideId: ride.id as string, priceCents: price.priceCents };
-  });
