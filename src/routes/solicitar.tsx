@@ -376,17 +376,19 @@ function SolicitarPage() {
 
         },
       });
-      return result.rideId;
+      return result;
     },
 
-    onSuccess: (rideId) => {
-      toast.success("Chamada criada! Confirme o pagamento para buscarmos um motorista.");
+    onSuccess: ({ rideId, returnRideId }) => {
+      toast.success(
+        returnRideId
+          ? "Criamos duas corridas: ida e volta. Cada uma pode ser aceita por um motorista diferente."
+          : "Chamada criada! Confirme o pagamento para buscarmos um motorista.",
+      );
       // Envia automaticamente o arquivo/resumo da corrida para a central no WhatsApp.
-      void dispatchRide({ data: { rideId } })
-        .then((r) => {
-          if (r.status === "sent") toast.success("Corrida encaminhada para a central.");
-        })
-        .catch(() => undefined);
+      for (const id of [rideId, returnRideId].filter((v): v is string => !!v)) {
+        void dispatchRide({ data: { rideId: id } }).catch(() => undefined);
+      }
       void qc.invalidateQueries({ queryKey: ["rides"] });
       void navigate({ to: "/pagamento/$rideId", params: { rideId } });
     },
