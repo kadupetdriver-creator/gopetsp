@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, BellRing } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -33,10 +33,11 @@ type ActiveRide = {
   driver_lat: number | null;
   driver_lng: number | null;
   location_updated_at: string | null;
+  arrived_at: string | null;
 };
 
 const cols =
-  "id, pet_name, status, distance_km, origin_neighborhood, destination_neighborhood, origin_lat, origin_lng, destination_lat, destination_lng, driver_lat, driver_lng, location_updated_at";
+  "id, pet_name, status, distance_km, origin_neighborhood, destination_neighborhood, origin_lat, origin_lng, destination_lat, destination_lng, driver_lat, driver_lng, location_updated_at, arrived_at";
 
 /** Corrida aceita do tutor: fundo destacado e rastreio ao vivo do motorista. */
 export function ActiveRideTracker() {
@@ -96,6 +97,17 @@ export function ActiveRideTracker() {
                 {statusLabels[ride.status]}
               </span>
             </div>
+
+            {ride.arrived_at && (
+              <Alert className="rounded-2xl border-success bg-success/15">
+                <BellRing className="size-5 shrink-0 text-success" />
+                <AlertTitle className="text-success">Seu motorista chegou!</AlertTitle>
+                <AlertDescription>
+                  Ele aguarda na portaria desde {formatDateTime(ride.arrived_at)} — a espera é de,
+                  no máximo, 10 minutos.
+                </AlertDescription>
+              </Alert>
+            )}
 
             <TutorWaitingAlert />
 
