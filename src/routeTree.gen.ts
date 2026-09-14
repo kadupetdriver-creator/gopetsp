@@ -28,6 +28,7 @@ import { Route as AdminMotoristasRouteImport } from './routes/admin/motoristas'
 import { Route as AdminRelatoriosRouteImport } from './routes/admin/relatorios'
 import { Route as AdminRepassesRouteImport } from './routes/admin/repasses'
 import { Route as AdminTutoresRouteImport } from './routes/admin/tutores'
+import { Route as MinhasCorridasRideIdRouteImport } from './routes/minhas-corridas.$rideId'
 import { Route as PagamentoRideIdRouteImport } from './routes/pagamento.$rideId'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
@@ -126,6 +127,11 @@ const AdminTutoresRoute = AdminTutoresRouteImport.update({
   path: '/tutores',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const MinhasCorridasRideIdRoute = MinhasCorridasRideIdRouteImport.update({
+  id: '/$rideId',
+  path: '/$rideId',
+  getParentRoute: () => MinhasCorridasRoute,
+} as any)
 const PagamentoRideIdRoute = PagamentoRideIdRouteImport.update({
   id: '/pagamento/$rideId',
   path: '/pagamento/$rideId',
@@ -143,7 +149,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/creditos': typeof CreditosRoute
-  '/minhas-corridas': typeof MinhasCorridasRoute
+  '/minhas-corridas': typeof MinhasCorridasRouteWithChildren
   '/motorista': typeof MotoristaRoute
   '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/repasses': typeof AdminRepassesRoute
   '/admin/tutores': typeof AdminTutoresRoute
+  '/minhas-corridas/$rideId': typeof MinhasCorridasRideIdRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -165,7 +172,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/creditos': typeof CreditosRoute
-  '/minhas-corridas': typeof MinhasCorridasRoute
+  '/minhas-corridas': typeof MinhasCorridasRouteWithChildren
   '/motorista': typeof MotoristaRoute
   '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/repasses': typeof AdminRepassesRoute
   '/admin/tutores': typeof AdminTutoresRoute
+  '/minhas-corridas/$rideId': typeof MinhasCorridasRideIdRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -189,7 +197,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/creditos': typeof CreditosRoute
-  '/minhas-corridas': typeof MinhasCorridasRoute
+  '/minhas-corridas': typeof MinhasCorridasRouteWithChildren
   '/motorista': typeof MotoristaRoute
   '/pagamentos': typeof PagamentosRoute
   '/perfil': typeof PerfilRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/repasses': typeof AdminRepassesRoute
   '/admin/tutores': typeof AdminTutoresRoute
+  '/minhas-corridas/$rideId': typeof MinhasCorridasRideIdRoute
   '/pagamento/$rideId': typeof PagamentoRideIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -228,6 +237,7 @@ export interface FileRouteTypes {
     | '/admin/relatorios'
     | '/admin/repasses'
     | '/admin/tutores'
+    | '/minhas-corridas/$rideId'
     | '/pagamento/$rideId'
     | '/admin/'
     | '/api/public/payments/webhook'
@@ -250,6 +260,7 @@ export interface FileRouteTypes {
     | '/admin/relatorios'
     | '/admin/repasses'
     | '/admin/tutores'
+    | '/minhas-corridas/$rideId'
     | '/pagamento/$rideId'
     | '/admin'
     | '/api/public/payments/webhook'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/admin/relatorios'
     | '/admin/repasses'
     | '/admin/tutores'
+    | '/minhas-corridas/$rideId'
     | '/pagamento/$rideId'
     | '/admin/'
     | '/api/public/payments/webhook'
@@ -283,7 +295,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CreditosRoute: typeof CreditosRoute
-  MinhasCorridasRoute: typeof MinhasCorridasRoute
+  MinhasCorridasRoute: typeof MinhasCorridasRouteWithChildren
   MotoristaRoute: typeof MotoristaRoute
   PagamentosRoute: typeof PagamentosRoute
   PerfilRoute: typeof PerfilRoute
@@ -430,6 +442,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTutoresRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/minhas-corridas/$rideId': {
+      id: '/minhas-corridas/$rideId'
+      path: '/$rideId'
+      fullPath: '/minhas-corridas/$rideId'
+      preLoaderRoute: typeof MinhasCorridasRideIdRouteImport
+      parentRoute: typeof MinhasCorridasRoute
+    }
     '/pagamento/$rideId': {
       id: '/pagamento/$rideId'
       path: '/pagamento/$rideId'
@@ -471,12 +490,24 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
 )
 
+interface MinhasCorridasRouteChildren {
+  MinhasCorridasRideIdRoute: typeof MinhasCorridasRideIdRoute
+}
+
+const MinhasCorridasRouteChildren: MinhasCorridasRouteChildren = {
+  MinhasCorridasRideIdRoute: MinhasCorridasRideIdRoute,
+}
+
+const MinhasCorridasRouteWithChildren = MinhasCorridasRoute._addFileChildren(
+  MinhasCorridasRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CreditosRoute: CreditosRoute,
-  MinhasCorridasRoute: MinhasCorridasRoute,
+  MinhasCorridasRoute: MinhasCorridasRouteWithChildren,
   MotoristaRoute: MotoristaRoute,
   PagamentosRoute: PagamentosRoute,
   PerfilRoute: PerfilRoute,
