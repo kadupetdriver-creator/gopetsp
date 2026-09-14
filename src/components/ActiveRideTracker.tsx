@@ -132,4 +132,25 @@ export function ActiveRideTracker() {
   );
 }
 
+function TutorWaitingAlert() {
+  return (
+    <Alert variant="warning" className="rounded-2xl">
+      <AlertTriangle className="size-5 shrink-0" />
+      <AlertTitle>Importante sobre o embarque</AlertTitle>
+      <AlertDescription className="space-y-1">
+        <p>Qualquer cancelamento acarretará na retenção de 20% do valor da corrida.</p>
+        <p>
+          Caso o cancelamento seja realizado com o motorista na porta da residência, o valor
+          retido será de 100%.
+        </p>
+        <p>O tutor deverá aguardar o motorista na portaria ou na entrada da residência.</p>
+        <p>
+          O motorista deverá aguardar, no máximo, 10 minutos. Após esse período, a viagem será
+          cancelada e o valor retido será de 100%.
+        </p>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
 export default ActiveRideTracker;
