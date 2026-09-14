@@ -26,6 +26,7 @@ import {
 import { RideMap } from "@/components/RideMap";
 import { cn } from "@/lib/utils";
 import { PetDetails, type PetInfo } from "@/components/PetDetails";
+import { AddressLink } from "@/components/AddressLink";
 import { StatusCard } from "@/routes/seja-motorista";
 import type { DriverStatus } from "@/lib/drivers";
 
@@ -71,11 +72,13 @@ type Ride = {
   origin_lng: number | null;
   destination_lat: number | null;
   destination_lng: number | null;
+  arrived_at: string | null;
+  stops: { address: string; lat: number; lng: number }[] | null;
   ride_pets: { pets: PetInfo | null }[] | null;
 };
 
 const selectCols =
-  "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
+  "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, stops, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
 type Application = {
   id: string;
@@ -172,6 +175,24 @@ function MotoristaPage() {
       ),
   });
 
+
+  // "Cheguei": registra o horário de chegada e avisa o tutor em tempo real.
+  const arrive = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc("mark_driver_arrived", { _ride_id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Tutor avisado de que você chegou.");
+      void qc.invalidateQueries({ queryKey: ["rides"] });
+    },
+    onError: (error) =>
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : "Não foi possível avisar a chegada.",
+      ),
+  });
 
   const open = rides?.filter((r) => r.status === "pending") ?? [];
 
@@ -300,12 +321,38 @@ function MotoristaPage() {
           {active.map((ride) => (
             <RideCard key={ride.id} ride={ride} showMap>
               {ride.status === "accepted" && (
-                <Button
-                  onClick={() => update.mutate({ id: ride.id, status: "in_progress" })}
-                  disabled={update.isPending}
-                >
-                  Iniciar transporte
-                </Button>
+                <>
+                  <Button
+                    onClick={() => update.mutate({ id: ride.id, status: "en_route" })}
+                    disabled={update.isPending}
+                  >
+                    Estou a caminho
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => update.mutate({ id: ride.id, status: "in_progress" })}
+                    disabled={update.isPending}
+                  >
+                    Iniciar transporte
+                  </Button>
+                </>
+              )}
+              {ride.status === "en_route" && (
+                <>
+                  <Button
+                    onClick={() => arrive.mutate(ride.id)}
+                    disabled={arrive.isPending || !!ride.arrived_at}
+                  >
+                    {ride.arrived_at ? "Chegada avisada" : "Cheguei"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => update.mutate({ id: ride.id, status: "in_progress" })}
+                    disabled={update.isPending}
+                  >
+                    Iniciar transporte
+                  </Button>
+                </>
               )}
               {ride.status === "in_progress" && (
                 <Button
@@ -557,22 +604,34 @@ function RideCard({
         )}
 
         <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
-          <p className="flex items-start gap-2">
-            <MapPin className="mt-0.5 size-4 shrink-0 text-primary-ink" />
-            <span>
-              <strong className="font-medium text-foreground">Embarque:</strong>{" "}
-              {ride.origin_address}
-              {ride.origin_neighborhood ? ` · ${ride.origin_neighborhood}` : ""}
-            </span>
-          </p>
-          <p className="flex items-start gap-2">
-            <MapPin className="mt-0.5 size-4 shrink-0 text-accent" />
-            <span>
-              <strong className="font-medium text-foreground">Destino:</strong>{" "}
-              {ride.destination_address}
-              {ride.destination_neighborhood ? ` · ${ride.destination_neighborhood}` : ""}
-            </span>
-          </p>
+          <div className="space-y-2 sm:col-span-2">
+            <AddressLink
+              label="Embarque"
+              address={ride.origin_address}
+              lat={ride.origin_lat}
+              lng={ride.origin_lng}
+            />
+            {(ride.stops ?? []).map((stop, i) => (
+              <AddressLink
+                key={`${stop.address}-${i}`}
+                label={`Parada ${i + 1}`}
+                address={stop.address}
+                lat={stop.lat}
+                lng={stop.lng}
+                tone="stop"
+              />
+            ))}
+            <AddressLink
+              label="Destino"
+              address={ride.destination_address}
+              lat={ride.destination_lat}
+              lng={ride.destination_lng}
+              tone="destination"
+            />
+            <p className="text-xs text-muted-foreground">
+              Toque no endereço para abrir a navegação no Waze ou no Google Maps.
+            </p>
+          </div>
           <p className="flex items-center gap-2">
             <CalendarClock className="size-4 shrink-0 text-primary-ink" />
             {formatDateTime(ride.scheduled_at)}
