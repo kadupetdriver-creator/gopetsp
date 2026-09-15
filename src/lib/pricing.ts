@@ -4,7 +4,7 @@
  */
 
 export const PRICE_BASE_CENTS = 1200;
-export const PRICE_PER_KM_CENTS = 290;
+export const PRICE_PER_KM_CENTS = 420;
 export const TRUNK_FEE_CENTS = 500;
 /** Pets adicionais pagam 40% do valor integral do próprio porte. */
 export const EXTRA_PET_FACTOR = 0.4;
