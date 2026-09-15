@@ -147,6 +147,7 @@ export const quoteRide = createServerFn({ method: "POST" })
         hasReturn: data.extras.hasReturn,
         waitingMinutes: waitingMinutesFor(data.extras),
       },
+      route.durationMinutes,
     );
     return {
       distanceKm: route.distanceKm,
@@ -249,7 +250,7 @@ export const createRide = createServerFn({ method: "POST" })
       const price = calculateRidePrice(route.distanceKm, pets.map((p) => p.size), data.needsTrunk, {
         hasReturn: splitReturn ? false : data.extras.hasReturn,
         waitingMinutes: waitingMinutesFor(data.extras),
-      });
+      }, route.durationMinutes);
 
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       // ordena os nomes seguindo a mesma ordem de precificação (maior porte primeiro)
