@@ -775,7 +775,9 @@ function SolicitarPage() {
                 <p className="text-xs uppercase tracking-wide opacity-80">Valor estimado</p>
                 <p className="mt-1 text-3xl font-semibold">{formatBRL(price)}</p>
                 <p className="mt-1 text-xs opacity-90">
-                  {routeReady ? `${distance} km` : "— km"} ·{" "}
+                  {routeReady
+                    ? `${distance} km · ~${quoteQuery.data!.durationMinutes} min`
+                    : "— km"} ·{" "}
                   {petSizes.find((s) => s.value === groupSize)?.label} · {petCount}{" "}
                   {petCount > 1 ? "pets" : "pet"}
                   {needsTrunk && " · porta-malas"}

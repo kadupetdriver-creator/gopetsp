@@ -5,6 +5,8 @@
 
 export const PRICE_BASE_CENTS = 1200;
 export const PRICE_PER_KM_CENTS = 420;
+/** Tempo estimado de viagem: R$ 0,75 por minuto (estilo apps de corrida). */
+export const PRICE_PER_MINUTE_CENTS = 75;
 export const TRUNK_FEE_CENTS = 500;
 /** Pets adicionais pagam 40% do valor integral do próprio porte. */
 export const EXTRA_PET_FACTOR = 0.4;
@@ -21,9 +23,14 @@ export function sizeFactor(size: string): number {
   return SIZE_FACTORS[size] ?? 1;
 }
 
-/** Valor integral de um pet, dado o porte e a distância por vias. */
-export function fullPetPriceCents(distanceKm: number, size: string): number {
-  return Math.round((PRICE_BASE_CENTS + distanceKm * PRICE_PER_KM_CENTS) * sizeFactor(size));
+/** Valor integral de um pet, dado o porte, a distância por vias e o tempo estimado. */
+export function fullPetPriceCents(distanceKm: number, size: string, durationMinutes = 0): number {
+  return Math.round(
+    (PRICE_BASE_CENTS +
+      distanceKm * PRICE_PER_KM_CENTS +
+      Math.max(0, Math.ceil(durationMinutes)) * PRICE_PER_MINUTE_CENTS) *
+      sizeFactor(size),
+  );
 }
 
 /** Espera do motorista no local: R$ 0,75 por minuto entre a ida e o retorno. */
@@ -64,10 +71,12 @@ export function calculateRidePrice(
   petSizes: string[],
   needsTrunk: boolean,
   extras: RideExtras = {},
+  durationMinutes = 0,
 ): PriceBreakdown {
   const ordered = [...petSizes].sort((a, b) => SIZE_RANK.indexOf(b) - SIZE_RANK.indexOf(a));
   const subtotal = ordered.reduce(
-    (sum, size, i) => sum + fullPetPriceCents(distanceKm, size) * (i === 0 ? 1 : EXTRA_PET_FACTOR),
+    (sum, size, i) =>
+      sum + fullPetPriceCents(distanceKm, size, durationMinutes) * (i === 0 ? 1 : EXTRA_PET_FACTOR),
     0,
   );
   const trunkFeeCents = needsTrunk ? TRUNK_FEE_CENTS : 0;
