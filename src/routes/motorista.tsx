@@ -84,6 +84,7 @@ type Application = {
   id: string;
   status: DriverStatus;
   rejection_reason: string | null;
+  pix_key: string | null;
   // O vínculo é 1:1, então o embed pode voltar como objeto ou lista.
   vehicles: VehicleInfo | VehicleInfo[] | null;
 };
@@ -109,7 +110,7 @@ function MotoristaPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("drivers")
-        .select("id, status, rejection_reason, vehicles(plate, model, brand, year, color, vehicle_type)")
+        .select("id, status, rejection_reason, pix_key, vehicles(plate, model, brand, year, color, vehicle_type)")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
