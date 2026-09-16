@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet } from "lucide-react";
+import { BellRing, CalendarClock, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -254,6 +254,61 @@ function MotoristaPage() {
   const rawVehicles = application?.vehicles ?? null;
   const vehicle = (Array.isArray(rawVehicles) ? (rawVehicles[0] ?? null) : rawVehicles) ?? null;
 
+  // Lembrete: avisa o motorista 30 minutos antes do horário de cada corrida aceita.
+  const [tick, setTick] = useState(0);
+  const remindedRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setTick((t) => t + 1), 30000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const upcoming = active.filter((r) => {
+    if (r.status === "in_progress") return false;
+    const diff = new Date(r.scheduled_at).getTime() - Date.now();
+    return diff > 0 && diff <= 30 * 60 * 1000;
+  });
+
+  useEffect(() => {
+    for (const ride of upcoming) {
+      if (remindedRef.current.has(ride.id)) continue;
+      remindedRef.current.add(ride.id);
+      const minutes = Math.max(
+        1,
+        Math.round((new Date(ride.scheduled_at).getTime() - Date.now()) / 60000),
+      );
+      toast.warning(`Sua corrida começa em ${minutes} min`, {
+        description: `${ride.pet_name} · ${ride.origin_address}`,
+        duration: 15000,
+      });
+      try {
+        navigator.vibrate?.([300, 120, 300]);
+      } catch {
+        /* dispositivo sem vibração */
+      }
+      try {
+        const Ctx =
+          window.AudioContext ??
+          (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        if (Ctx) {
+          const ctx = new Ctx();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.value = 660;
+          gain.gain.value = 0.15;
+          osc.connect(gain).connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.5);
+          osc.onended = () => void ctx.close();
+        }
+      } catch {
+        /* som bloqueado pelo navegador */
+      }
+    }
+    // tick força a reavaliação periódica dos horários
+  }, [upcoming, tick]);
+
   if (loading || !user || !profile || appLoading) {
     return (
       <div className="mx-auto w-full max-w-5xl px-4 py-8">
@@ -284,6 +339,21 @@ function MotoristaPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Chamadas de transporte de pets em São Paulo, atualizadas em tempo real.
       </p>
+
+      {upcoming.length > 0 && (
+        <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
+          <p className="flex items-center gap-2 font-semibold">
+            <BellRing className="size-5" /> Corrida em menos de 30 minutos
+          </p>
+          <ul className="mt-2 space-y-1 text-sm">
+            {upcoming.map((r) => (
+              <li key={r.id}>
+                {formatDateTime(r.scheduled_at)} · {r.pet_name} · {r.origin_address}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="mt-6">
         <StatCard icon={Wallet} label="Ganhos concluídos" value={formatBRL(earnings)} />
