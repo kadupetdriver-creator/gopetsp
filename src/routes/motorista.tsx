@@ -285,16 +285,14 @@ function MotoristaPage() {
         Chamadas de transporte de pets em São Paulo, atualizadas em tempo real.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <StatCard icon={RouteIcon} label="Chamadas abertas" value={String(open.length)} />
-        <StatCard icon={CalendarClock} label="Minhas corridas" value={String(mine.length)} />
+      <div className="mt-6">
         <StatCard icon={Wallet} label="Ganhos concluídos" value={formatBRL(earnings)} />
       </div>
 
       <Tabs defaultValue="abertas" className="mt-8">
         <TabsList className="flex h-auto w-full flex-wrap justify-start">
-          <TabsTrigger value="abertas">Chamadas abertas</TabsTrigger>
-          <TabsTrigger value="minhas">Minhas corridas</TabsTrigger>
+          <TabsTrigger value="abertas">Chamadas abertas ({open.length})</TabsTrigger>
+          <TabsTrigger value="minhas">Minhas corridas ({active.length})</TabsTrigger>
           <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
           <TabsTrigger value="veiculo">Meu veículo</TabsTrigger>
         </TabsList>
