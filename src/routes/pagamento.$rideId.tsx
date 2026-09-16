@@ -193,102 +193,60 @@ function PagamentoCorrida() {
         </Card>
       ) : (
         ride && (
-          <>
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="text-lg">Como você quer pagar?</CardTitle>
-                <CardDescription>Use seu saldo GoPet ou cartão de crédito.</CardDescription>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3">
-                {(
-                  [
-                    {
-                      id: "credits",
-                      label: "Saldo",
-                      icon: Wallet,
-                      hint: `Disponível ${formatBRL(balanceCents)}`,
-                    },
-                    { id: "card", label: "Cartão", icon: CreditCard, hint: "Crédito à vista" },
-                  ] as const
-                ).map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => setMethod(option.id)}
-                    className={`flex flex-col items-center gap-1 rounded-2xl border-2 px-4 py-4 text-sm font-medium transition ${
-                      method === option.id
-                        ? "border-primary bg-primary/10 text-foreground"
-                        : "border-border text-muted-foreground hover:border-primary/50"
-                    }`}
-                  >
-                    <option.icon className="size-5" />
-                    {option.label}
-                    <span className="text-xs font-normal text-muted-foreground">{option.hint}</span>
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
-            {method === "credits" ? (
-              <Card className="shadow-soft">
-                <CardContent className="space-y-3 py-6 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Saldo disponível</span>
-                    <span className="font-medium">{formatBRL(balanceCents)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Valor da corrida</span>
-                    <span className="font-medium">{formatBRL(amount)}</span>
-                  </div>
-                  {balanceCents < amount ? (
-                    <div className="space-y-3 pt-1">
-                      <p className="text-sm text-destructive">
-                        Saldo insuficiente. Faltam {formatBRL(amount - balanceCents)}.
-                      </p>
-                      <Button asChild variant="secondary" className="w-full rounded-full">
-                        <Link to="/creditos">Recarregar créditos</Link>
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      className="w-full rounded-full"
-                      disabled={payingWithCredits}
-                      onClick={async () => {
-                        setPayingWithCredits(true);
-                        const result = await payRideWithCredits({ data: { rideId } });
-                        setPayingWithCredits(false);
-                        if ("error" in result) {
-                          toast.error(result.error);
-                          return;
-                        }
-                        void refetchBalance();
-                        toast.success("Corrida paga com seu saldo GoPet.");
-                        void navigate({
-                          to: "/minhas-corridas/$rideId",
-                          params: { rideId },
-                        });
-                      }}
-                    >
-                      Pagar {formatBRL(amount)} com saldo
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ) : (
-              <RideCheckout
-                key={method}
-                rideId={rideId}
-                returnUrl={returnUrlFor(rideId)}
-                method={method}
-              />
-            )}
-          </>
+          <Card className="shadow-soft">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Wallet className="size-5 text-primary-ink" /> Pagamento com saldo GoPet
+              </CardTitle>
+              <CardDescription>
+                As corridas são pagas exclusivamente com o saldo da sua conta.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Saldo disponível</span>
+                <span className="font-medium">{formatBRL(balanceCents)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Valor da corrida</span>
+                <span className="font-medium">{formatBRL(amount)}</span>
+              </div>
+              {balanceCents < amount ? (
+                <div className="space-y-3 pt-1">
+                  <p className="text-sm text-destructive">
+                    Saldo insuficiente. Faltam {formatBRL(amount - balanceCents)}.
+                  </p>
+                  <Button asChild variant="secondary" className="w-full rounded-full">
+                    <Link to="/creditos">Inserir saldo</Link>
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  className="w-full rounded-full"
+                  disabled={payingWithCredits}
+                  onClick={async () => {
+                    setPayingWithCredits(true);
+                    const result = await payRideWithCredits({ data: { rideId } });
+                    setPayingWithCredits(false);
+                    if ("error" in result) {
+                      toast.error(result.error);
+                      return;
+                    }
+                    void refetchBalance();
+                    toast.success("Corrida paga com seu saldo GoPet.");
+                    void navigate({
+                      to: "/minhas-corridas/$rideId",
+                      params: { rideId },
+                    });
+                  }}
+                >
+                  Pagar {formatBRL(amount)} com saldo
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         )
       )}
     </div>
   );
-}
-
-function returnUrlFor(rideId: string) {
-  const origin = typeof window === "undefined" ? "" : window.location.origin;
-  return `${origin}/pagamento/${rideId}?session_id={CHECKOUT_SESSION_ID}`;
 }
