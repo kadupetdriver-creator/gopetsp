@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -84,6 +85,7 @@ type Application = {
   id: string;
   status: DriverStatus;
   rejection_reason: string | null;
+  pix_key: string | null;
   // O vínculo é 1:1, então o embed pode voltar como objeto ou lista.
   vehicles: VehicleInfo | VehicleInfo[] | null;
 };
@@ -109,7 +111,7 @@ function MotoristaPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("drivers")
-        .select("id, status, rejection_reason, vehicles(plate, model, brand, year, color, vehicle_type)")
+        .select("id, status, rejection_reason, pix_key, vehicles(plate, model, brand, year, color, vehicle_type)")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
@@ -192,6 +194,36 @@ function MotoristaPage() {
         error instanceof Error && error.message
           ? error.message
           : "Não foi possível avisar a chegada.",
+      ),
+  });
+
+  // Chave Pix para repasses: motoristas já cadastrados informam/editam por aqui.
+  const [pixKey, setPixKey] = useState("");
+  useEffect(() => {
+    if (application) setPixKey(application.pix_key ?? "");
+  }, [application]);
+
+  const savePixKey = useMutation({
+    mutationFn: async () => {
+      const key = pixKey.trim();
+      if (key.length < 5) {
+        throw new Error("Informe uma chave Pix válida (CPF, e-mail, telefone ou chave aleatória).");
+      }
+      const { error } = await supabase
+        .from("drivers")
+        .update({ pix_key: key })
+        .eq("id", application!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Chave Pix salva. Os repasses serão enviados para ela.");
+      void qc.invalidateQueries({ queryKey: ["driver-application"] });
+    },
+    onError: (error) =>
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : "Não foi possível salvar a chave Pix.",
       ),
   });
 
@@ -530,6 +562,45 @@ function MotoristaPage() {
           ) : (
             <EmptyState text="Nenhum veículo encontrado no seu cadastro." />
           )}
+
+          <Card className="mt-4 shadow-soft">
+            <CardContent className="py-6">
+              <div className="flex items-center gap-3">
+                <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary-ink">
+                  <Wallet className="size-5" />
+                </span>
+                <div>
+                  <p className="text-lg font-semibold">Chave Pix para repasses</p>
+                  <p className="text-sm text-muted-foreground">
+                    Os repasses dos seus ganhos são enviados para essa chave.
+                  </p>
+                </div>
+              </div>
+              <form
+                className="mt-4 flex flex-col gap-3 sm:flex-row"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  savePixKey.mutate();
+                }}
+              >
+                <Input
+                  value={pixKey}
+                  onChange={(e) => setPixKey(e.target.value)}
+                  placeholder="CPF, e-mail, telefone ou chave aleatória"
+                  aria-label="Chave Pix"
+                  required
+                />
+                <Button type="submit" disabled={savePixKey.isPending}>
+                  {savePixKey.isPending ? "Salvando..." : "Salvar chave Pix"}
+                </Button>
+              </form>
+              {!application?.pix_key && (
+                <p className="mt-3 text-sm font-medium text-destructive">
+                  Você ainda não informou uma chave Pix. Cadastre para receber seus repasses.
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
