@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Pencil, Search, XCircle } from "lucide-react";
+import { Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL, formatDateTime, serviceTypes, statusLabels, statusStyles, type RideStatus } from "@/lib/rides";
@@ -62,6 +62,7 @@ function AdminCorridasPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"todas" | "andamento" | "completed" | "cancelled">("todas");
   const [editing, setEditing] = useState<Ride | null>(null);
+  const [forwarding, setForwarding] = useState<Ride | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-rides"],
