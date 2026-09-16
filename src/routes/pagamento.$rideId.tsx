@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, CreditCard, MessageCircle, QrCode, ShieldCheck, Wallet } from "lucide-react";
+import { CheckCircle2, MessageCircle, ShieldCheck, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleGuard } from "@/hooks/useRoleGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RideCheckout } from "@/components/RideCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { formatBRL, rideWhatsAppUrl } from "@/lib/rides";
 import { getStripeEnvironment } from "@/lib/stripe";
