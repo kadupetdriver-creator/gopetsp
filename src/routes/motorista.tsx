@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -193,6 +194,36 @@ function MotoristaPage() {
         error instanceof Error && error.message
           ? error.message
           : "Não foi possível avisar a chegada.",
+      ),
+  });
+
+  // Chave Pix para repasses: motoristas já cadastrados informam/editam por aqui.
+  const [pixKey, setPixKey] = useState("");
+  useEffect(() => {
+    if (application) setPixKey(application.pix_key ?? "");
+  }, [application]);
+
+  const savePixKey = useMutation({
+    mutationFn: async () => {
+      const key = pixKey.trim();
+      if (key.length < 5) {
+        throw new Error("Informe uma chave Pix válida (CPF, e-mail, telefone ou chave aleatória).");
+      }
+      const { error } = await supabase
+        .from("drivers")
+        .update({ pix_key: key })
+        .eq("id", application!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Chave Pix salva. Os repasses serão enviados para ela.");
+      void qc.invalidateQueries({ queryKey: ["driver-application"] });
+    },
+    onError: (error) =>
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : "Não foi possível salvar a chave Pix.",
       ),
   });
 
