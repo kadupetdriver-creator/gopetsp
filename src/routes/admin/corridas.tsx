@@ -344,3 +344,76 @@ function EditRideDialog({
     </Dialog>
   );
 }
+
+/** Encaminhamento manual: o administrador atribui a corrida a um motorista, mesmo com conflito de horário. */
+function ForwardRideDialog({
+  ride,
+  people,
+  onClose,
+  onSaved,
+}: {
+  ride: Ride;
+  people: Person[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [driverId, setDriverId] = useState(ride.driver_id ?? "");
+  const drivers = people.filter((p) => p.role === "driver");
+
+  const send = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("rides")
+        .update({ driver_id: driverId, status: "accepted" })
+        .eq("id", ride.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Corrida encaminhada ao motorista.");
+      onSaved();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível encaminhar."),
+  });
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Encaminhar corrida</DialogTitle>
+          <DialogDescription>
+            A corrida é atribuída diretamente ao motorista escolhido, mesmo que ele já tenha outra corrida no mesmo
+            horário.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-3">
+          <Field label="Motorista">
+            <Select value={driverId} onValueChange={setDriverId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o motorista" />
+              </SelectTrigger>
+              <SelectContent>
+                {drivers.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.full_name || p.id.slice(0, 8)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <div className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
+            {formatDateTime(ride.scheduled_at)} · {ride.pet_name} · {ride.origin_address} → {ride.destination_address}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button disabled={!driverId || send.isPending} onClick={() => send.mutate()}>
+            {send.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            Encaminhar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
