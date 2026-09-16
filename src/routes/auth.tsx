@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PasswordInput } from "@/components/PasswordInput";
+import { isValidCPF, maskCPF, onlyDigits } from "@/lib/drivers";
 
 const searchSchema = z.object({
   papel: z.enum(["tutor", "motorista"]).optional(),
@@ -47,6 +48,7 @@ function AuthPage() {
   const { user, profile, loading } = useAuth();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -61,13 +63,26 @@ function AuthPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cpfDigits = onlyDigits(cpf);
+    if (!isValidCPF(cpfDigits)) {
+      toast.error("CPF inválido. Confira os números digitados.");
+      return;
+    }
     setBusy(true);
+    const { data: disponivel, error: cpfError } = await supabase.rpc("cpf_disponivel", { _cpf: cpfDigits });
+    if (cpfError || disponivel === false) {
+      setBusy(false);
+      toast.error(
+        cpfError ? "Não foi possível validar o CPF agora." : "Já existe uma conta cadastrada com este CPF.",
+      );
+      return;
+    }
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: fullName, phone, role: "tutor" },
+        data: { full_name: fullName, phone, cpf: cpfDigits, role: "tutor" },
       },
     });
     setBusy(false);
@@ -153,6 +168,20 @@ function AuthPage() {
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome completo</Label>
                   <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cpf-signup">CPF</Label>
+                  <Input
+                    id="cpf-signup"
+                    inputMode="numeric"
+                    placeholder="000.000.000-00"
+                    value={maskCPF(cpf)}
+                    onChange={(e) => setCpf(maskCPF(e.target.value))}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Cada CPF pode ter apenas uma conta GoPet.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">WhatsApp</Label>
