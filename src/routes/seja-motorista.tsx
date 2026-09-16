@@ -473,7 +473,6 @@ function PersonalStep({
             label="Chave Pix (para repasses)"
             id="pix"
             className="sm:col-span-2"
-            hint="CPF, e-mail, telefone ou chave aleatória. Os repasses dos seus ganhos serão enviados para esta chave."
           >
             <Input
               id="pix"
@@ -482,6 +481,10 @@ function PersonalStep({
               onChange={(e) => set("pix_key", e.target.value)}
               required
             />
+            <p className="mt-1 text-xs text-muted-foreground">
+              CPF, e-mail, telefone ou chave aleatória. Os repasses dos seus ganhos serão enviados
+              para esta chave.
+            </p>
           </Field>
 
           <div className="sm:col-span-2">
