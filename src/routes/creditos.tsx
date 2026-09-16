@@ -1,38 +1,27 @@
-import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CreditCard, QrCode, Wallet } from "lucide-react";
-import { toast } from "sonner";
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { MessageCircle, QrCode, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleGuard } from "@/hooks/useRoleGuard";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { CreditTopupCheckout } from "@/components/CreditTopupCheckout";
-import { formatBRL } from "@/lib/rides";
-import { getStripeEnvironment } from "@/lib/stripe";
-import { syncCreditTopup, MIN_TOPUP_CENTS, MAX_TOPUP_CENTS } from "@/lib/credits.functions";
+import { formatBRL, CENTRAL_WHATSAPP } from "@/lib/rides";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/creditos")({
-  validateSearch: (search: Record<string, unknown>): { session_id?: string | undefined } => ({
-    session_id: typeof search["session_id"] === "string" ? search["session_id"] : undefined,
-  }),
   head: () => ({
     meta: [
-      { title: "Créditos GoPet | Recarregue com cartão" },
+      { title: "Créditos GoPet | Saldo para as corridas" },
       {
         name: "description",
         content:
-          "Adicione créditos na sua conta GoPet com cartão e use o saldo nas corridas de transporte de pets em São Paulo.",
+          "Consulte seu saldo GoPet e fale com a central para inserir créditos por link de pagamento ou Pix.",
       },
-      { property: "og:title", content: "Créditos GoPet | Recarregue com cartão" },
+      { property: "og:title", content: "Créditos GoPet | Saldo para as corridas" },
       {
         property: "og:description",
-        content: "Recarregue seu saldo GoPet com cartão e acompanhe o extrato de créditos.",
+        content: "Veja seu saldo GoPet e o extrato de créditos usados nas corridas do seu pet.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -41,8 +30,6 @@ export const Route = createFileRoute("/creditos")({
   component: CreditosPage,
 });
 
-const PRESETS = [5000, 10000, 20000, 50000];
-
 const statusLabels: Record<string, string> = {
   pending: "Aguardando pagamento",
   completed: "Confirmado",
@@ -50,17 +37,12 @@ const statusLabels: Record<string, string> = {
   cancelled: "Cancelado",
 };
 
+const whatsappUrl = `https://wa.me/${CENTRAL_WHATSAPP}?text=${encodeURIComponent(
+  "Olá! Quero inserir saldo na minha conta GoPet. Pode me enviar o link de pagamento ou o QR Code do Pix?",
+)}`;
+
 function CreditosPage() {
   const { user } = useRoleGuard("tutor", "/creditos");
-  const { session_id: sessionId } = Route.useSearch();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  const [amountInput, setAmountInput] = useState("50,00");
-  const [method, setMethod] = useState<"card" | "pix">("card");
-  const [checkoutKey, setCheckoutKey] = useState<{ amountCents: number; method: "card" | "pix" } | null>(
-    null,
-  );
 
   const { data: transactions, isLoading } = useQuery({
     queryKey: ["credit-transactions", user?.id],
@@ -80,47 +62,12 @@ function CreditosPage() {
     .filter((t) => t.status === "completed")
     .reduce((acc, t) => acc + (t.kind === "spend" ? -t.amount_cents : t.amount_cents), 0);
 
-  useEffect(() => {
-    if (!sessionId || !user) return;
-    let active = true;
-    void (async () => {
-      const result = await syncCreditTopup({
-        data: { sessionId, environment: getStripeEnvironment() },
-      });
-      if (!active) return;
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
-      }
-      if (result.status === "completed") {
-        toast.success("Créditos adicionados à sua conta!");
-      } else {
-        toast.info("Pagamento em processamento. O saldo entra assim que for confirmado.");
-      }
-      setCheckoutKey(null);
-      void queryClient.invalidateQueries({ queryKey: ["credit-transactions", user.id] });
-    })();
-    return () => {
-      active = false;
-    };
-  }, [sessionId, user, queryClient]);
-
-  const parsedCents = Math.round(
-    Number(amountInput.replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) * 100,
-  );
-  const validAmount =
-    Number.isFinite(parsedCents) && parsedCents >= MIN_TOPUP_CENTS && parsedCents <= MAX_TOPUP_CENTS;
-
-  const returnUrl = `${typeof window === "undefined" ? "" : window.location.origin}/creditos?session_id={CHECKOUT_SESSION_ID}`;
-
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5 px-4 py-8">
-      <PaymentTestModeBanner />
-
       <div>
         <h1 className="text-3xl font-semibold">Meus créditos</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Adicione saldo com cartão e use nas corridas do seu pet.
+          As corridas são pagas com o saldo GoPet. Fale com a central para inserir créditos.
         </p>
       </div>
 
@@ -133,90 +80,39 @@ function CreditosPage() {
         </CardHeader>
       </Card>
 
-      <Card className="shadow-soft">
+      <Card className="shadow-soft border-primary/40 bg-primary/5">
         <CardHeader>
-          <CardTitle className="text-lg">Inserir créditos</CardTitle>
+          <CardTitle className="text-lg">Inserir saldo</CardTitle>
           <CardDescription>
-            Valor mínimo de {formatBRL(MIN_TOPUP_CENTS)} por recarga.
+            Para adicionar créditos, chame a nossa central pelo WhatsApp.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {PRESETS.map((preset) => (
-              <Button
-                key={preset}
-                type="button"
-                variant={parsedCents === preset ? "default" : "outline"}
-                className="rounded-full"
-                onClick={() => setAmountInput((preset / 100).toFixed(2).replace(".", ","))}
-              >
-                {formatBRL(preset)}
-              </Button>
-            ))}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="valor">Outro valor (R$)</Label>
-            <Input
-              id="valor"
-              inputMode="decimal"
-              value={amountInput}
-              onChange={(e) => setAmountInput(e.target.value)}
-              placeholder="0,00"
-            />
-            {!validAmount && (
-              <p className="text-xs text-destructive">
-                Informe um valor entre {formatBRL(MIN_TOPUP_CENTS)} e {formatBRL(MAX_TOPUP_CENTS)}.
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>Forma de pagamento</Label>
-            <div className="grid gap-2">
-              {(
-                [
-                  { id: "card", label: "Cartão", icon: CreditCard, hint: "Crédito, confirmação na hora" },
-                ] as const
-              ).map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => setMethod(option.id)}
-                  className={cn(
-                    "flex items-start gap-3 rounded-xl border p-3 text-left transition-colors",
-                    method === option.id
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:bg-secondary",
-                  )}
-                >
-                  <option.icon className="mt-0.5 size-5 text-primary-ink" />
-                  <span>
-                    <span className="block text-sm font-medium">{option.label}</span>
-                    <span className="block text-xs text-muted-foreground">{option.hint}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <Button
-            className="w-full rounded-full"
-            disabled={!validAmount}
-            onClick={() => setCheckoutKey({ amountCents: parsedCents, method })}
-          >
-            Continuar para o pagamento
+        <CardContent className="space-y-4 text-sm">
+          <ul className="space-y-2">
+            <li className="flex items-start gap-2">
+              <MessageCircle className="mt-0.5 size-4 text-primary-ink" />
+              <span>
+                <strong>Cartão de crédito:</strong> a central envia um link de pagamento seguro.
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <QrCode className="mt-0.5 size-4 text-primary-ink" />
+              <span>
+                <strong>Pix:</strong> a central envia o QR Code para pagamento imediato.
+              </span>
+            </li>
+          </ul>
+          <p className="text-xs text-muted-foreground">
+            Assim que o pagamento for confirmado, o valor entra como saldo na sua conta GoPet.
+          </p>
+          <Button asChild className="w-full rounded-full">
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="mr-2 size-4" />
+              Chamar a central no WhatsApp
+            </a>
           </Button>
         </CardContent>
       </Card>
-
-      {checkoutKey && (
-        <CreditTopupCheckout
-          amountCents={checkoutKey.amountCents}
-          method={checkoutKey.method}
-          returnUrl={returnUrl}
-        />
-      )}
 
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Extrato</h2>
