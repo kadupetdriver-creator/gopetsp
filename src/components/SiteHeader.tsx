@@ -23,6 +23,7 @@ export function SiteHeader() {
           { to: "/minhas-corridas", label: "Minhas corridas" },
           { to: "/creditos", label: "Créditos" },
           { to: "/pagamentos", label: "Pagamentos" },
+          { to: "/seja-motorista", label: "Seja motorista" },
           { to: "/perfil", label: "Meu perfil" },
         ]
     : [
