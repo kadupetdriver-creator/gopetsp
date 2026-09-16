@@ -216,6 +216,18 @@ function AdminCorridasPage() {
           }}
         />
       )}
+
+      {forwarding && (
+        <ForwardRideDialog
+          ride={forwarding}
+          people={data?.people ?? []}
+          onClose={() => setForwarding(null)}
+          onSaved={() => {
+            setForwarding(null);
+            void qc.invalidateQueries({ queryKey: ["admin-rides"] });
+          }}
+        />
+      )}
     </div>
   );
 }
