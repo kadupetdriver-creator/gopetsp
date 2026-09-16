@@ -42,7 +42,7 @@ function PagamentoCorrida() {
   const { user, loading } = useRoleGuard("tutor");
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
-  const [method, setMethod] = useState<"credits" | "card" | "pix">("card");
+  
   const [payingWithCredits, setPayingWithCredits] = useState(false);
 
   const { data: ride, isLoading } = useQuery({
@@ -148,8 +148,8 @@ function PagamentoCorrida() {
               transporte.
             </p>
             <div className="mt-3 rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-ink">
-              Não aceitamos dinheiro em espécie. O pagamento é feito pelo app (saldo GoPet ou
-              cartão) antes do início do transporte.
+              Não aceitamos dinheiro em espécie. O pagamento é feito somente com o saldo GoPet
+              antes do início do transporte.
             </div>
           </CardContent>
         </Card>
