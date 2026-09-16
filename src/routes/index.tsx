@@ -49,7 +49,7 @@ const options = [
     search: { papel: "tutor" as const, next: "/seja-motorista" },
     icon: Sparkles,
     title: "Quero ser Motorista",
-    text: "Já tem conta de tutor? Envie seus documentos e vire parceiro GoPet.",
+    text: "Envie seus documentos e vire parceiro GoPet.",
     tone: "bg-card text-foreground ring-1 ring-border hover:bg-secondary",
     iconTone: "bg-primary/15 text-primary-ink",
   },
