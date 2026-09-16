@@ -5,8 +5,8 @@
 
 export const PRICE_BASE_CENTS = 1200;
 export const PRICE_PER_KM_CENTS = 420;
-/** Tempo estimado de viagem: R$ 0,75 por minuto (estilo apps de corrida). */
-export const PRICE_PER_MINUTE_CENTS = 75;
+/** Tempo estimado de viagem: R$ 0,60 por minuto (estilo apps de corrida). */
+export const PRICE_PER_MINUTE_CENTS = 60;
 export const TRUNK_FEE_CENTS = 500;
 /** Pets adicionais pagam 40% do valor integral do próprio porte. */
 export const EXTRA_PET_FACTOR = 0.4;
