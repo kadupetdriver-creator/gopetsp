@@ -17,8 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { petSizes, petSpecies, labelOf } from "@/lib/rides";
-import { getStripeEnvironment } from "@/lib/stripe";
-import { startDriverPayouts, refreshDriverPayouts } from "@/lib/payments.functions";
 import { deleteMyAccount } from "@/lib/account.functions";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
@@ -182,42 +180,6 @@ function PerfilPage() {
     },
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Não foi possível excluir a conta."),
-  });
-
-  const payouts = useMutation({
-    mutationFn: async () => {
-      const result = await startDriverPayouts({
-        data: { returnUrl: window.location.href, environment: getStripeEnvironment() },
-      });
-      if ("error" in result) throw new Error(result.error);
-      return result;
-    },
-    onSuccess: (result) => {
-      if (result.onboardingUrl) window.location.href = result.onboardingUrl;
-      else toast.success("Sua conta já está apta a receber repasses.");
-    },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Não foi possível iniciar o cadastro."),
-  });
-
-  const checkPayouts = useMutation({
-    mutationFn: async () => {
-      const result = await refreshDriverPayouts({
-        data: { environment: getStripeEnvironment() },
-      });
-      if ("error" in result) throw new Error(result.error);
-      return result;
-    },
-    onSuccess: async (result) => {
-      await refreshProfile();
-      toast.success(
-        result.payoutsEnabled
-          ? "Recebimentos liberados."
-          : "Cadastro ainda em análise pelo Stripe.",
-      );
-    },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Não foi possível consultar o status."),
   });
 
   const isDriver = profile?.role === "driver";
@@ -400,34 +362,6 @@ function PerfilPage() {
           </CardContent>
         </Card>
       )}
-          {isDriver && (
-        <Card className="shadow-soft">
-          <CardHeader>
-            <CardTitle className="text-lg">Recebimento de corridas</CardTitle>
-            <CardDescription>
-              Cadastre sua conta de recebimento para que o repasse caia automaticamente quando
-              você concluir a corrida.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold">
-              {profile?.payouts_enabled ? "Recebimentos liberados" : "Cadastro pendente"}
-            </span>
-            <Button onClick={() => payouts.mutate()} disabled={payouts.isPending}>
-              {payouts.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-              {profile?.payouts_enabled ? "Atualizar dados bancários" : "Cadastrar recebimento"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => checkPayouts.mutate()}
-              disabled={checkPayouts.isPending}
-            >
-              Verificar status
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       <Card className="shadow-soft">
         <CardHeader>
           <CardTitle className="text-lg">Segurança da conta</CardTitle>
