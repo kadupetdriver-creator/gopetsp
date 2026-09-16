@@ -75,7 +75,7 @@ function Splash() {
         Go<span className="text-primary-ink">Pet</span>
       </h1>
       <p className="mt-2 text-center text-sm text-muted-foreground">
-        Transporte de pets com carinho na cidade de São Paulo.
+        Transporte de pets com carinho em São Paulo e região metropolitana.
       </p>
 
       {deciding ? (
