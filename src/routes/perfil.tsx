@@ -306,6 +306,23 @@ function PerfilPage() {
       {!isDriver && (
         <Card className="shadow-soft">
           <CardHeader>
+            <CardTitle className="text-lg">Quero ser motorista parceiro</CardTitle>
+            <CardDescription>
+              Você pode usar a mesma conta para transportar pets. Envie seus dados, veículo e documentos
+              para análise.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => void navigate({ to: "/seja-motorista" })}>
+              Fazer cadastro de motorista
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isDriver && (
+        <Card className="shadow-soft">
+          <CardHeader>
             <CardTitle className="text-lg">Meus pets</CardTitle>
             <CardDescription>Cadastre para agilizar novas solicitações.</CardDescription>
           </CardHeader>
