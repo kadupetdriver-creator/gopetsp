@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet } from "lucide-react";
+import { BellRing, CalendarClock, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -339,6 +339,21 @@ function MotoristaPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Chamadas de transporte de pets em São Paulo, atualizadas em tempo real.
       </p>
+
+      {upcoming.length > 0 && (
+        <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
+          <p className="flex items-center gap-2 font-semibold">
+            <BellRing className="size-5" /> Corrida em menos de 30 minutos
+          </p>
+          <ul className="mt-2 space-y-1 text-sm">
+            {upcoming.map((r) => (
+              <li key={r.id}>
+                {formatDateTime(r.scheduled_at)} · {r.pet_name} · {r.origin_address}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="mt-6">
         <StatCard icon={Wallet} label="Ganhos concluídos" value={formatBRL(earnings)} />
