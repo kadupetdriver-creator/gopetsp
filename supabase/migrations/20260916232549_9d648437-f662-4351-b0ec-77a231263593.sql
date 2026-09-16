@@ -1,0 +1,2 @@
+ALTER TABLE public.drivers ADD COLUMN pix_key text;
+COMMENT ON COLUMN public.drivers.pix_key IS 'Chave Pix informada pelo motorista para recebimento dos repasses (CPF, e-mail, telefone ou chave aleatória).';
