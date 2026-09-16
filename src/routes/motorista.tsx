@@ -251,7 +251,8 @@ function MotoristaPage() {
   });
   const monthEarnings = thisMonth.reduce((sum, r) => sum + netOf(r), 0);
   const kmTotal = completed.reduce((sum, r) => sum + Number(r.distance_km ?? 0), 0);
-  const vehicle = application?.vehicles?.[0] ?? null;
+  const rawVehicles = application?.vehicles ?? null;
+  const vehicle = (Array.isArray(rawVehicles) ? (rawVehicles[0] ?? null) : rawVehicles) ?? null;
 
   if (loading || !user || !profile || appLoading) {
     return (
