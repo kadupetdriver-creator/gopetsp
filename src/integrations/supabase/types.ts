@@ -230,6 +230,7 @@ export type Database = {
           address: string | null
           avatar_url: string | null
           city: string
+          cpf: string | null
           created_at: string
           full_name: string
           id: string
@@ -247,6 +248,7 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           city?: string
+          cpf?: string | null
           created_at?: string
           full_name?: string
           id: string
@@ -264,6 +266,7 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           city?: string
+          cpf?: string | null
           created_at?: string
           full_name?: string
           id?: string
@@ -794,6 +797,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      cpf_disponivel: { Args: { _cpf: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["platform_role"]
