@@ -126,6 +126,7 @@ export type Database = {
           id: string
           neighborhood: string
           phone: string
+          pix_key: string | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -145,6 +146,7 @@ export type Database = {
           id?: string
           neighborhood?: string
           phone: string
+          pix_key?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -164,6 +166,7 @@ export type Database = {
           id?: string
           neighborhood?: string
           phone?: string
+          pix_key?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -876,6 +879,7 @@ export type Database = {
           id: string
           neighborhood: string
           phone: string
+          pix_key: string | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
