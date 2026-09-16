@@ -201,14 +201,13 @@ function AuthPage() {
                   <PasswordInput
                     id="password"
                     minLength={8}
-                    pattern="^(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$"
-                    title="A senha deve ter no mínimo 8 caracteres, incluindo uma letra maiúscula, um número e um caractere especial."
+                    title="A senha deve ter no mínimo 8 caracteres."
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    A senha deverá conter no mínimo 8 dígitos, devendo conter pelo menos uma letra maiúscula, um carácter especial e um número.
+                    A senha deve ter no mínimo 8 caracteres.
                   </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={busy}>
