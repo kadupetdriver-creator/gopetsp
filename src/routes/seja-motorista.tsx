@@ -166,6 +166,14 @@ function SejaMotoristaPage() {
         Complete as três etapas. Nossa equipe revisa seus documentos e libera as chamadas.
       </p>
 
+      <div className="mt-5 rounded-2xl border border-warning/40 bg-warning/10 p-4 text-sm">
+        <p className="font-semibold">Atenção: sua conta de tutor será encerrada</p>
+        <p className="mt-1 text-muted-foreground">
+          Ao ter o cadastro de motorista aprovado, a mesma conta passa a ser de motorista parceiro e
+          você deixa de solicitar corridas como tutor.
+        </p>
+      </div>
+
       {driver?.status === "rejeitado" && (
         <div className="mt-5 rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
           <p className="font-semibold text-destructive">Cadastro rejeitado</p>

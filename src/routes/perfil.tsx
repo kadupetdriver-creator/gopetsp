@@ -308,8 +308,8 @@ function PerfilPage() {
           <CardHeader>
             <CardTitle className="text-lg">Quero ser motorista parceiro</CardTitle>
             <CardDescription>
-              Você pode usar a mesma conta para transportar pets. Envie seus dados, veículo e documentos
-              para análise.
+              Envie seus dados, veículo e documentos para análise. Ao ser aprovado, sua conta de tutor
+              será encerrada e a mesma conta passa a ser de motorista parceiro.
             </CardDescription>
           </CardHeader>
           <CardContent>
