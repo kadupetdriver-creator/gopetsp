@@ -84,7 +84,8 @@ type Application = {
   id: string;
   status: DriverStatus;
   rejection_reason: string | null;
-  vehicles: VehicleInfo[] | null;
+  // O vínculo é 1:1, então o embed pode voltar como objeto ou lista.
+  vehicles: VehicleInfo | VehicleInfo[] | null;
 };
 
 type VehicleInfo = {
@@ -250,7 +251,8 @@ function MotoristaPage() {
   });
   const monthEarnings = thisMonth.reduce((sum, r) => sum + netOf(r), 0);
   const kmTotal = completed.reduce((sum, r) => sum + Number(r.distance_km ?? 0), 0);
-  const vehicle = application?.vehicles?.[0] ?? null;
+  const rawVehicles = application?.vehicles ?? null;
+  const vehicle = (Array.isArray(rawVehicles) ? (rawVehicles[0] ?? null) : rawVehicles) ?? null;
 
   if (loading || !user || !profile || appLoading) {
     return (
@@ -283,16 +285,14 @@ function MotoristaPage() {
         Chamadas de transporte de pets em São Paulo, atualizadas em tempo real.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <StatCard icon={RouteIcon} label="Chamadas abertas" value={String(open.length)} />
-        <StatCard icon={CalendarClock} label="Minhas corridas" value={String(mine.length)} />
+      <div className="mt-6">
         <StatCard icon={Wallet} label="Ganhos concluídos" value={formatBRL(earnings)} />
       </div>
 
       <Tabs defaultValue="abertas" className="mt-8">
         <TabsList className="flex h-auto w-full flex-wrap justify-start">
-          <TabsTrigger value="abertas">Chamadas abertas</TabsTrigger>
-          <TabsTrigger value="minhas">Minhas corridas</TabsTrigger>
+          <TabsTrigger value="abertas">Chamadas abertas ({open.length})</TabsTrigger>
+          <TabsTrigger value="minhas">Minhas corridas ({active.length})</TabsTrigger>
           <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
           <TabsTrigger value="veiculo">Meu veículo</TabsTrigger>
         </TabsList>
