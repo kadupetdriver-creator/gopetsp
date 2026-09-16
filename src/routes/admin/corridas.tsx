@@ -180,6 +180,11 @@ function AdminCorridasPage() {
                   <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
                     <Pencil className="mr-2 size-4" /> Editar
                   </Button>
+                  {activeGroup.includes(r.status) && r.status !== "in_progress" && (
+                    <Button size="sm" onClick={() => setForwarding(r)}>
+                      <Send className="mr-2 size-4" /> Encaminhar a motorista
+                    </Button>
+                  )}
                   {activeGroup.includes(r.status) && (
                     <Button
                       size="sm"
