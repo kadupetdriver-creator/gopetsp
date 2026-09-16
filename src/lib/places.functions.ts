@@ -24,11 +24,15 @@ async function readError(response: Response): Promise<never> {
 
 export type PlaceSuggestion = { placeId: string; primary: string; secondary: string };
 
-/** Limites da cidade de São Paulo (retângulo de restrição). */
+/**
+ * Limites da Região Metropolitana de São Paulo (retângulo de restrição).
+ * Cobre a capital e cidades vizinhas (Osasco, Guarulhos, Barueri, ABC,
+ * Mogi, Cotia, Diadema, Santo André, São Bernardo, Itaquaquecetuba etc.).
+ */
 const SP_RECT = {
   rectangle: {
-    low: { latitude: -24.0088, longitude: -46.8272 },
-    high: { latitude: -23.3565, longitude: -46.365 },
+    low: { latitude: -24.1, longitude: -47.1 },
+    high: { latitude: -23.1, longitude: -46.05 },
   },
 };
 
@@ -120,7 +124,9 @@ export const getPlaceDetails = createServerFn({ method: "POST" })
       throw new Error("Não foi possível obter as coordenadas do endereço.");
     }
     if (!isInSaoPaulo(lat, lng)) {
-      throw new Error("No momento, o GoPet atende apenas endereços na cidade de São Paulo.");
+      throw new Error(
+        "No momento, o GoPet atende apenas endereços em São Paulo e na região metropolitana.",
+      );
     }
     const comps = json.addressComponents ?? [];
     const neighborhood =
