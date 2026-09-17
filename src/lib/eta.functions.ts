@@ -19,10 +19,20 @@ export type EstimateEtaInput = {
 export type EtaResult = {
   tempo_estimado_min: number;
   fator_transito_aplicado: "leve" | "moderado" | "intenso" | "padrão";
-  fonte_dado: "google_maps" | "historico_recente" | "fator_padrao";
+  fonte_dado: "google_maps" | "historico_real_sp" | "historico_recente" | "fator_padrao";
   data_historico_usado: string | null;
   justificativa: string;
 };
+
+/** Velocidade de referência (km/h) usada para converter a calibragem em fator. */
+const REF_SPEED_KMH = 25;
+
+function nivelPorFator(fator: number): EtaResult["fator_transito_aplicado"] {
+  if (fator <= 0.95) return "leve";
+  if (fator <= 1.15) return "padrão";
+  if (fator <= 1.35) return "moderado";
+  return "intenso";
+}
 
 const DIAS_SEMANA = [
   "domingo",
@@ -104,6 +114,31 @@ export const estimateRideEta = createServerFn({ method: "POST" })
       };
     }
 
+    // 1º) Calibragem com corridas reais de São Paulo (dia da semana + hora).
+    const { data: calibRow } = await context.supabase
+      .from("eta_traffic_calibration")
+      .select("avg_speed_kmh, samples, source, updated_at")
+      .eq("weekday", alvo.weekday)
+      .eq("hour", alvo.hour)
+      .maybeSingle();
+
+    const calibSpeed = Number(calibRow?.avg_speed_kmh);
+    const calibFator =
+      Number.isFinite(calibSpeed) && calibSpeed > 0
+        ? Math.min(2, Math.max(0.7, REF_SPEED_KMH / calibSpeed))
+        : null;
+
+    if (calibRow?.source === "real" && (calibRow.samples ?? 0) >= 3 && calibFator) {
+      const minutos = Math.max(1, Math.round(data.duracaoBaseMin * calibFator * 1.1));
+      return {
+        tempo_estimado_min: minutos,
+        fator_transito_aplicado: nivelPorFator(calibFator),
+        fonte_dado: "historico_real_sp",
+        data_historico_usado: String(calibRow.updated_at ?? "").slice(0, 10) || null,
+        justificativa: `Baseado em ${calibRow.samples} corridas reais em São Paulo neste dia e horário (média de ${calibSpeed} km/h), com 10% de folga para embarque do pet.`,
+      };
+    }
+
     // Histórico: corridas concluídas no mesmo dia da semana e faixa de horário,
     // do dia anterior à data agendada retrocedendo até 30 dias.
     const inicio = new Date(new Date(data.horarioAgendado).getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -138,6 +173,16 @@ export const estimateRideEta = createServerFn({ method: "POST" })
       );
 
     if (!historico) {
+      if (calibFator) {
+        return {
+          tempo_estimado_min: Math.max(1, Math.round(data.duracaoBaseMin * calibFator * 1.1)),
+          fator_transito_aplicado: nivelPorFator(calibFator),
+          fonte_dado: "fator_padrao",
+          data_historico_usado: null,
+          justificativa:
+            "Sem corridas registradas nesse dia e horário; usamos o padrão de trânsito de São Paulo para essa faixa.",
+        };
+      }
       return fallbackPadrao(
         data.duracaoBaseMin,
         alvo.hour,
@@ -250,4 +295,24 @@ REGRAS:
         "Não foi possível consultar a estimativa inteligente; aplicamos o ajuste padrão de trânsito.",
       );
     }
+  });
+
+/**
+ * Recalcula a calibragem de trânsito de São Paulo a partir das corridas
+ * concluídas de verdade (somente administradores).
+ */
+export const refreshEtaCalibration = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ faixasAtualizadas: number }> => {
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (roleError || isAdmin !== true) {
+      throw new Error("Apenas administradores podem executar esta ação.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.rpc("refresh_eta_calibration", { _days: 90 });
+    if (error) throw new Error(error.message);
+    return { faixasAtualizadas: Number(data ?? 0) };
   });

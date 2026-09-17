@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { adminGetReport } from "@/lib/admin.functions";
+import { refreshEtaCalibration } from "@/lib/eta.functions";
 import { formatBRL, formatDateTime, statusLabels, type RideStatus } from "@/lib/rides";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,6 +38,8 @@ const kindLabels: Record<string, string> = {
 
 function AdminRelatoriosPage() {
   const getReport = useServerFn(adminGetReport);
+  const runCalibration = useServerFn(refreshEtaCalibration);
+  const calibrar = useMutation({ mutationFn: () => runCalibration({ data: undefined }) });
   const [tutorId, setTutorId] = useState("all");
   const [driverId, setDriverId] = useState("all");
   const [startDate, setStartDate] = useState<Date | undefined>();
@@ -93,6 +96,30 @@ function AdminRelatoriosPage() {
 
   return (
     <div className="space-y-4">
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+          <div>
+            <p className="font-semibold">Treinar estimativa de tempo</p>
+            <p className="text-sm text-muted-foreground">
+              Recalcula o trânsito por dia da semana e horário com as corridas reais concluídas nos últimos 90 dias.
+            </p>
+            {calibrar.data && (
+              <p className="mt-1 text-sm text-primary">
+                {calibrar.data.faixasAtualizadas} faixas de horário atualizadas com dados reais.
+              </p>
+            )}
+            {calibrar.isError && (
+              <p className="mt-1 text-sm text-destructive">
+                {(calibrar.error as Error)?.message ?? "Não foi possível recalcular agora."}
+              </p>
+            )}
+          </div>
+          <Button onClick={() => calibrar.mutate()} disabled={calibrar.isPending}>
+            {calibrar.isPending ? "Calculando..." : "Treinar com corridas reais"}
+          </Button>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <DatePicker label="De" date={startDate} setDate={setStartDate} />
         <DatePicker label="Até" date={endDate} setDate={setEndDate} />
