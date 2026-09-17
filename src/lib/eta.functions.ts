@@ -173,6 +173,16 @@ export const estimateRideEta = createServerFn({ method: "POST" })
       );
 
     if (!historico) {
+      if (calibFator) {
+        return {
+          tempo_estimado_min: Math.max(1, Math.round(data.duracaoBaseMin * calibFator * 1.1)),
+          fator_transito_aplicado: nivelPorFator(calibFator),
+          fonte_dado: "fator_padrao",
+          data_historico_usado: null,
+          justificativa:
+            "Sem corridas registradas nesse dia e horário; usamos o padrão de trânsito de São Paulo para essa faixa.",
+        };
+      }
       return fallbackPadrao(
         data.duracaoBaseMin,
         alvo.hour,
