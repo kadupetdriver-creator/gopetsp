@@ -138,13 +138,11 @@ function RideDetails() {
   });
 
   const { data: driver } = useQuery({
-    queryKey: ["ride-driver", ride?.driver_id],
+    queryKey: ["ride-driver", ride?.driver_id, rideId],
     enabled: !!ride?.driver_id,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("ride_counterpart_contact", { _ride_id: ride!.id });
-      if (error) throw error;
-      const row = (data ?? [])[0];
-      return (row ?? null) as { full_name: string | null; phone: string | null } | null;
+      const details = await getRideDriverDetails({ data: { rideId } });
+      return details;
     },
   });
 
