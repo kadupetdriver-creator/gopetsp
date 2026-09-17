@@ -177,6 +177,33 @@ export type Database = {
         }
         Relationships: []
       }
+      eta_traffic_calibration: {
+        Row: {
+          avg_speed_kmh: number
+          hour: number
+          samples: number
+          source: string
+          updated_at: string
+          weekday: number
+        }
+        Insert: {
+          avg_speed_kmh: number
+          hour: number
+          samples?: number
+          source?: string
+          updated_at?: string
+          weekday: number
+        }
+        Update: {
+          avg_speed_kmh?: number
+          hour?: number
+          samples?: number
+          source?: string
+          updated_at?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
       pets: {
         Row: {
           breed: string | null
@@ -862,6 +889,7 @@ export type Database = {
         }
       }
       my_credit_balance_cents: { Args: never; Returns: number }
+      refresh_eta_calibration: { Args: { _days?: number }; Returns: number }
       review_driver_application: {
         Args: {
           _driver_id: string
