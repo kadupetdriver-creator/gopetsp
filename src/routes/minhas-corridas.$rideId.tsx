@@ -361,7 +361,6 @@ function RideDetails() {
             <p className="text-sm text-muted-foreground">
               <strong className="font-medium text-foreground">Motorista:</strong>{" "}
               {driver.full_name ?? "Parceiro GoPet"}
-              {driver.phone ? ` · ${driver.phone}` : ""}
             </p>
           )}
           {ride.notes && (
