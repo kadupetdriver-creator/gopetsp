@@ -404,7 +404,7 @@ function RideDetails() {
             rideId={ride.id}
             userId={user.id}
             active
-            counterpartName={driver?.full_name ?? "Motorista"}
+            counterpartName={driver?.fullName ?? "Motorista"}
           />
         </div>
       )}
