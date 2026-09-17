@@ -19,10 +19,20 @@ export type EstimateEtaInput = {
 export type EtaResult = {
   tempo_estimado_min: number;
   fator_transito_aplicado: "leve" | "moderado" | "intenso" | "padrão";
-  fonte_dado: "google_maps" | "historico_recente" | "fator_padrao";
+  fonte_dado: "google_maps" | "historico_real_sp" | "historico_recente" | "fator_padrao";
   data_historico_usado: string | null;
   justificativa: string;
 };
+
+/** Velocidade de referência (km/h) usada para converter a calibragem em fator. */
+const REF_SPEED_KMH = 25;
+
+function nivelPorFator(fator: number): EtaResult["fator_transito_aplicado"] {
+  if (fator <= 0.95) return "leve";
+  if (fator <= 1.15) return "padrão";
+  if (fator <= 1.35) return "moderado";
+  return "intenso";
+}
 
 const DIAS_SEMANA = [
   "domingo",
