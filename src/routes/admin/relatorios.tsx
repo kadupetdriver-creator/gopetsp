@@ -93,6 +93,30 @@ function AdminRelatoriosPage() {
 
   return (
     <div className="space-y-4">
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+          <div>
+            <p className="font-semibold">Treinar estimativa de tempo</p>
+            <p className="text-sm text-muted-foreground">
+              Recalcula o trânsito por dia da semana e horário com as corridas reais concluídas nos últimos 90 dias.
+            </p>
+            {calibrar.data && (
+              <p className="mt-1 text-sm text-primary">
+                {calibrar.data.faixasAtualizadas} faixas de horário atualizadas com dados reais.
+              </p>
+            )}
+            {calibrar.isError && (
+              <p className="mt-1 text-sm text-destructive">
+                {(calibrar.error as Error)?.message ?? "Não foi possível recalcular agora."}
+              </p>
+            )}
+          </div>
+          <Button onClick={() => calibrar.mutate()} disabled={calibrar.isPending}>
+            {calibrar.isPending ? "Calculando..." : "Treinar com corridas reais"}
+          </Button>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <DatePicker label="De" date={startDate} setDate={setStartDate} />
         <DatePicker label="Até" date={endDate} setDate={setEndDate} />
