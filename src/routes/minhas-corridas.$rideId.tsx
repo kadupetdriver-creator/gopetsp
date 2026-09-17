@@ -141,13 +141,10 @@ function RideDetails() {
     queryKey: ["ride-driver", ride?.driver_id],
     enabled: !!ride?.driver_id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("full_name, phone")
-        .eq("id", ride!.driver_id!)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("ride_counterpart_contact", { _ride_id: ride!.id });
       if (error) throw error;
-      return data as { full_name: string | null; phone: string | null } | null;
+      const row = (data ?? [])[0];
+      return (row ?? null) as { full_name: string | null; phone: string | null } | null;
     },
   });
 

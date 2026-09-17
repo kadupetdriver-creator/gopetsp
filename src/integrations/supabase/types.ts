@@ -895,6 +895,13 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      ride_counterpart_contact: {
+        Args: { _ride_id: string }
+        Returns: {
+          full_name: string
+          phone: string
+        }[]
+      }
       set_ride_status: {
         Args: {
           _ride_id: string
