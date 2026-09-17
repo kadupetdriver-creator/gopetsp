@@ -898,7 +898,7 @@ export type Database = {
       ride_counterpart_contact: {
         Args: { _ride_id: string }
         Returns: {
-          avatar_url: string
+          avatar_path: string
           full_name: string
           phone: string
           vehicle_brand: string
