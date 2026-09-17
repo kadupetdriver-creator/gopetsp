@@ -114,6 +114,31 @@ export const estimateRideEta = createServerFn({ method: "POST" })
       };
     }
 
+    // 1º) Calibragem com corridas reais de São Paulo (dia da semana + hora).
+    const { data: calibRow } = await context.supabase
+      .from("eta_traffic_calibration")
+      .select("avg_speed_kmh, samples, source, updated_at")
+      .eq("weekday", alvo.weekday)
+      .eq("hour", alvo.hour)
+      .maybeSingle();
+
+    const calibSpeed = Number(calibRow?.avg_speed_kmh);
+    const calibFator =
+      Number.isFinite(calibSpeed) && calibSpeed > 0
+        ? Math.min(2, Math.max(0.7, REF_SPEED_KMH / calibSpeed))
+        : null;
+
+    if (calibRow?.source === "real" && (calibRow.samples ?? 0) >= 3 && calibFator) {
+      const minutos = Math.max(1, Math.round(data.duracaoBaseMin * calibFator * 1.1));
+      return {
+        tempo_estimado_min: minutos,
+        fator_transito_aplicado: nivelPorFator(calibFator),
+        fonte_dado: "historico_real_sp",
+        data_historico_usado: String(calibRow.updated_at ?? "").slice(0, 10) || null,
+        justificativa: `Baseado em ${calibRow.samples} corridas reais em São Paulo neste dia e horário (média de ${calibSpeed} km/h), com 10% de folga para embarque do pet.`,
+      };
+    }
+
     // Histórico: corridas concluídas no mesmo dia da semana e faixa de horário,
     // do dia anterior à data agendada retrocedendo até 30 dias.
     const inicio = new Date(new Date(data.horarioAgendado).getTime() - 30 * 24 * 60 * 60 * 1000);
