@@ -296,3 +296,23 @@ REGRAS:
       );
     }
   });
+
+/**
+ * Recalcula a calibragem de trânsito de São Paulo a partir das corridas
+ * concluídas de verdade (somente administradores).
+ */
+export const refreshEtaCalibration = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ faixasAtualizadas: number }> => {
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (roleError || isAdmin !== true) {
+      throw new Error("Apenas administradores podem executar esta ação.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.rpc("refresh_eta_calibration", { _days: 90 });
+    if (error) throw new Error(error.message);
+    return { faixasAtualizadas: Number(data ?? 0) };
+  });
