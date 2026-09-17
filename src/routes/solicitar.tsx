@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { dispatchRideToCentral } from "@/lib/whatsapp.functions";
 import { createRide, quoteRide } from "@/lib/rides.functions";
+import { getCreditBalance } from "@/lib/credits.functions";
 
 
 import { useEffect, useState } from "react";
@@ -183,6 +184,14 @@ function SolicitarPage() {
   const dispatchRide = useServerFn(dispatchRideToCentral);
   const fetchQuote = useServerFn(quoteRide);
   const submitRide = useServerFn(createRide);
+  const fetchBalance = useServerFn(getCreditBalance);
+
+  const balanceQuery = useQuery({
+    queryKey: ["credit-balance", user?.id],
+    enabled: !!user,
+    queryFn: () => fetchBalance(),
+  });
+  const balanceCents = balanceQuery.data?.balanceCents ?? 0;
 
 
 
