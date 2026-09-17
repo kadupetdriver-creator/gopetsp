@@ -37,6 +37,8 @@ const kindLabels: Record<string, string> = {
 
 function AdminRelatoriosPage() {
   const getReport = useServerFn(adminGetReport);
+  const runCalibration = useServerFn(refreshEtaCalibration);
+  const calibrar = useMutation({ mutationFn: () => runCalibration({ data: undefined }) });
   const [tutorId, setTutorId] = useState("all");
   const [driverId, setDriverId] = useState("all");
   const [startDate, setStartDate] = useState<Date | undefined>();
