@@ -345,3 +345,47 @@ export const createRide = createServerFn({ method: "POST" })
     },
   );
 
+
+export const getRideDriverDetails = createServerFn({ method: "GET" })
+  .inputValidator((data: { rideId: string }) => {
+    if (!data?.rideId || typeof data.rideId !== "string") {
+      throw new Error("Corrida inválida.");
+    }
+    return { rideId: data.rideId };
+  })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase.rpc("ride_counterpart_contact", {
+      _ride_id: data.rideId,
+    });
+    if (error) throw new Error("Não foi possível carregar os dados do motorista.");
+    const row = (rows ?? [])[0] as
+      | {
+          full_name: string | null;
+          avatar_path: string | null;
+          vehicle_plate: string | null;
+          vehicle_model: string | null;
+          vehicle_brand: string | null;
+          vehicle_color: string | null;
+        }
+      | undefined;
+    if (!row) return null;
+
+    let avatarUrl: string | null = null;
+    if (row.avatar_path) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: signed } = await supabaseAdmin.storage
+        .from("driver-documents")
+        .createSignedUrl(row.avatar_path, 60 * 60);
+      avatarUrl = signed?.signedUrl ?? null;
+    }
+
+    return {
+      fullName: row.full_name,
+      avatarUrl,
+      vehiclePlate: row.vehicle_plate,
+      vehicleModel: row.vehicle_model,
+      vehicleBrand: row.vehicle_brand,
+      vehicleColor: row.vehicle_color,
+    };
+  });

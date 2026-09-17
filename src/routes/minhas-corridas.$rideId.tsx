@@ -38,6 +38,7 @@ import {
 import { cn } from "@/lib/utils";
 import { paymentStatusLabels, paymentStatusStyles, getStripeEnvironment } from "@/lib/stripe";
 import { refundRidePayment } from "@/lib/payments.functions";
+import { getRideDriverDetails } from "@/lib/rides.functions";
 
 export const Route = createFileRoute("/minhas-corridas/$rideId")({
   head: () => ({
@@ -138,13 +139,11 @@ function RideDetails() {
   });
 
   const { data: driver } = useQuery({
-    queryKey: ["ride-driver", ride?.driver_id],
+    queryKey: ["ride-driver", ride?.driver_id, rideId],
     enabled: !!ride?.driver_id,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("ride_counterpart_contact", { _ride_id: ride!.id });
-      if (error) throw error;
-      const row = (data ?? [])[0];
-      return (row ?? null) as { full_name: string | null; phone: string | null } | null;
+      const details = await getRideDriverDetails({ data: { rideId } });
+      return details;
     },
   });
 
@@ -358,10 +357,38 @@ function RideDetails() {
             ))}
           </ul>
           {driver && (
-            <p className="text-sm text-muted-foreground">
-              <strong className="font-medium text-foreground">Motorista:</strong>{" "}
-              {driver.full_name ?? "Parceiro GoPet"}
-            </p>
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-secondary/40 p-3">
+              {driver.avatarUrl ? (
+                <img
+                  src={driver.avatarUrl}
+                  alt={`Foto de ${driver.fullName ?? "motorista parceiro"}`}
+                  className="size-14 shrink-0 rounded-full object-cover ring-2 ring-primary/30"
+                />
+              ) : (
+                <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary/15 text-lg font-bold text-primary ring-2 ring-primary/30">
+                  {(driver.fullName ?? "G").trim().charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0 text-sm">
+                <p className="truncate font-semibold text-foreground">
+                  {driver.fullName ?? "Parceiro GoPet"}
+                </p>
+                {driver.vehiclePlate && (
+                  <p className="text-muted-foreground">
+                    <span className="font-medium text-foreground">
+                      {driver.vehiclePlate.toUpperCase()}
+                    </span>
+                    {(driver.vehicleModel || driver.vehicleBrand) && (
+                      <>
+                        {" "}
+                        · {[driver.vehicleBrand, driver.vehicleModel].filter(Boolean).join(" ")}
+                      </>
+                    )}
+                    {driver.vehicleColor && <> · {driver.vehicleColor}</>}
+                  </p>
+                )}
+              </div>
+            </div>
           )}
           {ride.notes && (
             <p className="text-sm text-muted-foreground">
@@ -377,7 +404,7 @@ function RideDetails() {
             rideId={ride.id}
             userId={user.id}
             active
-            counterpartName={driver?.full_name ?? "Motorista"}
+            counterpartName={driver?.fullName ?? "Motorista"}
           />
         </div>
       )}

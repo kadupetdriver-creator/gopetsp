@@ -898,8 +898,13 @@ export type Database = {
       ride_counterpart_contact: {
         Args: { _ride_id: string }
         Returns: {
+          avatar_path: string
           full_name: string
           phone: string
+          vehicle_brand: string
+          vehicle_color: string
+          vehicle_model: string
+          vehicle_plate: string
         }[]
       }
       set_ride_status: {
