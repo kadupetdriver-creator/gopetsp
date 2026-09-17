@@ -25,14 +25,16 @@ async function readError(response: Response): Promise<never> {
 export type PlaceSuggestion = { placeId: string; primary: string; secondary: string };
 
 /**
- * Limites da Região Metropolitana de São Paulo (retângulo de restrição).
+ * Limites da Região Metropolitana de São Paulo + Laranjal Paulista
+ * (retângulo de restrição).
  * Cobre a capital e cidades vizinhas (Osasco, Guarulhos, Barueri, ABC,
- * Mogi, Cotia, Diadema, Santo André, São Bernardo, Itaquaquecetuba etc.).
+ * Mogi, Cotia, Diadema, Santo André, São Bernardo, Itaquaquecetuba etc.)
+ * e também Laranjal Paulista e região (Tietê, Cerquilho...).
  */
 const SP_RECT = {
   rectangle: {
-    low: { latitude: -24.1, longitude: -47.1 },
-    high: { latitude: -23.1, longitude: -46.05 },
+    low: { latitude: -24.1, longitude: -47.95 },
+    high: { latitude: -23.0, longitude: -46.05 },
   },
 };
 
