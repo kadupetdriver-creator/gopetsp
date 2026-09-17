@@ -335,6 +335,12 @@ function SolicitarPage() {
   const mapReady = !!originPoint && !!destinationPoint;
   const routeReady = !!quoteQuery.data;
 
+  // Retorno sem espera vira duas corridas (ida + volta), cobradas separadamente.
+  const totalRequiredCents = routeReady
+    ? price * (hasReturn === true && driverWaits === false ? 2 : 1)
+    : 0;
+  const insufficientBalance = routeReady && balanceCents < totalRequiredCents;
+
 
   const create = useMutation({
     mutationFn: async () => {
@@ -807,10 +813,26 @@ function SolicitarPage() {
                 Não aceitamos dinheiro em espécie. O pagamento é feito pelo app (saldo GoPet ou
                 cartão) antes do início do transporte.
               </div>
-              <Button type="submit" className="w-full" disabled={create.isPending || !routeReady}>
+              {insufficientBalance && (
+                <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
+                  Saldo insuficiente: você tem {formatBRL(balanceCents)} e esta corrida custa{" "}
+                  {formatBRL(totalRequiredCents)}. Insira saldo GoPet com a nossa central antes de
+                  solicitar.
+                </div>
+              )}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={create.isPending || !routeReady || insufficientBalance}
+              >
                 {create.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Chamar motorista
               </Button>
+              {insufficientBalance && (
+                <Button asChild variant="outline" className="w-full">
+                  <a href="/creditos">Inserir saldo GoPet</a>
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
