@@ -38,6 +38,7 @@ import {
 import { cn } from "@/lib/utils";
 import { paymentStatusLabels, paymentStatusStyles, getStripeEnvironment } from "@/lib/stripe";
 import { refundRidePayment } from "@/lib/payments.functions";
+import { getRideDriverDetails } from "@/lib/rides.functions";
 
 export const Route = createFileRoute("/minhas-corridas/$rideId")({
   head: () => ({
