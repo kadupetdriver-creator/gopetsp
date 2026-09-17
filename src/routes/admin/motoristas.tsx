@@ -199,6 +199,50 @@ function AdminMotoristasPage() {
             ))}
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          disabled={list.length === 0}
+          onClick={() =>
+            downloadCsvFile(`motoristas-${new Date().toISOString().slice(0, 10)}.csv`, [
+              [
+                "Nome",
+                "CPF",
+                "Nascimento",
+                "E-mail",
+                "Telefone",
+                "Chave Pix",
+                "Cidade",
+                "Bairro",
+                "Situação",
+                "Placa",
+                "Veículo",
+                "Ano",
+                "Cor",
+                "Tipo",
+                "Cadastro",
+              ],
+              ...list.map((d) => [
+                d.full_name,
+                maskCPF(d.cpf),
+                csvDate(d.birth_date),
+                d.email,
+                maskPhone(d.phone),
+                d.pix_key ?? "",
+                d.city,
+                d.neighborhood,
+                driverStatusLabels[d.status],
+                d.vehicles?.plate ?? "",
+                d.vehicles ? `${d.vehicles.brand} ${d.vehicles.model}` : "",
+                d.vehicles?.year ?? "",
+                d.vehicles?.color ?? "",
+                d.vehicles?.vehicle_type ?? "",
+                csvDate(d.created_at),
+              ]),
+            ])
+          }
+        >
+          <Download className="mr-2 size-4" /> Baixar planilha
+        </Button>
       </div>
 
       {isLoading && <Skeleton className="h-48 w-full rounded-2xl" />}
