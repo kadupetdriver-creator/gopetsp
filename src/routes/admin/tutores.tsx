@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Search, UserCog } from "lucide-react";
+import { Download, Loader2, Search, UserCog } from "lucide-react";
+import { csvDate, downloadCsvFile } from "@/lib/csv";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -111,6 +112,27 @@ function AdminTutoresPage() {
             <SelectItem value="inativos">Desativados</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          className="sm:w-auto"
+          disabled={list.length === 0}
+          onClick={() =>
+            downloadCsvFile(`tutores-${new Date().toISOString().slice(0, 10)}.csv`, [
+              ["Nome", "E-mail", "Telefone", "Cidade", "Endereço", "Situação", "Cadastro"],
+              ...list.map((t) => [
+                t.full_name,
+                t.email ?? "",
+                t.phone ? maskPhone(t.phone) : "",
+                t.city,
+                t.address ?? "",
+                t.is_active ? "Ativo" : "Desativado",
+                csvDate(t.created_at),
+              ]),
+            ])
+          }
+        >
+          <Download className="mr-2 size-4" /> Baixar planilha
+        </Button>
       </div>
 
       {isLoading && <Skeleton className="h-40 w-full rounded-2xl" />}
