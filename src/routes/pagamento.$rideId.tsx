@@ -112,6 +112,14 @@ function PagamentoCorrida() {
     <div className="mx-auto w-full max-w-3xl space-y-4 px-4 py-8">
       <PaymentTestModeBanner />
       <h1 className="text-3xl font-semibold">Pagamento da corrida</h1>
+      <div className="flex items-start gap-3 rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
+        <Wallet className="mt-0.5 size-5 shrink-0 text-primary-ink" />
+        <span>
+          <strong>Aceitamos somente saldo GoPet.</strong> Não aceitamos dinheiro, cartão na hora
+          nem Pix direto ao motorista — insira saldo com a nossa central e pague por aqui, com
+          segurança.
+        </span>
+      </div>
       <p className="text-sm text-muted-foreground">
         A cobrança é feita agora e o valor fica retido com segurança. O repasse ao motorista só
         acontece depois que a corrida é concluída.
