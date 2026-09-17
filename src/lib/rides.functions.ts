@@ -252,6 +252,21 @@ export const createRide = createServerFn({ method: "POST" })
         waitingMinutes: waitingMinutesFor(data.extras),
       }, route.durationMinutes);
 
+      // Saldo obrigatório: sem saldo suficiente a corrida nem é criada.
+      // Retorno dividido (sem espera) gera uma segunda corrida do mesmo valor.
+      const totalRequiredCents = price.priceCents * (splitReturn ? 2 : 1);
+      const { data: balance } = await context.supabase.rpc("my_credit_balance_cents");
+      const balanceCents = typeof balance === "number" ? balance : 0;
+      if (balanceCents < totalRequiredCents) {
+        const reais = (totalRequiredCents / 100).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        });
+        throw new Error(
+          `Saldo insuficiente. Esta corrida custa ${reais} — insira saldo GoPet com a nossa central antes de solicitar.`,
+        );
+      }
+
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       // ordena os nomes seguindo a mesma ordem de precificação (maior porte primeiro)
       const orderedPets = [...pets].sort(
