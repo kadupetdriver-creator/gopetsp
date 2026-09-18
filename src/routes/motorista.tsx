@@ -81,6 +81,8 @@ type Ride = {
 const selectCols =
   "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, stops, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
+const driverValueOf = (ride: Pick<Ride, "price_cents">) => Math.round(ride.price_cents * 0.75);
+
 type Application = {
   id: string;
   status: DriverStatus;
@@ -241,15 +243,13 @@ function MotoristaPage() {
   const mine = rides?.filter((r) => r.driver_id === user?.id && r.status !== "pending") ?? [];
   const active = mine.filter((r) => r.status !== "completed" && r.status !== "cancelled");
   const completed = mine.filter((r) => r.status === "completed");
-  // Ganhos líquidos: o motorista recebe 75% (a plataforma retém 25% de comissão).
-  const netOf = (r: Ride) => Math.round(r.price_cents * 0.75);
-  const earnings = completed.reduce((sum, r) => sum + netOf(r), 0);
+  const earnings = completed.reduce((sum, r) => sum + driverValueOf(r), 0);
   const now = new Date();
   const thisMonth = completed.filter((r) => {
     const d = new Date(r.scheduled_at);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
-  const monthEarnings = thisMonth.reduce((sum, r) => sum + netOf(r), 0);
+  const monthEarnings = thisMonth.reduce((sum, r) => sum + driverValueOf(r), 0);
   const kmTotal = completed.reduce((sum, r) => sum + Number(r.distance_km ?? 0), 0);
   const rawVehicles = application?.vehicles ?? null;
   const vehicle = (Array.isArray(rawVehicles) ? (rawVehicles[0] ?? null) : rawVehicles) ?? null;
@@ -476,7 +476,7 @@ function MotoristaPage() {
                         {statusLabels[ride.status]}
                       </span>
                       <span className="font-semibold">
-                        {ride.status === "completed" ? formatBRL(netOf(ride)) : "—"}
+                        {ride.status === "completed" ? formatBRL(driverValueOf(ride)) : "—"}
                       </span>
                     </div>
                   </CardContent>
@@ -536,7 +536,7 @@ function MotoristaPage() {
           <div className="w-full max-w-md rounded-3xl border-4 border-primary bg-primary p-6 text-primary-foreground shadow-2xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em]">Nova chamada</p>
             <p className="mt-2 text-2xl font-extrabold">
-              {newRide.pet_name} · {formatBRL(newRide.price_cents)}
+              {newRide.pet_name} · {formatBRL(driverValueOf(newRide))}
             </p>
             <p className="mt-3 text-sm font-medium">
               Embarque: {newRide.origin_address}
@@ -705,7 +705,7 @@ function RideCard({
             {formatDateTime(ride.scheduled_at)}
           </p>
           <p className="font-semibold text-foreground">
-            {formatBRL(ride.price_cents)}{" "}
+            {formatBRL(driverValueOf(ride))}{" "}
             <span className="font-normal text-muted-foreground">· {ride.distance_km} km</span>
             {ride.needs_trunk && (
               <span className="ml-2 rounded-full bg-warning/20 px-2 py-0.5 text-xs font-medium text-warning-foreground">
