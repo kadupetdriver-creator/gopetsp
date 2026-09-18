@@ -85,7 +85,6 @@ type Application = {
   id: string;
   status: DriverStatus;
   rejection_reason: string | null;
-  pix_key: string | null;
   // O vínculo é 1:1, então o embed pode voltar como objeto ou lista.
   vehicles: VehicleInfo | VehicleInfo[] | null;
 };
@@ -111,7 +110,7 @@ function MotoristaPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("drivers")
-        .select("id, status, rejection_reason, pix_key, vehicles(plate, model, brand, year, color, vehicle_type)")
+        .select("id, status, rejection_reason, vehicles(plate, model, brand, year, color, vehicle_type)")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
@@ -164,7 +163,6 @@ function MotoristaPage() {
           ? await supabase.rpc("accept_ride", { _ride_id: id })
           : await supabase.rpc("set_ride_status", { _ride_id: id, _status: status });
       if (error) throw error;
-      // O repasse é feito manualmente pelos administradores, pelos relatórios de repasse.
     },
     onSuccess: () => {
       toast.success("Corrida atualizada.");
@@ -194,36 +192,6 @@ function MotoristaPage() {
         error instanceof Error && error.message
           ? error.message
           : "Não foi possível avisar a chegada.",
-      ),
-  });
-
-  // Chave Pix para repasses: motoristas já cadastrados informam/editam por aqui.
-  const [pixKey, setPixKey] = useState("");
-  useEffect(() => {
-    if (application) setPixKey(application.pix_key ?? "");
-  }, [application]);
-
-  const savePixKey = useMutation({
-    mutationFn: async () => {
-      const key = pixKey.trim();
-      if (key.length < 5) {
-        throw new Error("Informe uma chave Pix válida (CPF, e-mail, telefone ou chave aleatória).");
-      }
-      const { error } = await supabase
-        .from("drivers")
-        .update({ pix_key: key })
-        .eq("id", application!.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Chave Pix salva. Os repasses serão enviados para ela.");
-      void qc.invalidateQueries({ queryKey: ["driver-application"] });
-    },
-    onError: (error) =>
-      toast.error(
-        error instanceof Error && error.message
-          ? error.message
-          : "Não foi possível salvar a chave Pix.",
       ),
   });
 
