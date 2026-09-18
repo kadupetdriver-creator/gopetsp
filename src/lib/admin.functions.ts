@@ -159,10 +159,7 @@ export const adminGrantDriverBonus = createServerFn({ method: "POST" })
     return { balanceCents: await balanceOf(supabaseAdmin, data.driverUserId) };
   });
 
-/**
- * Cobrança por tempo parado: debita o tutor e repassa 75% ao motorista
- * (25% ficam como comissão da plataforma). Somente admin.
- */
+/** Cobrança por tempo parado: debita o saldo do tutor (somente admin). */
 export const adminChargeIdleTime = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
@@ -377,7 +374,7 @@ export const adminGetReport = createServerFn({ method: "POST" })
 
     let ridesQuery = supabaseAdmin
       .from("rides")
-      .select("id, created_at, scheduled_at, status, price_cents, tutor_id, driver_id, ride_payments(status)")
+      .select("id, created_at, scheduled_at, status, price_cents, tutor_id, driver_id, paid_at")
       .order("created_at", { ascending: false })
       .limit(500);
 
@@ -418,7 +415,7 @@ export const adminGetReport = createServerFn({ method: "POST" })
         scheduledAt: r.scheduled_at,
         status: r.status,
         priceCents: r.price_cents,
-        paymentStatus: r.ride_payments?.[0]?.status ?? null,
+        paymentStatus: r.paid_at ? "pago" : "pendente",
         tutorId: r.tutor_id,
         tutorName: nameOf(r.tutor_id) ?? "Sem nome",
         driverId: r.driver_id,
@@ -436,181 +433,3 @@ export const adminGetReport = createServerFn({ method: "POST" })
     };
   });
 
-/* ==========================================================================
- * Relatórios de ganhos (pagamento manual feito pelos administradores)
- * Ganhos Seg-Qui (gerado às sextas): corridas de segunda a quinta da semana.
- * Ganhos Sex-Dom (gerado às segundas): corridas de sexta, sábado e domingo anteriores.
- * ======================================================================= */
-
-const SP_OFFSET_HOURS = 3; // São Paulo = UTC-3
-
-export type PayoutKind = "repasse1" | "repasse2";
-
-export type PayoutRideRow = {
-  id: string;
-  scheduledAt: string;
-  tutorName: string;
-  priceCents: number;
-  driverAmountCents: number;
-};
-
-export type PayoutAdjustment = {
-  id: string;
-  createdAt: string;
-  kind: "bonus" | "desconto";
-  amountCents: number;
-  description: string | null;
-};
-
-export type PayoutDriverGroup = {
-  driverId: string;
-  driverName: string;
-  rides: PayoutRideRow[];
-  ridesTotalCents: number;
-  adjustments: PayoutAdjustment[];
-  adjustmentsCents: number;
-  totalCents: number;
-};
-
-export type PayoutReport = {
-  kind: PayoutKind;
-  startIso: string;
-  endIso: string;
-  drivers: PayoutDriverGroup[];
-  totalRides: number;
-  totalCents: number;
-};
-
-/** Converte uma data local de São Paulo (ano/mês/dia + hora) para ISO em UTC. */
-function spIso(y: number, m: number, d: number, h: number, mi: number, s: number, ms: number) {
-  return new Date(Date.UTC(y, m, d, h + SP_OFFSET_HOURS, mi, s, ms)).toISOString();
-}
-
-export function payoutWindow(kind: PayoutKind, reference: Date) {
-  // "local" carrega os campos UTC já deslocados para o fuso de São Paulo.
-  const local = new Date(reference.getTime() - SP_OFFSET_HOURS * 3600_000);
-  const y = local.getUTCFullYear();
-  const m = local.getUTCMonth();
-  const d = local.getUTCDate();
-  const dow = local.getUTCDay(); // 0 domingo ... 6 sábado
-
-  if (kind === "repasse1") {
-    // Segunda a quinta da semana da data de referência.
-    const monday = d - ((dow + 6) % 7);
-    return {
-      startIso: spIso(y, m, monday, 0, 0, 0, 0),
-      endIso: spIso(y, m, monday + 3, 23, 59, 59, 999),
-    };
-  }
-  // Sexta, sábado e domingo imediatamente anteriores à data de referência.
-  const lastSunday = d - (dow === 0 ? 7 : dow);
-  return {
-    startIso: spIso(y, m, lastSunday - 2, 0, 0, 0, 0),
-    endIso: spIso(y, m, lastSunday, 23, 59, 59, 999),
-  };
-}
-
-/** Relatório de ganhos por motorista em um período fechado (somente admin). */
-export const adminGetPayoutReport = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input) =>
-    z
-      .object({
-        kind: z.enum(["repasse1", "repasse2"]),
-        referenceDate: z.string().datetime({ offset: true }).nullable().optional(),
-      })
-      .parse(input),
-  )
-  .handler(async ({ data, context }): Promise<PayoutReport> => {
-    await assertAdmin(context as Ctx);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const reference = data.referenceDate ? new Date(data.referenceDate) : new Date();
-    const { startIso, endIso } = payoutWindow(data.kind, reference);
-
-    const [{ data: rides, error: ridesErr }, { data: txs }, { data: profiles }] = await Promise.all([
-      supabaseAdmin
-        .from("rides")
-        .select("id, scheduled_at, price_cents, tutor_id, driver_id, ride_payments(driver_amount_cents)")
-        .eq("status", "completed")
-        .not("driver_id", "is", null)
-        .gte("scheduled_at", startIso)
-        .lte("scheduled_at", endIso)
-        .order("scheduled_at", { ascending: true })
-        .limit(1000),
-      supabaseAdmin
-        .from("credit_transactions")
-        .select("id, created_at, user_id, kind, amount_cents, description, payment_method")
-        .in("payment_method", ["manual", "bonus"])
-        .eq("status", "completed")
-        .gte("created_at", startIso)
-        .lte("created_at", endIso)
-        .limit(1000),
-      supabaseAdmin.from("profiles").select("id, full_name, role"),
-    ]);
-    if (ridesErr) throw new Error(ridesErr.message);
-
-    const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
-    const nameOf = (id: string | null) => (id ? byId.get(id)?.full_name || "Sem nome" : "Sem nome");
-
-    const groups = new Map<string, PayoutDriverGroup>();
-    const groupFor = (driverId: string) => {
-      let g = groups.get(driverId);
-      if (!g) {
-        g = {
-          driverId,
-          driverName: nameOf(driverId),
-          rides: [],
-          ridesTotalCents: 0,
-          adjustments: [],
-          adjustmentsCents: 0,
-          totalCents: 0,
-        };
-        groups.set(driverId, g);
-      }
-      return g;
-    };
-
-    for (const r of (rides ?? []) as any[]) {
-      const driverAmount =
-        r.ride_payments?.[0]?.driver_amount_cents ?? Math.round(r.price_cents * 0.75);
-      const g = groupFor(r.driver_id);
-      g.rides.push({
-        id: r.id,
-        scheduledAt: r.scheduled_at,
-        tutorName: nameOf(r.tutor_id),
-        priceCents: r.price_cents,
-        driverAmountCents: driverAmount,
-      });
-      g.ridesTotalCents += driverAmount;
-    }
-
-    // Bônus e descontos lançados para motoristas dentro do mesmo período.
-    for (const t of (txs ?? []) as any[]) {
-      if (byId.get(t.user_id)?.role !== "driver") continue;
-      if (!groups.has(t.user_id) && t.kind === "spend") continue;
-      const g = groupFor(t.user_id);
-      const isDesconto = t.kind === "spend";
-      g.adjustments.push({
-        id: t.id,
-        createdAt: t.created_at,
-        kind: isDesconto ? "desconto" : "bonus",
-        amountCents: t.amount_cents,
-        description: t.description,
-      });
-      g.adjustmentsCents += isDesconto ? -t.amount_cents : t.amount_cents;
-    }
-
-    const drivers = [...groups.values()]
-      .map((g) => ({ ...g, totalCents: g.ridesTotalCents + g.adjustmentsCents }))
-      .sort((a, b) => a.driverName.localeCompare(b.driverName, "pt-BR"));
-
-    return {
-      kind: data.kind,
-      startIso,
-      endIso,
-      drivers,
-      totalRides: drivers.reduce((acc, g) => acc + g.rides.length, 0),
-      totalCents: drivers.reduce((acc, g) => acc + g.totalCents, 0),
-    };
-  });
