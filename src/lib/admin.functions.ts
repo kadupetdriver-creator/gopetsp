@@ -160,8 +160,8 @@ export const adminGrantDriverBonus = createServerFn({ method: "POST" })
   });
 
 /**
- * Cobrança por tempo parado: debita o tutor e repassa 80% ao motorista
- * (20% ficam como comissão da plataforma). Somente admin.
+ * Cobrança por tempo parado: debita o tutor e repassa 75% ao motorista
+ * (25% ficam como comissão da plataforma). Somente admin.
  */
 export const adminChargeIdleTime = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -190,7 +190,7 @@ export const adminChargeIdleTime = createServerFn({ method: "POST" })
     const tutorBalance = await balanceOf(supabaseAdmin, data.tutorUserId);
     if (tutorBalance < data.amountCents) throw new Error("Saldo do tutor insuficiente para esta cobrança.");
 
-    const driverAmountCents = Math.round(data.amountCents * 0.8);
+    const driverAmountCents = Math.round(data.amountCents * 0.75);
     const now = new Date().toISOString();
 
     const { error: spendErr } = await supabaseAdmin.from("credit_transactions").insert({
@@ -573,7 +573,7 @@ export const adminGetPayoutReport = createServerFn({ method: "POST" })
 
     for (const r of (rides ?? []) as any[]) {
       const driverAmount =
-        r.ride_payments?.[0]?.driver_amount_cents ?? Math.round(r.price_cents * 0.8);
+        r.ride_payments?.[0]?.driver_amount_cents ?? Math.round(r.price_cents * 0.75);
       const g = groupFor(r.driver_id);
       g.rides.push({
         id: r.id,

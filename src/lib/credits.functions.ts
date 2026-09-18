@@ -160,7 +160,7 @@ export const payRideWithCredits = createServerFn({ method: "POST" })
       if (balanceCents < amountCents)
         return { error: "Saldo insuficiente para pagar esta corrida", balanceCents };
 
-      const platformFeeCents = Math.round(amountCents * 0.2);
+      const platformFeeCents = Math.round(amountCents * 0.25);
       const driverAmountCents = amountCents - platformFeeCents;
 
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
