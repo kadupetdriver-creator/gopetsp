@@ -26,7 +26,10 @@ export function MercadoPagoPaymentBrick({
     <Payment
       initialization={{
         amount: amountCents / 100,
-        payer: { email, identification: { type: "CPF", number: cpf } },
+        payer: {
+          ...(email ? { email } : {}),
+          identification: { type: "CPF", number: cpf },
+        },
       }}
       customization={{
         paymentMethods: {
