@@ -211,7 +211,6 @@ function AdminMotoristasPage() {
                 "Nascimento",
                 "E-mail",
                 "Telefone",
-                "Chave Pix",
                 "Cidade",
                 "Bairro",
                 "Situação",
@@ -228,7 +227,6 @@ function AdminMotoristasPage() {
                 csvDate(d.birth_date),
                 d.email,
                 maskPhone(d.phone),
-                d.pix_key ?? "",
                 d.city,
                 d.neighborhood,
                 driverStatusLabels[d.status],
@@ -322,10 +320,6 @@ function ApplicationCard({
             <CardDescription>
               {app.neighborhood}, {app.city} · enviado em{" "}
               {new Date(app.submitted_at ?? app.created_at).toLocaleDateString("pt-BR")}
-            </CardDescription>
-            <CardDescription>
-              Chave Pix:{" "}
-              <span className="font-medium text-foreground">{app.pix_key ?? "não informada"}</span>
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -497,7 +491,6 @@ function EditDriverDialog({
     email: app.email,
     city: app.city,
     neighborhood: app.neighborhood,
-    pix_key: app.pix_key ?? "",
     plate: v?.plate ?? "",
     brand: v?.brand ?? "",
     model: v?.model ?? "",
@@ -520,7 +513,6 @@ function EditDriverDialog({
           email: form.email.trim(),
           city: form.city.trim(),
           neighborhood: form.neighborhood.trim(),
-          pix_key: form.pix_key.trim() || null,
         })
         .eq("id", app.id);
       if (error) throw error;
@@ -614,15 +606,6 @@ function EditDriverDialog({
           <Field label="Bairro">
             <Input value={form.neighborhood} onChange={set("neighborhood")} />
           </Field>
-          <div className="sm:col-span-2">
-            <Field label="Chave Pix (repasses)">
-              <Input
-                placeholder="CPF, e-mail, telefone ou chave aleatória"
-                value={form.pix_key}
-                onChange={set("pix_key")}
-              />
-            </Field>
-          </div>
 
           <p className="mt-2 text-sm font-medium sm:col-span-2">Veículo</p>
           <Field label="Placa">

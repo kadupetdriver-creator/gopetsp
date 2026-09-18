@@ -444,9 +444,6 @@ function MotoristaPage() {
           </div>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Histórico</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/pagamentos">Ver repasses</Link>
-            </Button>
           </div>
           {mine.filter((r) => r.status === "completed" || r.status === "cancelled").length === 0 && (
             <EmptyState text="Suas corridas concluídas aparecerão aqui." />
@@ -531,44 +528,6 @@ function MotoristaPage() {
             <EmptyState text="Nenhum veículo encontrado no seu cadastro." />
           )}
 
-          <Card className="mt-4 shadow-soft">
-            <CardContent className="py-6">
-              <div className="flex items-center gap-3">
-                <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary-ink">
-                  <Wallet className="size-5" />
-                </span>
-                <div>
-                  <p className="text-lg font-semibold">Chave Pix para repasses</p>
-                  <p className="text-sm text-muted-foreground">
-                    Os repasses dos seus ganhos são enviados para essa chave.
-                  </p>
-                </div>
-              </div>
-              <form
-                className="mt-4 flex flex-col gap-3 sm:flex-row"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  savePixKey.mutate();
-                }}
-              >
-                <Input
-                  value={pixKey}
-                  onChange={(e) => setPixKey(e.target.value)}
-                  placeholder="CPF, e-mail, telefone ou chave aleatória"
-                  aria-label="Chave Pix"
-                  required
-                />
-                <Button type="submit" disabled={savePixKey.isPending}>
-                  {savePixKey.isPending ? "Salvando..." : "Salvar chave Pix"}
-                </Button>
-              </form>
-              {!application?.pix_key && (
-                <p className="mt-3 text-sm font-medium text-destructive">
-                  Você ainda não informou uma chave Pix. Cadastre para receber seus repasses.
-                </p>
-              )}
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
 

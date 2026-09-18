@@ -22,7 +22,6 @@ const sections = [
   { to: "/admin/motoristas", label: "Motoristas", icon: Car },
   { to: "/admin/corridas", label: "Corridas", icon: RouteIcon },
   { to: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
-  { to: "/admin/repasses", label: "Ganhos", icon: Wallet },
   { to: "/admin/administradores", label: "Administradores", icon: ShieldCheck },
 ] as const;
 
