@@ -49,7 +49,7 @@ type Ride = {
   distance_km: number;
   status: RideStatus;
   created_at: string;
-  ride_payments: { status: string; payment_method: string }[];
+  paid_at: string | null;
 };
 
 type Person = { id: string; full_name: string; role: "tutor" | "driver" };
@@ -70,7 +70,7 @@ function AdminCorridasPage() {
       const { data: rides, error } = await supabase
         .from("rides")
         .select(
-          "id, tutor_id, driver_id, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, distance_km, status, created_at, ride_payments(status, payment_method)",
+          "id, tutor_id, driver_id, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, distance_km, status, created_at, paid_at",
         )
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
@@ -147,7 +147,7 @@ function AdminCorridasPage() {
 
       <div className="grid gap-3">
         {list.map((r) => {
-          const pay = r.ride_payments?.[0];
+          const pay = r.paid_at ? "pago com saldo GoPet" : "pagamento pendente";
           return (
             <Card key={r.id} className="shadow-soft">
               <CardContent className="space-y-2 py-4">
@@ -170,11 +170,7 @@ function AdminCorridasPage() {
                 </p>
                 <p className="text-sm">
                   {formatDateTime(r.scheduled_at)} · <strong>{formatBRL(r.price_cents)}</strong> · {r.distance_km} km
-                  {pay && (
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      pagamento: {pay.status} ({pay.payment_method})
-                    </span>
-                  )}
+                  <span className="ml-2 text-xs text-muted-foreground">{pay}</span>
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1">
                   <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
@@ -280,7 +276,7 @@ function EditRideDialog({
         <DialogHeader>
           <DialogTitle>Editar corrida</DialogTitle>
           <DialogDescription>
-            Ajustes manuais. Estornos e repasses financeiros não são disparados automaticamente por aqui.
+            Ajustes manuais. Devoluções de saldo não são disparadas automaticamente por aqui.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
@@ -327,7 +323,7 @@ function EditRideDialog({
               {formatDateTime(ride.scheduled_at)}
             </p>
             <p className="mt-1">
-              Valor, pagamento e comissão não são editáveis aqui. Estornos e repasses seguem pelo fluxo de pagamentos.
+              Valor e pagamento não são editáveis aqui. Devoluções de saldo seguem pelo cancelamento da corrida.
             </p>
           </div>
         </div>

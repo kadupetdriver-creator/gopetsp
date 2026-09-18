@@ -90,8 +90,7 @@ function PagamentoCorrida() {
         </span>
       </div>
       <p className="text-sm text-muted-foreground">
-        A cobrança é feita agora e o valor fica retido com segurança. O repasse ao motorista só
-        acontece depois que a corrida é concluída.
+        O valor é debitado do seu saldo GoPet agora e a corrida fica liberada para os motoristas.
       </p>
 
       {returnRide && (
