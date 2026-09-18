@@ -20,14 +20,11 @@ export type Database = {
           completed_at: string | null
           created_at: string
           description: string | null
-          environment: string
           id: string
           kind: string
           payment_method: string | null
           ride_id: string | null
           status: string
-          stripe_payment_intent: string | null
-          stripe_session_id: string | null
           updated_at: string
           user_id: string
         }
@@ -36,14 +33,11 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           description?: string | null
-          environment?: string
           id?: string
           kind?: string
           payment_method?: string | null
           ride_id?: string | null
           status?: string
-          stripe_payment_intent?: string | null
-          stripe_session_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -52,14 +46,11 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           description?: string | null
-          environment?: string
           id?: string
           kind?: string
           payment_method?: string | null
           ride_id?: string | null
           status?: string
-          stripe_payment_intent?: string | null
-          stripe_session_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -126,7 +117,6 @@ export type Database = {
           id: string
           neighborhood: string
           phone: string
-          pix_key: string | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -146,7 +136,6 @@ export type Database = {
           id?: string
           neighborhood?: string
           phone: string
-          pix_key?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -166,7 +155,6 @@ export type Database = {
           id?: string
           neighborhood?: string
           phone?: string
-          pix_key?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -265,11 +253,8 @@ export type Database = {
           full_name: string
           id: string
           is_active: boolean
-          payouts_checked_at: string | null
-          payouts_enabled: boolean
           phone: string | null
           role: Database["public"]["Enums"]["app_role"]
-          stripe_account_id: string | null
           updated_at: string
           vehicle_model: string | null
           vehicle_plate: string | null
@@ -283,11 +268,8 @@ export type Database = {
           full_name?: string
           id: string
           is_active?: boolean
-          payouts_checked_at?: string | null
-          payouts_enabled?: boolean
           phone?: string | null
           role?: Database["public"]["Enums"]["app_role"]
-          stripe_account_id?: string | null
           updated_at?: string
           vehicle_model?: string | null
           vehicle_plate?: string | null
@@ -301,11 +283,8 @@ export type Database = {
           full_name?: string
           id?: string
           is_active?: boolean
-          payouts_checked_at?: string | null
-          payouts_enabled?: boolean
           phone?: string | null
           role?: Database["public"]["Enums"]["app_role"]
-          stripe_account_id?: string | null
           updated_at?: string
           vehicle_model?: string | null
           vehicle_plate?: string | null
@@ -383,86 +362,6 @@ export type Database = {
             foreignKeyName: "ride_messages_ride_id_fkey"
             columns: ["ride_id"]
             isOneToOne: false
-            referencedRelation: "rides"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ride_payments: {
-        Row: {
-          amount_cents: number
-          cancellation_fee_cents: number
-          created_at: string
-          driver_amount_cents: number
-          driver_id: string | null
-          environment: string
-          id: string
-          paid_at: string | null
-          payment_method: string
-          platform_fee_cents: number
-          refunded_at: string | null
-          refunded_cents: number
-          released_at: string | null
-          ride_id: string
-          status: Database["public"]["Enums"]["payment_status"]
-          stripe_payment_intent: string | null
-          stripe_session_id: string | null
-          stripe_transfer_id: string | null
-          transfer_group: string | null
-          tutor_id: string
-          updated_at: string
-        }
-        Insert: {
-          amount_cents: number
-          cancellation_fee_cents?: number
-          created_at?: string
-          driver_amount_cents: number
-          driver_id?: string | null
-          environment?: string
-          id?: string
-          paid_at?: string | null
-          payment_method?: string
-          platform_fee_cents: number
-          refunded_at?: string | null
-          refunded_cents?: number
-          released_at?: string | null
-          ride_id: string
-          status?: Database["public"]["Enums"]["payment_status"]
-          stripe_payment_intent?: string | null
-          stripe_session_id?: string | null
-          stripe_transfer_id?: string | null
-          transfer_group?: string | null
-          tutor_id: string
-          updated_at?: string
-        }
-        Update: {
-          amount_cents?: number
-          cancellation_fee_cents?: number
-          created_at?: string
-          driver_amount_cents?: number
-          driver_id?: string | null
-          environment?: string
-          id?: string
-          paid_at?: string | null
-          payment_method?: string
-          platform_fee_cents?: number
-          refunded_at?: string | null
-          refunded_cents?: number
-          released_at?: string | null
-          ride_id?: string
-          status?: Database["public"]["Enums"]["payment_status"]
-          stripe_payment_intent?: string | null
-          stripe_session_id?: string | null
-          stripe_transfer_id?: string | null
-          transfer_group?: string | null
-          tutor_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ride_payments_ride_id_fkey"
-            columns: ["ride_id"]
-            isOneToOne: true
             referencedRelation: "rides"
             referencedColumns: ["id"]
           },
@@ -564,6 +463,7 @@ export type Database = {
           origin_lat: number | null
           origin_lng: number | null
           origin_neighborhood: string | null
+          paid_at: string | null
           pet_id: string | null
           pet_name: string
           pet_size: string
@@ -603,6 +503,7 @@ export type Database = {
           origin_lat?: number | null
           origin_lng?: number | null
           origin_neighborhood?: string | null
+          paid_at?: string | null
           pet_id?: string | null
           pet_name: string
           pet_size?: string
@@ -642,6 +543,7 @@ export type Database = {
           origin_lat?: number | null
           origin_lng?: number | null
           origin_neighborhood?: string | null
+          paid_at?: string | null
           pet_id?: string | null
           pet_name?: string
           pet_size?: string
@@ -676,27 +578,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      stripe_webhook_events: {
-        Row: {
-          created_at: string
-          environment: string
-          event_id: string
-          event_type: string
-        }
-        Insert: {
-          created_at?: string
-          environment: string
-          event_id: string
-          event_type: string
-        }
-        Update: {
-          created_at?: string
-          environment?: string
-          event_id?: string
-          event_type?: string
-        }
-        Relationships: []
       }
       user_roles: {
         Row: {
@@ -794,6 +675,7 @@ export type Database = {
           origin_lat: number | null
           origin_lng: number | null
           origin_neighborhood: string | null
+          paid_at: string | null
           pet_id: string | null
           pet_name: string
           pet_size: string
@@ -863,6 +745,7 @@ export type Database = {
           origin_lat: number | null
           origin_lng: number | null
           origin_neighborhood: string | null
+          paid_at: string | null
           pet_id: string | null
           pet_name: string
           pet_size: string
@@ -907,7 +790,6 @@ export type Database = {
           id: string
           neighborhood: string
           phone: string
-          pix_key: string | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -961,6 +843,7 @@ export type Database = {
           origin_lat: number | null
           origin_lng: number | null
           origin_neighborhood: string | null
+          paid_at: string | null
           pet_id: string | null
           pet_name: string
           pet_size: string
@@ -997,13 +880,6 @@ export type Database = {
         | "aprovado"
         | "rejeitado"
         | "suspenso"
-      payment_status:
-        | "pending"
-        | "held"
-        | "released"
-        | "refunded"
-        | "cancelled"
-        | "failed"
       platform_role: "admin"
       ride_status:
         | "pending"
@@ -1148,14 +1024,6 @@ export const Constants = {
         "aprovado",
         "rejeitado",
         "suspenso",
-      ],
-      payment_status: [
-        "pending",
-        "held",
-        "released",
-        "refunded",
-        "cancelled",
-        "failed",
       ],
       platform_role: ["admin"],
       ride_status: [
