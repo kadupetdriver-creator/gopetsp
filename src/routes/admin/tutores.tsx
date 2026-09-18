@@ -361,22 +361,8 @@ function EditTutorDialog({
           <div className="space-y-3 rounded-xl border border-border px-3 py-3">
             <p className="text-sm font-medium">Cobrança por tempo parado</p>
             <p className="text-xs text-muted-foreground">
-              O valor é debitado do saldo do tutor e 75% vão para o motorista escolhido.
+              O valor é debitado do saldo do tutor.
             </p>
-            <Field label="Motorista que receberá">
-              <Select value={idleDriver} onValueChange={setIdleDriver}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o motorista" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(drivers.data ?? []).map((d) => (
-                    <SelectItem key={d.id} value={d.id}>
-                      {d.full_name || "Sem nome"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
             <div className="grid gap-2 sm:grid-cols-2">
               <Field label="Valor da cobrança (R$)">
                 <Input
