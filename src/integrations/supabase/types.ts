@@ -203,6 +203,7 @@ export type Database = {
           payment_method: string
           qr_code: string | null
           qr_code_base64: string | null
+          refund_idempotency_key: string
           ride_id: string
           status: string
           status_detail: string | null
@@ -219,6 +220,7 @@ export type Database = {
           payment_method: string
           qr_code?: string | null
           qr_code_base64?: string | null
+          refund_idempotency_key?: string
           ride_id: string
           status?: string
           status_detail?: string | null
@@ -235,6 +237,7 @@ export type Database = {
           payment_method?: string
           qr_code?: string | null
           qr_code_base64?: string | null
+          refund_idempotency_key?: string
           ride_id?: string
           status?: string
           status_detail?: string | null
