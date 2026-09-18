@@ -8,28 +8,22 @@ import { useRoleGuard } from "@/hooks/useRoleGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { formatBRL, rideWhatsAppUrl } from "@/lib/rides";
-import { getStripeEnvironment } from "@/lib/stripe";
-import { syncRidePayment } from "@/lib/payments.functions";
 import { getCreditBalance, payRideWithCredits } from "@/lib/credits.functions";
 
 export const Route = createFileRoute("/pagamento/$rideId")({
-  validateSearch: (search: Record<string, unknown>): { session_id?: string | undefined } => ({
-    session_id: typeof search["session_id"] === "string" ? search["session_id"] : undefined,
-  }),
   head: () => ({
     meta: [
       { title: "Pagamento da corrida | GoPet" },
       {
         name: "description",
         content:
-          "Pague a corrida do seu pet com segurança. O valor fica retido e só é repassado ao motorista após a conclusão do transporte.",
+          "Pague a corrida do seu pet com o saldo GoPet, de forma simples e segura, antes do início do transporte.",
       },
       { property: "og:title", content: "Pagamento da corrida | GoPet" },
       {
         property: "og:description",
-        content: "Cobrança segura com retenção até a conclusão da corrida.",
+        content: "Pagamento da corrida do seu pet com saldo GoPet.",
       },
     ],
   }),
@@ -38,7 +32,6 @@ export const Route = createFileRoute("/pagamento/$rideId")({
 
 function PagamentoCorrida() {
   const { rideId } = Route.useParams();
-  const { session_id: sessionId } = Route.useSearch();
   const { user, loading } = useRoleGuard("tutor");
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
