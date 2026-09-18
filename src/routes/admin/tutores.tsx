@@ -238,20 +238,6 @@ function EditTutorDialog({
   const chargeIdle = useServerFn(adminChargeIdleTime);
   const [idleValue, setIdleValue] = useState("");
   const [idleReason, setIdleReason] = useState("");
-  const [idleDriver, setIdleDriver] = useState("");
-
-  const drivers = useQuery({
-    queryKey: ["admin-driver-options"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name")
-        .eq("role", "driver")
-        .order("full_name");
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
 
   const idleCents = Math.round(
     Number(idleValue.replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) * 100,
@@ -260,7 +246,6 @@ function EditTutorDialog({
     Number.isFinite(idleCents) &&
     idleCents > 0 &&
     idleCents <= 1000000 &&
-    !!idleDriver &&
     idleReason.trim().length >= 3;
 
   const idleCharge = useMutation({
@@ -268,13 +253,12 @@ function EditTutorDialog({
       chargeIdle({
         data: {
           tutorUserId: tutor.id,
-          driverUserId: idleDriver,
           amountCents: idleCents,
           reason: idleReason.trim(),
         },
       }),
-    onSuccess: (res) => {
-      toast.success(`Cobrança lançada. Motorista recebeu ${formatBRL(res.driverAmountCents)}.`);
+    onSuccess: () => {
+      toast.success("Cobrança lançada no saldo do tutor.");
       setIdleValue("");
       setIdleReason("");
       void balance.refetch();

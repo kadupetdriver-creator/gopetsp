@@ -166,29 +166,17 @@ export const adminChargeIdleTime = createServerFn({ method: "POST" })
     z
       .object({
         tutorUserId: z.string().uuid(),
-        driverUserId: z.string().uuid(),
         amountCents: z.number().int().min(1).max(1000000),
         reason: z.string().trim().min(3).max(200),
       })
       .parse(input),
   )
-  .handler(async ({ data, context }): Promise<{ tutorBalanceCents: number; driverAmountCents: number }> => {
+  .handler(async ({ data, context }): Promise<{ tutorBalanceCents: number }> => {
     await assertAdmin(context as Ctx);
-    if (data.tutorUserId === data.driverUserId) throw new Error("Tutor e motorista devem ser contas diferentes.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { data: driverProfile } = await supabaseAdmin
-      .from("profiles")
-      .select("role")
-      .eq("id", data.driverUserId)
-      .maybeSingle();
-    if (driverProfile?.role !== "driver") throw new Error("A conta selecionada não é de um motorista.");
 
     const tutorBalance = await balanceOf(supabaseAdmin, data.tutorUserId);
     if (tutorBalance < data.amountCents) throw new Error("Saldo do tutor insuficiente para esta cobrança.");
-
-    const driverAmountCents = Math.round(data.amountCents * 0.75);
-    const now = new Date().toISOString();
 
     const { error: spendErr } = await supabaseAdmin.from("credit_transactions").insert({
       user_id: data.tutorUserId,
@@ -197,25 +185,11 @@ export const adminChargeIdleTime = createServerFn({ method: "POST" })
       status: "completed",
       payment_method: "manual",
       description: `Tempo parado: ${data.reason}`,
-      completed_at: now,
+      completed_at: new Date().toISOString(),
     });
     if (spendErr) throw new Error(spendErr.message);
 
-    const { error: creditErr } = await supabaseAdmin.from("credit_transactions").insert({
-      user_id: data.driverUserId,
-      kind: "topup",
-      amount_cents: driverAmountCents,
-      status: "completed",
-      payment_method: "manual",
-      description: `Repasse por tempo parado: ${data.reason}`,
-      completed_at: now,
-    });
-    if (creditErr) throw new Error(creditErr.message);
-
-    return {
-      tutorBalanceCents: await balanceOf(supabaseAdmin, data.tutorUserId),
-      driverAmountCents,
-    };
+    return { tutorBalanceCents: await balanceOf(supabaseAdmin, data.tutorUserId) };
   });
 
 export type AdminUser = {
