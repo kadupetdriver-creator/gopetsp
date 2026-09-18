@@ -192,6 +192,65 @@ export type Database = {
         }
         Relationships: []
       }
+      mercadopago_payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          idempotency_key: string
+          mp_payment_id: string | null
+          payment_method: string
+          qr_code: string | null
+          qr_code_base64: string | null
+          ride_id: string
+          status: string
+          status_detail: string | null
+          tutor_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string
+          mp_payment_id?: string | null
+          payment_method: string
+          qr_code?: string | null
+          qr_code_base64?: string | null
+          ride_id: string
+          status?: string
+          status_detail?: string | null
+          tutor_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string
+          mp_payment_id?: string | null
+          payment_method?: string
+          qr_code?: string | null
+          qr_code_base64?: string | null
+          ride_id?: string
+          status?: string
+          status_detail?: string | null
+          tutor_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mercadopago_payments_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pets: {
         Row: {
           breed: string | null
