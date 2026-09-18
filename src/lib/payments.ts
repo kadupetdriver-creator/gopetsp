@@ -1,4 +1,4 @@
-/** Situação do pagamento da corrida (saldo GoPet, sem retenção). */
+/** Situação consolidada do pagamento da corrida. */
 export type RidePaymentState = "pending" | "paid" | "refunded";
 
 /** Taxa retida quando o tutor cancela após o motorista aceitar. */

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { refundRidePayment } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL, formatDateTime, serviceTypes, statusLabels, statusStyles, type RideStatus } from "@/lib/rides";
 import { cn } from "@/lib/utils";
@@ -103,6 +104,8 @@ function AdminCorridasPage() {
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("rides").update({ status: "cancelled" }).eq("id", id);
       if (error) throw error;
+      const result = await refundRidePayment({ data: { rideId: id } });
+      if ("error" in result) throw new Error(result.error);
     },
     onSuccess: () => {
       toast.success("Corrida cancelada.");
@@ -147,7 +150,7 @@ function AdminCorridasPage() {
 
       <div className="grid gap-3">
         {list.map((r) => {
-          const pay = r.paid_at ? "pago com saldo GoPet" : "pagamento pendente";
+          const pay = r.paid_at ? "pagamento aprovado" : "pagamento pendente";
           return (
             <Card key={r.id} className="shadow-soft">
               <CardContent className="space-y-2 py-4">
@@ -276,7 +279,7 @@ function EditRideDialog({
         <DialogHeader>
           <DialogTitle>Editar corrida</DialogTitle>
           <DialogDescription>
-            Ajustes manuais. Devoluções de saldo não são disparadas automaticamente por aqui.
+            Ajustes manuais. Cancelamentos de corridas pagas solicitam reembolso integral.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
@@ -323,7 +326,7 @@ function EditRideDialog({
               {formatDateTime(ride.scheduled_at)}
             </p>
             <p className="mt-1">
-              Valor e pagamento não são editáveis aqui. Devoluções de saldo seguem pelo cancelamento da corrida.
+              Valor e pagamento não são editáveis aqui. Reembolsos seguem pelo cancelamento da corrida.
             </p>
           </div>
         </div>
