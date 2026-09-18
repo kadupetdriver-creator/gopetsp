@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { dispatchRideToCentral } from "@/lib/whatsapp.functions";
 import { createRide, quoteRide } from "@/lib/rides.functions";
-import { getCreditBalance } from "@/lib/credits.functions";
 
 
 import { useEffect, useState } from "react";
@@ -184,14 +183,6 @@ function SolicitarPage() {
   const dispatchRide = useServerFn(dispatchRideToCentral);
   const fetchQuote = useServerFn(quoteRide);
   const submitRide = useServerFn(createRide);
-  const fetchBalance = useServerFn(getCreditBalance);
-
-  const balanceQuery = useQuery({
-    queryKey: ["credit-balance", user?.id],
-    enabled: !!user,
-    queryFn: () => fetchBalance(),
-  });
-  const balanceCents = balanceQuery.data?.balanceCents ?? 0;
 
 
 
@@ -334,13 +325,6 @@ function SolicitarPage() {
   const price = quoteQuery.data?.priceCents ?? 0;
   const mapReady = !!originPoint && !!destinationPoint;
   const routeReady = !!quoteQuery.data;
-
-  // Retorno sem espera vira duas corridas (ida + volta), cobradas separadamente.
-  const totalRequiredCents = routeReady
-    ? price * (hasReturn === true && driverWaits === false ? 2 : 1)
-    : 0;
-  const insufficientBalance = routeReady && balanceCents < totalRequiredCents;
-
 
   const create = useMutation({
     mutationFn: async () => {
@@ -810,29 +794,17 @@ function SolicitarPage() {
                 <span>Motoristas com curso de manejo animal e veículo higienizado.</span>
               </div>
               <div className="rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-ink">
-                Não aceitamos dinheiro em espécie. O pagamento é feito pelo app (saldo GoPet ou
-                cartão) antes do início do transporte.
+                Pagamento seguro no app por cartão de crédito, cartão de débito ou Pix antes do
+                início do transporte.
               </div>
-              {insufficientBalance && (
-                <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
-                  Saldo insuficiente: você tem {formatBRL(balanceCents)} e esta corrida custa{" "}
-                  {formatBRL(totalRequiredCents)}. Insira saldo GoPet com a nossa central antes de
-                  solicitar.
-                </div>
-              )}
               <Button
                 type="submit"
                 className="w-full"
-                disabled={create.isPending || !routeReady || insufficientBalance}
+                disabled={create.isPending || !routeReady}
               >
                 {create.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Chamar motorista
               </Button>
-              {insufficientBalance && (
-                <Button asChild variant="outline" className="w-full">
-                  <a href="/creditos">Inserir saldo GoPet</a>
-                </Button>
-              )}
             </CardContent>
           </Card>
         </div>
