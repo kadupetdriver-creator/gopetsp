@@ -13,7 +13,6 @@ export type Profile = {
   role: AppRole;
   vehicle_model: string | null;
   vehicle_plate: string | null;
-  payouts_enabled?: boolean | null;
 };
 
 type AuthContextValue = {
@@ -38,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [{ data }, { data: roles }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, full_name, phone, city, role, vehicle_model, vehicle_plate, payouts_enabled")
+        .select("id, full_name, phone, city, role, vehicle_model, vehicle_plate")
         .eq("id", userId)
         .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin"),

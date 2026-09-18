@@ -8,28 +8,22 @@ import { useRoleGuard } from "@/hooks/useRoleGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { formatBRL, rideWhatsAppUrl } from "@/lib/rides";
-import { getStripeEnvironment } from "@/lib/stripe";
-import { syncRidePayment } from "@/lib/payments.functions";
 import { getCreditBalance, payRideWithCredits } from "@/lib/credits.functions";
 
 export const Route = createFileRoute("/pagamento/$rideId")({
-  validateSearch: (search: Record<string, unknown>): { session_id?: string | undefined } => ({
-    session_id: typeof search["session_id"] === "string" ? search["session_id"] : undefined,
-  }),
   head: () => ({
     meta: [
       { title: "Pagamento da corrida | GoPet" },
       {
         name: "description",
         content:
-          "Pague a corrida do seu pet com segurança. O valor fica retido e só é repassado ao motorista após a conclusão do transporte.",
+          "Pague a corrida do seu pet com o saldo GoPet, de forma simples e segura, antes do início do transporte.",
       },
       { property: "og:title", content: "Pagamento da corrida | GoPet" },
       {
         property: "og:description",
-        content: "Cobrança segura com retenção até a conclusão da corrida.",
+        content: "Pagamento da corrida do seu pet com saldo GoPet.",
       },
     ],
   }),
@@ -38,7 +32,6 @@ export const Route = createFileRoute("/pagamento/$rideId")({
 
 function PagamentoCorrida() {
   const { rideId } = Route.useParams();
-  const { session_id: sessionId } = Route.useSearch();
   const { user, loading } = useRoleGuard("tutor");
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
@@ -83,34 +76,10 @@ function PagamentoCorrida() {
     queryFn: async () => (await getCreditBalance({ data: undefined })).balanceCents,
   });
 
-
-  useEffect(() => {
-    if (!sessionId || !user) return;
-    let active = true;
-    void (async () => {
-      const result = await syncRidePayment({
-        data: { sessionId, environment: getStripeEnvironment() },
-      });
-      if (!active) return;
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
-      }
-      if (result.status === "held" || result.status === "released") {
-        setConfirmed(true);
-        toast.success("Pagamento confirmado! O valor fica retido até a conclusão da corrida.");
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [sessionId, user]);
-
   const amount = ride?.price_cents ?? 0;
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4 px-4 py-8">
-      <PaymentTestModeBanner />
       <h1 className="text-3xl font-semibold">Pagamento da corrida</h1>
       <div className="flex items-start gap-3 rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
         <Wallet className="mt-0.5 size-5 shrink-0 text-primary-ink" />
@@ -121,8 +90,7 @@ function PagamentoCorrida() {
         </span>
       </div>
       <p className="text-sm text-muted-foreground">
-        A cobrança é feita agora e o valor fica retido com segurança. O repasse ao motorista só
-        acontece depois que a corrida é concluída.
+        O valor é debitado do seu saldo GoPet agora e a corrida fica liberada para os motoristas.
       </p>
 
       {returnRide && (
@@ -152,8 +120,8 @@ function PagamentoCorrida() {
               <span>{formatBRL(amount)}</span>
             </div>
             <p className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
-              <ShieldCheck className="size-4 text-primary-ink" /> Valor retido até a conclusão do
-              transporte.
+              <ShieldCheck className="size-4 text-primary-ink" /> Pagamento seguro com saldo
+              GoPet.
             </p>
             <div className="mt-3 rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-ink">
               Não aceitamos dinheiro em espécie. O pagamento é feito somente com o saldo GoPet

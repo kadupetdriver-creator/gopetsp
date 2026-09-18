@@ -36,7 +36,7 @@ import {
   type RideStatus,
 } from "@/lib/rides";
 import { cn } from "@/lib/utils";
-import { paymentStatusLabels, paymentStatusStyles, getStripeEnvironment } from "@/lib/stripe";
+import { paymentStatusLabels, paymentStatusStyles, ridePaymentState } from "@/lib/payments";
 import { refundRidePayment } from "@/lib/payments.functions";
 import { getRideDriverDetails } from "@/lib/rides.functions";
 
@@ -113,12 +113,12 @@ function RideDetails() {
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("ride_payments")
-        .select("status")
-        .eq("ride_id", rideId)
+        .from("rides")
+        .select("status, paid_at")
+        .eq("id", rideId)
         .maybeSingle();
       if (error) throw error;
-      return data as { status: string } | null;
+      return data as { status: string; paid_at: string | null } | null;
     },
   });
 
@@ -169,16 +169,14 @@ function RideDetails() {
         _status: "cancelled",
       });
       if (error) throw error;
-      const result = await refundRidePayment({
-        data: { rideId, environment: getStripeEnvironment() },
-      });
+      const result = await refundRidePayment({ data: { rideId } });
       if ("error" in result) throw new Error(result.error);
       return result.status;
     },
     onSuccess: (status) => {
       toast.success(
         status === "refunded"
-          ? "Corrida cancelada. O estorno foi solicitado."
+          ? "Corrida cancelada. O saldo foi devolvido à sua carteira."
           : "Corrida cancelada.",
       );
       void qc.invalidateQueries({ queryKey: ["ride", rideId] });
@@ -195,7 +193,7 @@ function RideDetails() {
     );
   }
 
-  const paymentStatus = payment?.status ?? "pending";
+  const paymentStatus = ridePaymentState(payment ?? {});
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">

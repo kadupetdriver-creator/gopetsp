@@ -204,12 +204,12 @@ function MinhasCorridas() {
                 <span
                   className={cn(
                     "rounded-full px-3 py-1 text-xs font-semibold",
-                    paymentStatusStyles[paymentOf(ride.id)?.status ?? "pending"],
+                    paymentStatusStyles[paymentOf(ride)],
                   )}
                 >
-                  {paymentStatusLabels[paymentOf(ride.id)?.status ?? "pending"]}
+                  {paymentStatusLabels[paymentOf(ride)]}
                 </span>
-                {(paymentOf(ride.id)?.status ?? "pending") === "pending" &&
+                {paymentOf(ride) === "pending" &&
                   ride.status !== "cancelled" && (
                     <Button asChild size="sm" className="rounded-full">
                       <Link to="/pagamento/$rideId" params={{ rideId: ride.id }}>

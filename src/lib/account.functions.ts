@@ -9,16 +9,15 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
   .handler(async ({ context }): Promise<Result> => {
     const { supabase, userId } = context;
 
-    // Bloqueia exclusão com dinheiro em aberto.
-    const { data: openPayments } = await supabase
-      .from("ride_payments")
+    // Bloqueia exclusão com corrida em andamento.
+    const { data: openRides } = await supabase
+      .from("rides")
       .select("id")
-      .in("status", ["pending", "held"])
+      .in("status", ["pending", "accepted", "en_route", "in_progress"])
       .limit(1);
-    if (openPayments && openPayments.length > 0) {
+    if (openRides && openRides.length > 0) {
       return {
-        error:
-          "Existe uma corrida com pagamento em aberto. Conclua ou cancele antes de excluir a conta.",
+        error: "Existe uma corrida em aberto. Conclua ou cancele antes de excluir a conta.",
       };
     }
 

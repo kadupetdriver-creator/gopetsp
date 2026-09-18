@@ -70,7 +70,6 @@ type DriverRow = {
   city: string;
   neighborhood: string;
   avatar_path: string | null;
-  pix_key: string | null;
   status: DriverStatus;
   rejection_reason: string | null;
 };
@@ -115,7 +114,7 @@ function SejaMotoristaPage() {
       const { data: driver, error } = await supabase
         .from("drivers")
         .select(
-          "id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, pix_key, status, rejection_reason",
+          "id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, status, rejection_reason",
         )
         .eq("user_id", user!.id)
         .maybeSingle();
@@ -225,7 +224,6 @@ function SejaMotoristaPage() {
               city: driver?.city ?? "São Paulo",
               neighborhood: driver?.neighborhood ?? "",
               avatar_path: driver?.avatar_path ?? null,
-              pix_key: driver?.pix_key ?? "",
             }}
             driverId={driver?.id ?? null}
             onSaved={async () => {
@@ -318,7 +316,6 @@ type PersonalDefaults = {
   city: string;
   neighborhood: string;
   avatar_path: string | null;
-  pix_key: string;
 };
 
 function PersonalStep({
@@ -352,8 +349,6 @@ function PersonalStep({
       if (form.city.trim().length < 2) throw new Error("Informe a cidade.");
       if (form.neighborhood.trim().length < 2) throw new Error("Informe o bairro.");
       if (!avatar && !form.avatar_path) throw new Error("Envie a foto de perfil.");
-      if (form.pix_key.trim().length < 5)
-        throw new Error("Informe sua chave Pix para receber os repasses.");
 
       let avatar_path = form.avatar_path;
       if (avatar) {
@@ -377,7 +372,6 @@ function PersonalStep({
         city: form.city.trim(),
         neighborhood: form.neighborhood.trim(),
         avatar_path,
-        pix_key: form.pix_key.trim(),
       };
       const { error } = driverId
         ? await supabase.from("drivers").update(payload).eq("id", driverId)
@@ -468,23 +462,6 @@ function PersonalStep({
           </Field>
           <Field label="Bairro" id="bairro">
             <Input id="bairro" placeholder="Ex.: Pinheiros" value={form.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} required />
-          </Field>
-          <Field
-            label="Chave Pix (para repasses)"
-            id="pix"
-            className="sm:col-span-2"
-          >
-            <Input
-              id="pix"
-              placeholder="Ex.: seu CPF, e-mail ou telefone"
-              value={form.pix_key}
-              onChange={(e) => set("pix_key", e.target.value)}
-              required
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              CPF, e-mail, telefone ou chave aleatória. Os repasses dos seus ganhos serão enviados
-              para esta chave.
-            </p>
           </Field>
 
           <div className="sm:col-span-2">
