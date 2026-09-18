@@ -273,8 +273,8 @@ function MotoristaPage() {
   const mine = rides?.filter((r) => r.driver_id === user?.id && r.status !== "pending") ?? [];
   const active = mine.filter((r) => r.status !== "completed" && r.status !== "cancelled");
   const completed = mine.filter((r) => r.status === "completed");
-  // Ganhos líquidos: o motorista recebe 80% (a plataforma retém 20% de comissão).
-  const netOf = (r: Ride) => Math.round(r.price_cents * 0.8);
+  // Ganhos líquidos: o motorista recebe 75% (a plataforma retém 25% de comissão).
+  const netOf = (r: Ride) => Math.round(r.price_cents * 0.75);
   const earnings = completed.reduce((sum, r) => sum + netOf(r), 0);
   const now = new Date();
   const thisMonth = completed.filter((r) => {

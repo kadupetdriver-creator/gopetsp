@@ -27,7 +27,7 @@ export function getStripeEnvironment(): StripeEnv {
 }
 
 /** Comissão da plataforma sobre o valor da corrida. */
-export const PLATFORM_FEE_RATE = 0.2;
+export const PLATFORM_FEE_RATE = 0.25;
 
 /** Taxa retida quando o tutor cancela após o motorista aceitar. */
 export const CANCELLATION_FEE_RATE = 0.2;

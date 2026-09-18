@@ -377,7 +377,7 @@ function EditTutorDialog({
           <div className="space-y-3 rounded-xl border border-border px-3 py-3">
             <p className="text-sm font-medium">Cobrança por tempo parado</p>
             <p className="text-xs text-muted-foreground">
-              O valor é debitado do saldo do tutor e 80% vão para o motorista escolhido.
+              O valor é debitado do saldo do tutor e 75% vão para o motorista escolhido.
             </p>
             <Field label="Motorista que receberá">
               <Select value={idleDriver} onValueChange={setIdleDriver}>

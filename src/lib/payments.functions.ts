@@ -6,7 +6,7 @@ import {
   getStripeErrorMessage,
 } from "@/lib/stripe.server";
 
-const PLATFORM_FEE_RATE = 0.2;
+const PLATFORM_FEE_RATE = 0.25;
 const CANCELLATION_FEE_RATE = 0.2;
 
 type CheckoutResult = { clientSecret: string } | { error: string };
