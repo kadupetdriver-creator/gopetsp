@@ -23,7 +23,7 @@ import {
 } from "@/lib/rides";
 import { RideMap } from "@/components/RideMap";
 import { cn } from "@/lib/utils";
-import { paymentStatusLabels, paymentStatusStyles, getStripeEnvironment } from "@/lib/stripe";
+import { paymentStatusLabels, paymentStatusStyles, ridePaymentState } from "@/lib/payments";
 import { refundRidePayment } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/minhas-corridas/")({
@@ -66,9 +66,8 @@ type Ride = {
   origin_lng: number | null;
   destination_lat: number | null;
   destination_lng: number | null;
+  paid_at: string | null;
 };
-
-type Payment = { ride_id: string; status: string };
 
 function MinhasCorridas() {
   const { user } = useRoleGuard("tutor", "/minhas-corridas");
@@ -83,7 +82,7 @@ function MinhasCorridas() {
       const { data, error } = await supabase
         .from("rides")
         .select(
-          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng",
+          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, paid_at",
         )
         .eq("tutor_id", user!.id)
         .order("scheduled_at", { ascending: false });
@@ -92,20 +91,8 @@ function MinhasCorridas() {
     },
   });
 
-  const { data: payments } = useQuery({
-    queryKey: ["ride-payments", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("ride_payments")
-        .select("ride_id, status")
-        .eq("tutor_id", user!.id);
-      if (error) throw error;
-      return data as Payment[];
-    },
-  });
+  const paymentOf = (ride: Ride) => ridePaymentState(ride);
 
-  const paymentOf = (rideId: string) => payments?.find((p) => p.ride_id === rideId);
 
   useEffect(() => {
     if (!user) return;
@@ -113,9 +100,6 @@ function MinhasCorridas() {
       .channel("rides-tutor")
       .on("postgres_changes", { event: "*", schema: "public", table: "rides" }, () => {
         void qc.invalidateQueries({ queryKey: ["rides"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "ride_payments" }, () => {
-        void qc.invalidateQueries({ queryKey: ["ride-payments"] });
       })
       .subscribe();
     return () => {
@@ -131,20 +115,17 @@ function MinhasCorridas() {
       });
       if (error) throw error;
 
-      const result = await refundRidePayment({
-        data: { rideId: id, environment: getStripeEnvironment() },
-      });
+      const result = await refundRidePayment({ data: { rideId: id } });
       if ("error" in result) throw new Error(result.error);
       return result.status;
     },
     onSuccess: (status) => {
       toast.success(
         status === "refunded"
-          ? "Corrida cancelada. O estorno foi solicitado."
+          ? "Corrida cancelada. O saldo foi devolvido à sua carteira."
           : "Corrida cancelada.",
       );
       void qc.invalidateQueries({ queryKey: ["rides"] });
-      void qc.invalidateQueries({ queryKey: ["ride-payments"] });
     },
     onError: () => toast.error("Não foi possível cancelar."),
   });
