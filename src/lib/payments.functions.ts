@@ -1,9 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-/** Taxa retida quando o tutor cancela após o motorista aceitar. */
-const CANCELLATION_FEE_RATE = 0.2;
-
 type ActionResult = { status: string } | { error: string };
 
 function isUuid(value: string) {
@@ -11,9 +8,7 @@ function isUuid(value: string) {
 }
 
 /**
- * Devolve o saldo ao tutor quando a corrida é cancelada.
- * Não existe repasse: o valor pago é integralmente da GoPet, e o estorno
- * apenas recoloca créditos na carteira do tutor.
+ * Solicita o reembolso integral ao Mercado Pago para uma corrida cancelada.
  */
 export const refundRidePayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -29,31 +24,34 @@ export const refundRidePayment = createServerFn({ method: "POST" })
       .eq("id", data.rideId)
       .maybeSingle();
     if (!ride) return { error: "Corrida não encontrada" };
-    if (ride.tutor_id !== userId && ride.driver_id !== userId) return { error: "Sem permissão" };
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (ride.tutor_id !== userId && !isAdmin) return { error: "Sem permissão" };
     if (ride.status !== "cancelled") return { error: "A corrida não está cancelada" };
     if (!ride.paid_at) return { status: "none" };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Cancelamento após o motorista aceitar retém a taxa de cancelamento.
-    const feeCents = ride.driver_id ? Math.round(ride.price_cents * CANCELLATION_FEE_RATE) : 0;
-    const refundCents = ride.price_cents - feeCents;
+    const { data: payment } = await supabaseAdmin
+      .from("mercadopago_payments")
+      .select("id, mp_payment_id, status, refund_idempotency_key")
+      .eq("ride_id", ride.id)
+      .eq("status", "approved")
+      .order("created_at", { ascending: false })
+      .maybeSingle();
+    if (!payment?.mp_payment_id) return { status: "none" };
 
-    if (refundCents > 0) {
-      const { error: refundError } = await supabaseAdmin.from("credit_transactions").insert({
-        user_id: ride.tutor_id,
-        kind: "refund",
-        amount_cents: refundCents,
-        status: "completed",
-        payment_method: "credits",
-        description: "Estorno de corrida cancelada",
-        ride_id: ride.id,
-        completed_at: new Date().toISOString(),
+    try {
+      const { mercadoPagoRequest } = await import("./mercadopago.server");
+      await mercadoPagoRequest(`/v1/payments/${encodeURIComponent(payment.mp_payment_id)}/refunds`, {
+        method: "POST",
+        body: "{}",
+        idempotencyKey: payment.refund_idempotency_key,
       });
-      // 23505 = estorno já registrado antes; repetir a operação é seguro.
-      if (refundError && refundError.code !== "23505")
-        return { error: "Não foi possível registrar o estorno. Tente novamente." };
+      await supabaseAdmin.from("mercadopago_payments").update({ status: "refunded" }).eq("id", payment.id);
+      await supabaseAdmin.from("rides").update({ paid_at: null }).eq("id", ride.id);
+      return { status: "refunded" };
+    } catch (error) {
+      console.error("Mercado Pago refund failed", error);
+      return { error: error instanceof Error ? error.message : "Não foi possível concluir o reembolso." };
     }
-
-    return { status: "refunded" };
   });

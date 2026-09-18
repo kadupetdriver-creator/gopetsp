@@ -42,6 +42,7 @@ export const createMercadoPagoPayment = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const idempotencyKey = crypto.randomUUID();
     const method = data.brickData.payment_method_id;
+    if (!method) return { error: "Escolha uma forma de pagamento." };
     const { data: attempt, error: insertError } = await supabaseAdmin
       .from("mercadopago_payments")
       .insert({ ride_id: ride.id, tutor_id: context.userId, payment_method: method, status: "pending", amount_cents: ride.price_cents, idempotency_key: idempotencyKey })
@@ -62,11 +63,12 @@ export const createMercadoPagoPayment = createServerFn({ method: "POST" })
         notification_url: "https://gopetsp.lovable.app/api/public/mp-webhook",
         metadata: { ride_id: ride.id, payment_attempt_id: attempt.id },
       };
-      if (expiresAt) payload.date_of_expiration = expiresAt;
+      if (expiresAt) payload["date_of_expiration"] = expiresAt;
       if (!isPix) {
-        payload.token = data.brickData.token;
-        payload.installments = Number(data.brickData.installments ?? 1);
-        if (data.brickData.issuer_id) payload.issuer_id = String(data.brickData.issuer_id);
+        if (!data.brickData.token) return { error: "Os dados do cartão não foram concluídos." };
+        payload["token"] = data.brickData.token;
+        payload["installments"] = Number(data.brickData.installments ?? 1);
+        if (data.brickData.issuer_id) payload["issuer_id"] = String(data.brickData.issuer_id);
       }
       const payment = await mercadoPagoRequest<import("./mercadopago.server").MercadoPagoPayment>("/v1/payments", {
         method: "POST",

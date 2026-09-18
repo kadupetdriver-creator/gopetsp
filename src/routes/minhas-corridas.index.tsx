@@ -122,7 +122,7 @@ function MinhasCorridas() {
     onSuccess: (status) => {
       toast.success(
         status === "refunded"
-          ? "Corrida cancelada. O saldo foi devolvido à sua carteira."
+          ? "Corrida cancelada. O reembolso integral foi solicitado."
           : "Corrida cancelada.",
       );
       void qc.invalidateQueries({ queryKey: ["rides"] });

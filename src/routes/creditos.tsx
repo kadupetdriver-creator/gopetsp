@@ -16,7 +16,7 @@ export const Route = createFileRoute("/creditos")({
       {
         name: "description",
         content:
-          "Consulte seu saldo GoPet e fale com a central para inserir créditos por link de pagamento ou Pix.",
+          "Consulte seu saldo GoPet e o histórico de créditos da sua conta.",
       },
       { property: "og:title", content: "Créditos GoPet | Saldo para as corridas" },
       {
@@ -67,7 +67,7 @@ function CreditosPage() {
       <div>
         <h1 className="text-3xl font-semibold">Meus créditos</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          As corridas são pagas com o saldo GoPet. Fale com a central para inserir créditos.
+          Consulte créditos anteriores da sua conta. Novas corridas são pagas diretamente no checkout.
         </p>
       </div>
 
@@ -82,9 +82,9 @@ function CreditosPage() {
 
       <Card className="shadow-soft border-primary/40 bg-primary/5">
         <CardHeader>
-          <CardTitle className="text-lg">Inserir saldo</CardTitle>
+          <CardTitle className="text-lg">Atendimento da central</CardTitle>
           <CardDescription>
-            Para adicionar créditos, chame a nossa central pelo WhatsApp.
+            Para dúvidas sobre créditos anteriores, chame a nossa central pelo WhatsApp.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
@@ -103,7 +103,7 @@ function CreditosPage() {
             </li>
           </ul>
           <p className="text-xs text-muted-foreground">
-            Assim que o pagamento for confirmado, o valor entra como saldo na sua conta GoPet.
+            O pagamento de novas corridas é feito diretamente na tela de pagamento.
           </p>
           <Button asChild className="w-full rounded-full">
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
