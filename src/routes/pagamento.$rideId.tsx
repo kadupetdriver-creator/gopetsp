@@ -120,8 +120,8 @@ function PagamentoCorrida() {
               <span>{formatBRL(amount)}</span>
             </div>
             <p className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
-              <ShieldCheck className="size-4 text-primary-ink" /> Valor retido até a conclusão do
-              transporte.
+              <ShieldCheck className="size-4 text-primary-ink" /> Pagamento seguro com saldo
+              GoPet.
             </p>
             <div className="mt-3 rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-ink">
               Não aceitamos dinheiro em espécie. O pagamento é feito somente com o saldo GoPet
