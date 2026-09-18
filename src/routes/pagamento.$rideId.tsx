@@ -76,34 +76,10 @@ function PagamentoCorrida() {
     queryFn: async () => (await getCreditBalance({ data: undefined })).balanceCents,
   });
 
-
-  useEffect(() => {
-    if (!sessionId || !user) return;
-    let active = true;
-    void (async () => {
-      const result = await syncRidePayment({
-        data: { sessionId, environment: getStripeEnvironment() },
-      });
-      if (!active) return;
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
-      }
-      if (result.status === "held" || result.status === "released") {
-        setConfirmed(true);
-        toast.success("Pagamento confirmado! O valor fica retido até a conclusão da corrida.");
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [sessionId, user]);
-
   const amount = ride?.price_cents ?? 0;
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4 px-4 py-8">
-      <PaymentTestModeBanner />
       <h1 className="text-3xl font-semibold">Pagamento da corrida</h1>
       <div className="flex items-start gap-3 rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
         <Wallet className="mt-0.5 size-5 shrink-0 text-primary-ink" />
