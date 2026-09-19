@@ -121,6 +121,32 @@ function PagamentoCorrida() {
     return () => window.clearInterval(timer);
   }, [payment?.expires_at]);
 
+  // Reforço: se o aviso do Mercado Pago demorar, consultamos o status a cada 5s por até 2 min.
+  useEffect(() => {
+    if (!user || !payment || ride?.paid_at) return;
+    if (!["pending", "in_process", "approved"].includes(payment.status)) return;
+    let attempts = 0;
+    let active = true;
+    const tick = async () => {
+      if (!active) return;
+      attempts += 1;
+      try {
+        const result = await syncPayment({ data: { rideId } });
+        if (!active) return;
+        await qc.invalidateQueries({ queryKey: ["mercadopago-payment", rideId] });
+        await qc.invalidateQueries({ queryKey: ["ride-payment", rideId] });
+        if (result.paid) { active = false; window.clearInterval(timer); }
+      } catch {
+        // silencioso: nova tentativa no próximo intervalo
+      }
+      if (attempts >= 24) { active = false; window.clearInterval(timer); }
+    };
+    const timer = window.setInterval(() => { void tick(); }, 5000);
+    void tick();
+    return () => { active = false; window.clearInterval(timer); };
+  }, [user, rideId, payment?.status, payment?.id, ride?.paid_at, qc, syncPayment, payment]);
+
+
   const countdown = useMemo(() => `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`, [secondsLeft]);
   const approved = Boolean(ride?.paid_at);
   const showPix = Boolean(payment?.qr_code && ["pending", "in_process"].includes(payment.status) && secondsLeft > 0);
