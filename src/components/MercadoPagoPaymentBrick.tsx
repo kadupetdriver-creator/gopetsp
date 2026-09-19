@@ -52,12 +52,14 @@ export function MercadoPagoPaymentBrick({
         // O Brick entrega { selectedPaymentMethod, formData }; o Pix chega como
         // selectedPaymentMethod "bank_transfer" e sem token de cartão.
         const selected = param?.selectedPaymentMethod;
-        const form = (param?.formData ?? {}) as Record<string, unknown>;
+        const form = (param?.formData ?? {}) as unknown as Record<string, unknown>;
         const isPix = selected === "bank_transfer" || form["payment_method_id"] === "pix";
+        const methodId = isPix ? "pix" : (form["payment_method_id"] as string | undefined);
+        const typeId = isPix ? "bank_transfer" : ((form["payment_type_id"] as string | undefined) ?? selected);
         const payload: PaymentBrickData = {
           ...(form as PaymentBrickData),
-          payment_method_id: isPix ? "pix" : ((form["payment_method_id"] as string | undefined) ?? undefined),
-          payment_type_id: isPix ? "bank_transfer" : ((form["payment_type_id"] as string | undefined) ?? selected),
+          ...(methodId ? { payment_method_id: methodId } : {}),
+          ...(typeId ? { payment_type_id: typeId } : {}),
         };
         console.info("[MP Brick] onSubmit", {
           selectedPaymentMethod: selected,
