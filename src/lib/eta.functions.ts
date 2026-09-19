@@ -115,12 +115,12 @@ export const estimateRideEta = createServerFn({ method: "POST" })
     }
 
     // 1º) Calibragem com corridas reais de São Paulo (dia da semana + hora).
-    const { data: calibRow } = await context.supabase
-      .from("eta_traffic_calibration")
-      .select("avg_speed_kmh, samples, source, updated_at")
-      .eq("weekday", alvo.weekday)
-      .eq("hour", alvo.hour)
-      .maybeSingle();
+    // Leitura via função segura: a tabela de calibração não é exposta diretamente.
+    const { data: calibRows } = await context.supabase.rpc("eta_avg_speed", {
+      _weekday: alvo.weekday,
+      _hour: alvo.hour,
+    });
+    const calibRow = Array.isArray(calibRows) ? calibRows[0] : calibRows;
 
     const calibSpeed = Number(calibRow?.avg_speed_kmh);
     const calibFator =
