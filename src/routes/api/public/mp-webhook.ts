@@ -8,30 +8,9 @@ const webhookSchema = z.object({
 
 async function processOrder(orderId: string) {
   try {
-    const { mercadoPagoRequest, normalizeOrderStatus, orderAmountCents, orderPayment } = await import("@/lib/mercadopago.server");
-    const order = await mercadoPagoRequest<import("@/lib/mercadopago.server").MercadoPagoOrder>(`/v1/orders/${encodeURIComponent(orderId)}`);
-    const rideId = order.external_reference;
-    if (!rideId || orderAmountCents(order) <= 0) return;
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: row } = await supabaseAdmin.from("mercadopago_payments")
-      .select("id, ride_id, amount_cents, status")
-      .eq("mp_order_id", order.id).maybeSingle();
-    if (!row || row.ride_id !== rideId || row.amount_cents !== orderAmountCents(order)) return;
-    const payment = orderPayment(order);
-    const status = normalizeOrderStatus(order.status, order.status_detail ?? payment?.status_detail, payment?.expiration_time);
-    if (row.status !== status) {
-      await supabaseAdmin.from("mercadopago_payments").update({
-        status,
-        status_detail: order.status_detail ?? payment?.status_detail ?? null,
-        expires_at: payment?.expiration_time ?? null,
-      }).eq("id", row.id);
-    }
-    if (status === "approved") {
-      await supabaseAdmin.from("rides").update({ paid_at: new Date().toISOString() }).eq("id", row.ride_id).is("paid_at", null);
-    }
-    if (["refunded", "cancelled", "expired", "rejected"].includes(status)) {
-      await supabaseAdmin.from("rides").update({ paid_at: null }).eq("id", row.ride_id);
-    }
+    const { settleMercadoPagoOrder } = await import("@/lib/mercadopago-settle.server");
+    const result = await settleMercadoPagoOrder(orderId);
+    console.info("Mercado Pago webhook processed order", orderId, result?.status ?? "ignored");
   } catch (error) {
     console.error("Mercado Pago order webhook processing failed", error);
   }

@@ -1,0 +1,1 @@
+UPDATE public.rides r SET paid_at = now() FROM public.mercadopago_payments p WHERE p.ride_id = r.id AND p.status = 'approved' AND p.mp_order_id IS NOT NULL AND r.paid_at IS NULL;
