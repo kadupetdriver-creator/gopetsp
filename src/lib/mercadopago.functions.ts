@@ -89,6 +89,14 @@ export const createMercadoPagoPayment = createServerFn({ method: "POST" })
         status, status_detail: order.status_detail ?? payment?.status_detail ?? null, qr_code: qr.qrCode,
         qr_code_base64: qr.qrCodeBase64, expires_at: expiresAt ?? null,
       }).eq("id", attempt.id);
+      if (status === "approved") {
+        try {
+          const { settleMercadoPagoOrder } = await import("./mercadopago-settle.server");
+          await settleMercadoPagoOrder(order.id);
+        } catch (settleError) {
+          console.error("Mercado Pago immediate settle failed", settleError);
+        }
+      }
       return { paymentId: order.id, status, statusDetail: order.status_detail ?? payment?.status_detail ?? null,
         qrCode: qr.qrCode, qrCodeBase64: qr.qrCodeBase64,
         expiresAt: expiresAt ?? null };
