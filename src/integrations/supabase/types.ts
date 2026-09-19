@@ -199,7 +199,7 @@ export type Database = {
           expires_at: string | null
           id: string
           idempotency_key: string
-          mp_payment_id: string | null
+          mp_order_id: string | null
           payment_method: string
           qr_code: string | null
           qr_code_base64: string | null
@@ -216,7 +216,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           idempotency_key?: string
-          mp_payment_id?: string | null
+          mp_order_id?: string | null
           payment_method: string
           qr_code?: string | null
           qr_code_base64?: string | null
@@ -233,7 +233,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           idempotency_key?: string
-          mp_payment_id?: string | null
+          mp_order_id?: string | null
           payment_method?: string
           qr_code?: string | null
           qr_code_base64?: string | null
