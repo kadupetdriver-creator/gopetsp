@@ -70,15 +70,17 @@ export function paymentErrorMessage(status: number, body: unknown) {
   return "Não foi possível processar o pagamento. Confira os dados e tente novamente.";
 }
 
-export function normalizeOrderStatus(status: string, expiration?: string | null) {
+export function normalizeOrderStatus(status: string, statusDetail?: string | null, expiration?: string | null) {
   const normalized = status.toLowerCase();
+  const detail = statusDetail?.toLowerCase();
   if (["created", "pending", "action_required"].includes(normalized) && expiration && new Date(expiration).getTime() <= Date.now()) return "expired";
+  if (normalized === "refunded" || (normalized === "processed" && ["refunded", "partially_refunded"].includes(detail ?? ""))) return "refunded";
   if (["processed", "approved"].includes(normalized)) return "approved";
   if (["created", "pending"].includes(normalized)) return "pending";
   if (["processing", "in_process", "action_required"].includes(normalized)) return "in_process";
   if (["failed", "rejected"].includes(normalized)) return "rejected";
   if (["canceled", "cancelled"].includes(normalized)) return "cancelled";
-  if (["refunded", "partially_refunded", "charged_back"].includes(normalized)) return "refunded";
+  if (["charged_back"].includes(normalized)) return "refunded";
   if (normalized === "expired") return "expired";
   return "pending";
 }

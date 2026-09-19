@@ -18,9 +18,7 @@ async function processOrder(orderId: string) {
       .eq("mp_order_id", order.id).maybeSingle();
     if (!row || row.ride_id !== rideId || row.amount_cents !== orderAmountCents(order)) return;
     const payment = orderPayment(order);
-    const status = order.status === "processed" && order.status_detail === "refunded"
-      ? "refunded"
-      : normalizeOrderStatus(order.status, payment?.expiration_time);
+    const status = normalizeOrderStatus(order.status, order.status_detail ?? payment?.status_detail, payment?.expiration_time);
     if (row.status !== status) {
       await supabaseAdmin.from("mercadopago_payments").update({
         status,
