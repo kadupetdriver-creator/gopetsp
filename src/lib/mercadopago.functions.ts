@@ -105,3 +105,43 @@ export const createMercadoPagoPayment = createServerFn({ method: "POST" })
       return { error: error instanceof Error ? error.message : "Falha de rede. Tente novamente." };
     }
   });
+
+/**
+ * Verificação de reforço: consulta a order no Mercado Pago e aplica o resultado
+ * com a mesma lógica idempotente do webhook.
+ */
+export const syncMercadoPagoPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { rideId: string }) => {
+    if (!/^[0-9a-fA-F-]{36}$/.test(input.rideId)) throw new Error("Corrida inválida.");
+    return input;
+  })
+  .handler(async ({ data, context }) => {
+    const { data: ride } = await context.supabase
+      .from("rides")
+      .select("id, tutor_id, paid_at")
+      .eq("id", data.rideId)
+      .maybeSingle();
+    if (!ride || ride.tutor_id !== context.userId) return { status: "unknown" as const, paid: false };
+    if (ride.paid_at) return { status: "approved" as const, paid: true };
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin
+      .from("mercadopago_payments")
+      .select("mp_order_id")
+      .eq("ride_id", ride.id)
+      .not("mp_order_id", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!row?.mp_order_id) return { status: "unknown" as const, paid: false };
+
+    try {
+      const { settleMercadoPagoOrder } = await import("./mercadopago-settle.server");
+      const result = await settleMercadoPagoOrder(row.mp_order_id);
+      return { status: (result?.status ?? "unknown") as string, paid: Boolean(result?.paid) };
+    } catch (error) {
+      console.error("Mercado Pago sync failed", error);
+      return { status: "unknown" as const, paid: false };
+    }
+  });
