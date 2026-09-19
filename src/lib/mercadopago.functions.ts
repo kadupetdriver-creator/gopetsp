@@ -51,40 +51,47 @@ export const createMercadoPagoPayment = createServerFn({ method: "POST" })
     if (insertError || !attempt) return { error: "Não foi possível iniciar o pagamento. Tente novamente." };
 
     try {
-      const { mercadoPagoRequest, normalizePaymentStatus } = await import("./mercadopago.server");
+      const { mercadoPagoRequest, normalizeOrderStatus, orderPayment, orderPixData } = await import("./mercadopago.server");
       const isPix = method === "pix";
       const expiresAt = isPix ? new Date(Date.now() + 30 * 60 * 1000).toISOString() : undefined;
-      const payload: Record<string, unknown> = {
-        transaction_amount: ride.price_cents / 100,
-        description: `Corrida GoPet - ${ride.pet_name}`.slice(0, 255),
-        payment_method_id: method,
-        payer: { email, identification: { type: "CPF", number: data.cpf } },
-        external_reference: ride.id,
-        notification_url: "https://gopetsp.lovable.app/api/public/mp-webhook",
-        metadata: { ride_id: ride.id, payment_attempt_id: attempt.id },
+      const orderPaymentData: Record<string, unknown> = {
+        amount: (ride.price_cents / 100).toFixed(2),
+        payment_method: isPix
+          ? { id: "pix", type: "bank_transfer" }
+          : {
+              id: method,
+              type: data.brickData.payment_type_id ?? "credit_card",
+              token: data.brickData.token,
+              installments: Number(data.brickData.installments ?? 1),
+            },
       };
-      if (expiresAt) payload["date_of_expiration"] = expiresAt;
       if (!isPix) {
         if (!data.brickData.token) return { error: "Os dados do cartão não foram concluídos." };
-        payload["token"] = data.brickData.token;
-        payload["installments"] = Number(data.brickData.installments ?? 1);
-        if (data.brickData.issuer_id) payload["issuer_id"] = String(data.brickData.issuer_id);
-      }
-      const payment = await mercadoPagoRequest<import("./mercadopago.server").MercadoPagoPayment>("/v1/payments", {
+      } else orderPaymentData["expiration_time"] = "PT30M";
+      const payload: Record<string, unknown> = {
+        type: "online",
+        processing_mode: "automatic",
+        external_reference: ride.id,
+        total_amount: (ride.price_cents / 100).toFixed(2),
+        payer: { email, identification: { type: "CPF", number: data.cpf } },
+        transactions: { payments: [orderPaymentData] },
+      };
+      const order = await mercadoPagoRequest<import("./mercadopago.server").MercadoPagoOrder>("/v1/orders", {
         method: "POST",
         body: JSON.stringify(payload),
         idempotencyKey,
       });
-      const status = normalizePaymentStatus(payment.status, payment.date_of_expiration);
-      const qr = payment.point_of_interaction?.transaction_data;
+      const payment = orderPayment(order);
+      const status = normalizeOrderStatus(order.status, payment?.expiration_time ?? expiresAt);
+      const qr = orderPixData(order);
       await supabaseAdmin.from("mercadopago_payments").update({
-        mp_payment_id: String(payment.id), payment_method: payment.payment_method_id ?? method,
-        status, status_detail: payment.status_detail ?? null, qr_code: qr?.qr_code ?? null,
-        qr_code_base64: qr?.qr_code_base64 ?? null, expires_at: payment.date_of_expiration ?? expiresAt ?? null,
+        mp_order_id: order.id, payment_method: payment?.payment_method?.id ?? payment?.payment_method_id ?? method,
+        status, status_detail: order.status_detail ?? payment?.status_detail ?? null, qr_code: qr.qrCode,
+        qr_code_base64: qr.qrCodeBase64, expires_at: expiresAt ?? null,
       }).eq("id", attempt.id);
-      return { paymentId: String(payment.id), status, statusDetail: payment.status_detail ?? null,
-        qrCode: qr?.qr_code ?? null, qrCodeBase64: qr?.qr_code_base64 ?? null,
-        expiresAt: payment.date_of_expiration ?? expiresAt ?? null };
+      return { paymentId: order.id, status, statusDetail: order.status_detail ?? payment?.status_detail ?? null,
+        qrCode: qr.qrCode, qrCodeBase64: qr.qrCodeBase64,
+        expiresAt: expiresAt ?? null };
     } catch (error) {
       await supabaseAdmin.from("mercadopago_payments").update({ status: "rejected", status_detail: "provider_error" }).eq("id", attempt.id);
       return { error: error instanceof Error ? error.message : "Falha de rede. Tente novamente." };

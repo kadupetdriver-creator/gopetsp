@@ -33,19 +33,18 @@ export const refundRidePayment = createServerFn({ method: "POST" })
 
     const { data: payment } = await supabaseAdmin
       .from("mercadopago_payments")
-      .select("id, mp_payment_id, status, refund_idempotency_key")
+      .select("id, mp_order_id, status, refund_idempotency_key")
       .eq("ride_id", ride.id)
       .eq("status", "approved")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (!payment?.mp_payment_id) return { status: "none" };
+    if (!payment?.mp_order_id) return { status: "none" };
 
     try {
       const { mercadoPagoRequest } = await import("./mercadopago.server");
-      await mercadoPagoRequest(`/v1/payments/${encodeURIComponent(payment.mp_payment_id)}/refunds`, {
+      await mercadoPagoRequest(`/v1/orders/${encodeURIComponent(payment.mp_order_id)}/refund`, {
         method: "POST",
-        body: "{}",
         idempotencyKey: payment.refund_idempotency_key,
       });
       await supabaseAdmin.from("mercadopago_payments").update({ status: "refunded" }).eq("id", payment.id);

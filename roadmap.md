@@ -5,7 +5,7 @@
 - [x] Chat, avaliações, mapas, rastreamento e compartilhamento seguro
 - [x] Administração, relatórios, bônus, documentos e exportação de cadastros
 - [x] Tarifas, rotas, ida/volta, espera, paradas e estimativa de trânsito
-- [x] Checkout Mercado Pago no app com crédito, débito e Pix
+- [x] Checkout Mercado Pago no app com crédito, débito e Pix pela API de Orders
 - [x] CPF obrigatório, Pix com QR Code/copia e cola e expiração em 30 minutos
 - [x] Confirmação por webhook assinado, atualização em tempo real e reembolso integral
 - [x] Sem split, repasse ou escrow; valor integral da GoPet
