@@ -89,8 +89,8 @@ export function labelOf(
 /** Estimativa simples: base + km, ajustada pelo porte do pet. */
 export function estimatePriceCents(distanceKm: number, petSize: string): number {
   const factor = petSizes.find((s) => s.value === petSize)?.factor ?? 1;
-  const base = 1200;
-  const perKm = 45;
+  const base = 1299;
+  const perKm = 350;
   return Math.round((base + distanceKm * perKm) * factor);
 }
 
