@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -91,6 +92,7 @@ function RideDetails() {
   const { rideId } = Route.useParams();
   const { user } = useRoleGuard("tutor", "/minhas-corridas");
   const qc = useQueryClient();
+  const refundPayment = useServerFn(refundRidePayment);
 
   const { data: ride, isLoading } = useQuery({
     queryKey: ["ride", rideId],
@@ -169,7 +171,7 @@ function RideDetails() {
         _status: "cancelled",
       });
       if (error) throw error;
-      const result = await refundRidePayment({ data: { rideId } });
+      const result = await refundPayment({ data: { rideId } });
       if ("error" in result) throw new Error(result.error);
       return result.status;
     },

@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Clock3, Copy, CreditCard, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ type PaymentRow = {
 };
 
 const statusMessage: Record<string, string> = {
+  approved: "Pagamento recebido. Aguardando a confirmação segura do Mercado Pago.",
   pending: "Aguardando o pagamento.",
   in_process: "Pagamento em análise.",
   rejected: "Pagamento recusado. Confira os dados ou tente outra forma de pagamento.",
@@ -54,6 +56,7 @@ function PagamentoCorrida() {
   const { rideId } = Route.useParams();
   const { user } = useRoleGuard("tutor");
   const qc = useQueryClient();
+  const createPayment = useServerFn(createMercadoPagoPayment);
   const [cpf, setCpf] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
@@ -117,14 +120,14 @@ function PagamentoCorrida() {
   }, [payment?.expires_at]);
 
   const countdown = useMemo(() => `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`, [secondsLeft]);
-  const approved = Boolean(ride?.paid_at) || payment?.status === "approved";
+  const approved = Boolean(ride?.paid_at);
   const showPix = Boolean(payment?.qr_code && ["pending", "in_process"].includes(payment.status) && secondsLeft > 0);
   const canTryAgain = !payment || ["rejected", "cancelled", "expired"].includes(payment.status);
 
   const submitPayment = async (brickData: PaymentBrickData) => {
     if (!isValidCPF(cpf)) { toast.error("Digite um CPF válido para continuar."); throw new Error("CPF inválido"); }
     setSubmitted(true);
-    const result = await createMercadoPagoPayment({ data: { rideId, cpf, brickData } });
+    const result = await createPayment({ data: { rideId, cpf, brickData } });
     setSubmitted(false);
     if ("error" in result) { toast.error(result.error); throw new Error(result.error); }
     await qc.invalidateQueries({ queryKey: ["mercadopago-payment", rideId] });
