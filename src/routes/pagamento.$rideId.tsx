@@ -127,13 +127,21 @@ function PagamentoCorrida() {
   const submitPayment = async (brickData: PaymentBrickData) => {
     if (!isValidCPF(cpf)) { toast.error("Digite um CPF válido para continuar."); throw new Error("CPF inválido"); }
     setSubmitted(true);
-    const result = await createPayment({ data: { rideId, cpf, brickData } });
-    setSubmitted(false);
-    if ("error" in result) { toast.error(result.error); throw new Error(result.error); }
-    await qc.invalidateQueries({ queryKey: ["mercadopago-payment", rideId] });
-    if (result.status === "approved") toast.success("Pagamento recebido. Aguarde a confirmação segura.");
-    else if (result.qrCode) toast.success("Pix gerado. Pague em até 30 minutos.");
-    else if (result.status === "rejected") toast.error("Pagamento recusado. Tente outra forma de pagamento.");
+    setFormError(null);
+    try {
+      const result = await createPayment({ data: { rideId, cpf, brickData } });
+      if ("error" in result) { setFormError(result.error); toast.error(result.error); throw new Error(result.error); }
+      await qc.invalidateQueries({ queryKey: ["mercadopago-payment", rideId] });
+      if (result.status === "approved") toast.success("Pagamento recebido. Aguarde a confirmação segura.");
+      else if (result.qrCode) toast.success("Pix gerado. Pague em até 30 minutos.");
+      else if (result.status === "rejected") { setFormError("Pagamento recusado. Tente outra forma de pagamento."); toast.error("Pagamento recusado. Tente outra forma de pagamento."); }
+    } catch (error) {
+      const message = error instanceof Error && error.message ? error.message : "Não foi possível concluir o pagamento. Tente novamente.";
+      setFormError(message);
+      throw error;
+    } finally {
+      setSubmitted(false);
+    }
   };
 
   return (
