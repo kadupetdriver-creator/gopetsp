@@ -48,8 +48,27 @@ export function MercadoPagoPaymentBrick({
           maxInstallments: 12,
         },
       }}
-      onSubmit={async (formData: IPaymentFormData) => {
-        await onSubmit(formData as PaymentBrickData);
+      onSubmit={async (param: IPaymentFormData) => {
+        // O Brick entrega { selectedPaymentMethod, formData }; o Pix chega como
+        // selectedPaymentMethod "bank_transfer" e sem token de cartão.
+        const selected = param?.selectedPaymentMethod;
+        const form = (param?.formData ?? {}) as unknown as Record<string, unknown>;
+        const isPix = selected === "bank_transfer" || form["payment_method_id"] === "pix";
+        const methodId = isPix ? "pix" : (form["payment_method_id"] as string | undefined);
+        const typeId = isPix ? "bank_transfer" : ((form["payment_type_id"] as string | undefined) ?? selected);
+        const payload: PaymentBrickData = {
+          ...(form as PaymentBrickData),
+          ...(methodId ? { payment_method_id: methodId } : {}),
+          ...(typeId ? { payment_type_id: typeId } : {}),
+        };
+        console.info("[MP Brick] onSubmit", {
+          selectedPaymentMethod: selected,
+          payment_method_id: payload.payment_method_id,
+          payment_type_id: payload.payment_type_id,
+          hasToken: Boolean(payload.token),
+          installments: payload.installments,
+        });
+        await onSubmit(payload);
       }}
       onError={(error) => {
         console.error("Payment Brick error", error);
