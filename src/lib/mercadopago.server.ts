@@ -62,6 +62,8 @@ export function paymentErrorMessage(status: number, body: unknown) {
   const cause = body && typeof body === "object" && "cause" in body
     ? (body as { cause?: Array<{ code?: string }> }).cause?.[0]?.code
     : undefined;
+  // A API de Orders devolve 402 quando o pagamento é recusado pelo emissor/antifraude.
+  if (status === 402) return "Pagamento recusado. Tente outro cartão ou pague com Pix.";
   if (status === 401 || status === 403) return "O pagamento não pôde ser autenticado. Fale com a central GoPet.";
   if (cause === "cc_rejected_bad_filled_card_number") return "Número do cartão inválido. Confira os dados.";
   if (cause === "cc_rejected_bad_filled_date") return "Data de validade inválida. Confira os dados.";
