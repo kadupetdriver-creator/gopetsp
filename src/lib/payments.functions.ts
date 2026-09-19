@@ -37,6 +37,7 @@ export const refundRidePayment = createServerFn({ method: "POST" })
       .eq("ride_id", ride.id)
       .eq("status", "approved")
       .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
     if (!payment?.mp_payment_id) return { status: "none" };
 

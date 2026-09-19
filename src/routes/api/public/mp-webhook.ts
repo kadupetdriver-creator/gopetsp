@@ -1,12 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
+
+const webhookSchema = z.object({
+  data: z.object({ id: z.union([z.string().max(100), z.number()]) }).optional(),
+  type: z.string().max(50).optional(),
+}).passthrough();
 
 export const Route = createFileRoute("/api/public/mp-webhook")({
   server: { handlers: { POST: async ({ request }) => {
     const secret = process.env["MP_WEBHOOK_SECRET"];
     if (!secret) return new Response("Webhook not configured", { status: 503 });
     const url = new URL(request.url);
-    let body: { data?: { id?: string | number }; type?: string } = {};
-    try { body = await request.json(); } catch { return new Response("Invalid body", { status: 400 }); }
+    let body: z.infer<typeof webhookSchema>;
+    try { body = webhookSchema.parse(await request.json()); } catch { return new Response("Invalid body", { status: 400 }); }
     const dataId = String(body.data?.id ?? url.searchParams.get("data.id") ?? "");
     const signature = request.headers.get("x-signature") ?? "";
     const requestId = request.headers.get("x-request-id") ?? "";

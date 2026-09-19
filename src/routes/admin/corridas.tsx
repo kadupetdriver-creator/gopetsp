@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
@@ -60,6 +61,7 @@ const activeGroup: RideStatus[] = ["pending", "accepted", "en_route", "in_progre
 
 function AdminCorridasPage() {
   const qc = useQueryClient();
+  const refundPayment = useServerFn(refundRidePayment);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"todas" | "andamento" | "completed" | "cancelled">("todas");
   const [editing, setEditing] = useState<Ride | null>(null);
@@ -104,7 +106,7 @@ function AdminCorridasPage() {
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("rides").update({ status: "cancelled" }).eq("id", id);
       if (error) throw error;
-      const result = await refundRidePayment({ data: { rideId: id } });
+      const result = await refundPayment({ data: { rideId: id } });
       if ("error" in result) throw new Error(result.error);
     },
     onSuccess: () => {

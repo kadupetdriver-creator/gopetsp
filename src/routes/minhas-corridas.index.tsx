@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CalendarClock, MapPin, MessageCircle, PawPrint } from "lucide-react";
@@ -73,6 +74,7 @@ function MinhasCorridas() {
   const { user } = useRoleGuard("tutor", "/minhas-corridas");
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const refundPayment = useServerFn(refundRidePayment);
 
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "tutor", user?.id],
@@ -115,7 +117,7 @@ function MinhasCorridas() {
       });
       if (error) throw error;
 
-      const result = await refundRidePayment({ data: { rideId: id } });
+      const result = await refundPayment({ data: { rideId: id } });
       if ("error" in result) throw new Error(result.error);
       return result.status;
     },
