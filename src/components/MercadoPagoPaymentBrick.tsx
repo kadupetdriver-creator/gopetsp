@@ -1,7 +1,14 @@
-import { useEffect } from "react";
 import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
 import type { IPaymentFormData } from "@mercadopago/sdk-react/esm/bricks/payment/type";
 import type { PaymentBrickData } from "@/lib/mercadopago.functions";
+
+// O SDK precisa estar inicializado ANTES do Brick montar; em useEffect seria tarde demais.
+let initializedKey: string | undefined;
+function ensureInitialized(publicKey: string) {
+  if (initializedKey === publicKey) return;
+  initMercadoPago(publicKey, { locale: "pt-BR" });
+  initializedKey = publicKey;
+}
 
 export function MercadoPagoPaymentBrick({
   publicKey,
@@ -18,14 +25,16 @@ export function MercadoPagoPaymentBrick({
   onSubmit: (data: PaymentBrickData) => Promise<void>;
   onError: (message: string) => void;
 }) {
-  useEffect(() => {
-    initMercadoPago(publicKey, { locale: "pt-BR" });
-  }, [publicKey]);
+  ensureInitialized(publicKey);
+
+  if (!(amountCents > 0)) {
+    return <p className="text-sm text-destructive">Não foi possível calcular o valor desta corrida.</p>;
+  }
 
   return (
     <Payment
       initialization={{
-        amount: amountCents / 100,
+        amount: Number((amountCents / 100).toFixed(2)),
         payer: {
           ...(email ? { email } : {}),
           identification: { type: "CPF", number: cpf },
@@ -39,11 +48,13 @@ export function MercadoPagoPaymentBrick({
           maxInstallments: 12,
         },
       }}
-      locale="pt"
       onSubmit={async (formData: IPaymentFormData) => {
         await onSubmit(formData as PaymentBrickData);
       }}
-      onError={(error) => onError(error.message || "Não foi possível carregar o pagamento.")}
+      onError={(error) => {
+        console.error("Payment Brick error", error);
+        onError("Não foi possível carregar o pagamento. Atualize a página e tente novamente.");
+      }}
     />
   );
 }
