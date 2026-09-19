@@ -843,6 +843,7 @@ export type Database = {
         }
       }
       my_credit_balance_cents: { Args: never; Returns: number }
+      pet_photo_readable: { Args: { _name: string }; Returns: boolean }
       refresh_eta_calibration: { Args: { _days?: number }; Returns: number }
       review_driver_application: {
         Args: {
