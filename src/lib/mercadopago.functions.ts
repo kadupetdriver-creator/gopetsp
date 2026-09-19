@@ -58,36 +58,40 @@ export const createMercadoPagoPayment = createServerFn({ method: "POST" })
         amount: (ride.price_cents / 100).toFixed(2),
         payment_method: isPix
           ? { id: "pix", type: "bank_transfer" }
-          : { id: method, type: data.brickData.payment_type_id ?? "credit_card", token: data.brickData.token },
+          : {
+              id: method,
+              type: data.brickData.payment_type_id ?? "credit_card",
+              token: data.brickData.token,
+              installments: Number(data.brickData.installments ?? 1),
+            },
       };
       if (!isPix) {
         if (!data.brickData.token) return { error: "Os dados do cartão não foram concluídos." };
-        orderPaymentData["installments"] = Number(data.brickData.installments ?? 1);
-      }
+      } else orderPaymentData["expiration_time"] = "PT30M";
       const payload: Record<string, unknown> = {
+        type: "online",
         processing_mode: "automatic",
         external_reference: ride.id,
         total_amount: (ride.price_cents / 100).toFixed(2),
         payer: { email, identification: { type: "CPF", number: data.cpf } },
         transactions: { payments: [orderPaymentData] },
       };
-      if (expiresAt) payload["expiration_time"] = expiresAt;
       const order = await mercadoPagoRequest<import("./mercadopago.server").MercadoPagoOrder>("/v1/orders", {
         method: "POST",
         body: JSON.stringify(payload),
         idempotencyKey,
       });
-      const status = normalizeOrderStatus(order.status, order.expiration_time ?? expiresAt);
+      const status = normalizeOrderStatus(order.status, payment?.expiration_time ?? expiresAt);
       const payment = orderPayment(order);
       const qr = orderPixData(order);
       await supabaseAdmin.from("mercadopago_payments").update({
-        mp_payment_id: order.id, payment_method: payment?.payment_method?.id ?? payment?.payment_method_id ?? method,
+        mp_order_id: order.id, payment_method: payment?.payment_method?.id ?? payment?.payment_method_id ?? method,
         status, status_detail: order.status_detail ?? payment?.status_detail ?? null, qr_code: qr.qrCode,
-        qr_code_base64: qr.qrCodeBase64, expires_at: order.expiration_time ?? expiresAt ?? null,
+        qr_code_base64: qr.qrCodeBase64, expires_at: expiresAt ?? null,
       }).eq("id", attempt.id);
       return { paymentId: order.id, status, statusDetail: order.status_detail ?? payment?.status_detail ?? null,
         qrCode: qr.qrCode, qrCodeBase64: qr.qrCodeBase64,
-        expiresAt: order.expiration_time ?? expiresAt ?? null };
+        expiresAt: expiresAt ?? null };
     } catch (error) {
       await supabaseAdmin.from("mercadopago_payments").update({ status: "rejected", status_detail: "provider_error" }).eq("id", attempt.id);
       return { error: error instanceof Error ? error.message : "Falha de rede. Tente novamente." };

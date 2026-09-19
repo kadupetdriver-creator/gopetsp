@@ -7,7 +7,13 @@ export type MercadoPagoOrderPayment = {
   status: string;
   status_detail?: string | null;
   amount?: string | number;
-  payment_method?: { id?: string | null; type?: string | null } | null;
+  expiration_time?: string | null;
+  payment_method?: {
+    id?: string | null;
+    type?: string | null;
+    qr_code?: string | null;
+    qr_code_base64?: string | null;
+  } | null;
   payment_method_id?: string | null;
   payment_type_id?: string | null;
 };
@@ -18,7 +24,6 @@ export type MercadoPagoOrder = {
   status_detail?: string | null;
   external_reference?: string | null;
   total_amount?: string | number;
-  expiration_time?: string | null;
   transactions?: { payments?: MercadoPagoOrderPayment[] } | null;
   point_of_interaction?: {
     transaction_data?: { qr_code?: string; qr_code_base64?: string };
@@ -94,8 +99,8 @@ export function orderPixData(order: MercadoPagoOrder) {
     qr_code_base64?: string;
   }) | undefined;
   return {
-    qrCode: order.qr_code ?? order.point_of_interaction?.transaction_data?.qr_code ?? source?.qr_code ?? source?.point_of_interaction?.transaction_data?.qr_code ?? null,
-    qrCodeBase64: order.qr_code_base64 ?? order.point_of_interaction?.transaction_data?.qr_code_base64 ?? source?.qr_code_base64 ?? source?.point_of_interaction?.transaction_data?.qr_code_base64 ?? null,
+    qrCode: source?.payment_method?.qr_code ?? order.qr_code ?? order.point_of_interaction?.transaction_data?.qr_code ?? source?.qr_code ?? source?.point_of_interaction?.transaction_data?.qr_code ?? null,
+    qrCodeBase64: source?.payment_method?.qr_code_base64 ?? order.qr_code_base64 ?? order.point_of_interaction?.transaction_data?.qr_code_base64 ?? source?.qr_code_base64 ?? source?.point_of_interaction?.transaction_data?.qr_code_base64 ?? null,
   };
 }
 
