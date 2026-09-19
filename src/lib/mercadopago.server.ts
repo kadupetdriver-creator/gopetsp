@@ -119,7 +119,9 @@ export function verifyMercadoPagoSignature(input: {
   const timestamp = parts.get("ts");
   const received = parts.get("v1");
   if (!timestamp || !received || !/^\d+$/.test(timestamp) || !/^[a-f0-9]+$/i.test(received)) return false;
-  if (Math.abs(Date.now() - Number(timestamp)) > 10 * 60 * 1000) return false;
+  // Mercado Pago may send the timestamp in seconds or milliseconds.
+  const tsMs = timestamp.length <= 10 ? Number(timestamp) * 1000 : Number(timestamp);
+  if (Math.abs(Date.now() - tsMs) > 10 * 60 * 1000) return false;
   const manifest = `id:${input.dataId.toLowerCase()};request-id:${input.requestId};ts:${timestamp};`;
   const expected = createHmac("sha256", input.secret).update(manifest).digest("hex");
   const a = Buffer.from(received, "hex");
