@@ -43,7 +43,7 @@ export const refundRidePayment = createServerFn({ method: "POST" })
 
     try {
       const { mercadoPagoRequest } = await import("./mercadopago.server");
-      await mercadoPagoRequest(`/v1/payments/${encodeURIComponent(payment.mp_payment_id)}/refunds`, {
+      await mercadoPagoRequest(`/v1/orders/${encodeURIComponent(payment.mp_payment_id)}/refund`, {
         method: "POST",
         body: "{}",
         idempotencyKey: payment.refund_idempotency_key,

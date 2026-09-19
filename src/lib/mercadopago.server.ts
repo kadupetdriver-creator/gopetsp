@@ -2,18 +2,30 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 const MP_API = "https://api.mercadopago.com";
 
-export type MercadoPagoPayment = {
-  id: number;
+export type MercadoPagoOrderPayment = {
+  id?: string | number;
   status: string;
   status_detail?: string | null;
+  amount?: string | number;
+  payment_method?: { id?: string | null; type?: string | null } | null;
   payment_method_id?: string | null;
   payment_type_id?: string | null;
-  transaction_amount: number;
+};
+
+export type MercadoPagoOrder = {
+  id: string;
+  status: string;
+  status_detail?: string | null;
   external_reference?: string | null;
-  date_of_expiration?: string | null;
+  total_amount?: string | number;
+  expiration_time?: string | null;
+  transactions?: { payments?: MercadoPagoOrderPayment[] } | null;
   point_of_interaction?: {
     transaction_data?: { qr_code?: string; qr_code_base64?: string };
   } | null;
+  payment_method?: { id?: string | null; type?: string | null } | null;
+  qr_code?: string | null;
+  qr_code_base64?: string | null;
 };
 
 function accessToken() {
@@ -53,10 +65,38 @@ export function paymentErrorMessage(status: number, body: unknown) {
   return "Não foi possível processar o pagamento. Confira os dados e tente novamente.";
 }
 
-export function normalizePaymentStatus(status: string, expiration?: string | null) {
-  if ((status === "pending" || status === "in_process") && expiration && new Date(expiration).getTime() <= Date.now()) return "expired";
-  if (["approved", "pending", "in_process", "rejected", "cancelled", "refunded", "expired"].includes(status)) return status;
-  return "cancelled";
+export function normalizeOrderStatus(status: string, expiration?: string | null) {
+  const normalized = status.toLowerCase();
+  if (["created", "pending", "action_required"].includes(normalized) && expiration && new Date(expiration).getTime() <= Date.now()) return "expired";
+  if (["processed", "approved"].includes(normalized)) return "approved";
+  if (["created", "pending"].includes(normalized)) return "pending";
+  if (["processing", "in_process", "action_required"].includes(normalized)) return "in_process";
+  if (["failed", "rejected"].includes(normalized)) return "rejected";
+  if (["canceled", "cancelled"].includes(normalized)) return "cancelled";
+  if (["refunded", "partially_refunded", "charged_back"].includes(normalized)) return "refunded";
+  if (normalized === "expired") return "expired";
+  return "pending";
+}
+
+export function orderPayment(order: MercadoPagoOrder) {
+  return order.transactions?.payments?.[0];
+}
+
+export function orderAmountCents(order: MercadoPagoOrder) {
+  const amount = order.total_amount ?? orderPayment(order)?.amount;
+  return Math.round(Number(amount ?? 0) * 100);
+}
+
+export function orderPixData(order: MercadoPagoOrder) {
+  const source = orderPayment(order) as (MercadoPagoOrderPayment & {
+    point_of_interaction?: { transaction_data?: { qr_code?: string; qr_code_base64?: string } };
+    qr_code?: string;
+    qr_code_base64?: string;
+  }) | undefined;
+  return {
+    qrCode: order.qr_code ?? order.point_of_interaction?.transaction_data?.qr_code ?? source?.qr_code ?? source?.point_of_interaction?.transaction_data?.qr_code ?? null,
+    qrCodeBase64: order.qr_code_base64 ?? order.point_of_interaction?.transaction_data?.qr_code_base64 ?? source?.qr_code_base64 ?? source?.point_of_interaction?.transaction_data?.qr_code_base64 ?? null,
+  };
 }
 
 export function verifyMercadoPagoSignature(input: {
