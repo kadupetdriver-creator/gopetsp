@@ -81,8 +81,8 @@ export const createMercadoPagoPayment = createServerFn({ method: "POST" })
         body: JSON.stringify(payload),
         idempotencyKey,
       });
-      const status = normalizeOrderStatus(order.status, payment?.expiration_time ?? expiresAt);
       const payment = orderPayment(order);
+      const status = normalizeOrderStatus(order.status, payment?.expiration_time ?? expiresAt);
       const qr = orderPixData(order);
       await supabaseAdmin.from("mercadopago_payments").update({
         mp_order_id: order.id, payment_method: payment?.payment_method?.id ?? payment?.payment_method_id ?? method,
