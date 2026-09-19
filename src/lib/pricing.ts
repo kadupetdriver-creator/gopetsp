@@ -3,10 +3,10 @@
  * Este módulo é a única fonte de verdade do cálculo e é executado no backend.
  */
 
-export const PRICE_BASE_CENTS = 1200;
-export const PRICE_PER_KM_CENTS = 45;
-/** Tempo estimado de viagem: R$ 0,60 por minuto (estilo apps de corrida). */
-export const PRICE_PER_MINUTE_CENTS = 60;
+export const PRICE_BASE_CENTS = 1299;
+export const PRICE_PER_KM_CENTS = 350;
+/** Tempo estimado de viagem: R$ 0,40 por minuto (estilo apps de corrida). */
+export const PRICE_PER_MINUTE_CENTS = 40;
 export const TRUNK_FEE_CENTS = 500;
 /** Pets adicionais pagam 40% do valor integral do próprio porte. */
 export const EXTRA_PET_FACTOR = 0.4;
