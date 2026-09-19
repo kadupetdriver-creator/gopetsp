@@ -772,6 +772,15 @@ export type Database = {
         }[]
       }
       cpf_disponivel: { Args: { _cpf: string }; Returns: boolean }
+      eta_avg_speed: {
+        Args: { _hour: number; _weekday: number }
+        Returns: {
+          avg_speed_kmh: number
+          samples: number
+          source: string
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["platform_role"]
