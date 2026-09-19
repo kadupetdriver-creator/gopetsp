@@ -90,7 +90,7 @@ export function labelOf(
 export function estimatePriceCents(distanceKm: number, petSize: string): number {
   const factor = petSizes.find((s) => s.value === petSize)?.factor ?? 1;
   const base = 1299;
-  const perKm = 450;
+  const perKm = 400;
   return Math.round((base + distanceKm * perKm) * factor);
 }
 
