@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatBRL } from "@/lib/rides";
 import { isValidCPF, maskCPF } from "@/lib/drivers";
-import { createMercadoPagoPayment, getMercadoPagoPublicKey, type PaymentBrickData } from "@/lib/mercadopago.functions";
+import { createMercadoPagoPayment, getMercadoPagoPublicKey, syncMercadoPagoPayment, type PaymentBrickData } from "@/lib/mercadopago.functions";
 
 const MercadoPagoPaymentBrick = lazy(() =>
   import("@/components/MercadoPagoPaymentBrick").then((module) => ({ default: module.MercadoPagoPaymentBrick })),
@@ -57,6 +57,7 @@ function PagamentoCorrida() {
   const { user } = useRoleGuard("tutor");
   const qc = useQueryClient();
   const createPayment = useServerFn(createMercadoPagoPayment);
+  const syncPayment = useServerFn(syncMercadoPagoPayment);
   const [cpf, setCpf] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
