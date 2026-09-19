@@ -59,6 +59,7 @@ function PagamentoCorrida() {
   const createPayment = useServerFn(createMercadoPagoPayment);
   const [cpf, setCpf] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
 
   const { data: ride, isLoading } = useQuery({
