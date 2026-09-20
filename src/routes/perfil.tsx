@@ -134,19 +134,45 @@ function PerfilPage() {
   const addPet = useMutation({
     mutationFn: async () => {
       if (!petSpeciesValue) throw new Error("Selecione a espécie do pet.");
-      const { error } = await supabase
+      const { data: created, error } = await supabase
         .from("pets")
-        .insert({ owner_id: user!.id, name: petName, size: petSize, species: petSpeciesValue });
+        .insert({ owner_id: user!.id, name: petName, size: petSize, species: petSpeciesValue })
+        .select("id")
+        .single();
       if (error) throw error;
+      if (petPhoto && created) {
+        const path = await uploadPetPhoto(user!.id, created.id, petPhoto);
+        const { error: photoError } = await supabase
+          .from("pets")
+          .update({ photo_url: path })
+          .eq("id", created.id);
+        if (photoError) throw photoError;
+      }
     },
     onSuccess: () => {
       setPetName("");
       setPetSpeciesValue("");
+      setPetPhoto(null);
+      if (petPhotoInputRef.current) petPhotoInputRef.current.value = "";
       toast.success("Pet cadastrado.");
       void qc.invalidateQueries({ queryKey: ["pets"] });
     },
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Não foi possível cadastrar o pet."),
+  });
+
+  const changePetPhoto = useMutation({
+    mutationFn: async ({ petId, file }: { petId: string; file: File }) => {
+      const path = await uploadPetPhoto(user!.id, petId, file);
+      const { error } = await supabase.from("pets").update({ photo_url: path }).eq("id", petId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Foto atualizada.");
+      void qc.invalidateQueries({ queryKey: ["pets"] });
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível enviar a foto."),
   });
 
   const removePet = useMutation({
