@@ -157,6 +157,9 @@ function MotoristaPage() {
     };
   }, [user, qc]);
 
+  // Guarda qual corrida do bolsão está sendo aceita, para travar só aquele botão.
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
+
   const update = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: RideStatus }) => {
       // Aceite e mudança de status são validados no backend (transições e disputa).
@@ -166,16 +169,22 @@ function MotoristaPage() {
           : await supabase.rpc("set_ride_status", { _ride_id: id, _status: status });
       if (error) throw error;
     },
-    onSuccess: () => {
-      toast.success("Corrida atualizada.");
+    onSuccess: (_data, variables) => {
+      toast.success(
+        variables.status === "accepted" ? "Corrida sua! Já está em Minhas corridas." : "Corrida atualizada.",
+      );
       void qc.invalidateQueries({ queryKey: ["rides"] });
     },
-    onError: (error) =>
+    onError: (error) => {
       toast.error(
         error instanceof Error && error.message
           ? error.message
           : "Não foi possível atualizar a corrida.",
-      ),
+      );
+      // Se outro motorista pegou primeiro, o bolsão é atualizado na hora.
+      void qc.invalidateQueries({ queryKey: ["rides"] });
+    },
+    onSettled: () => setAcceptingId(null),
   });
 
 
