@@ -1,5 +1,5 @@
-import { PawPrint } from "lucide-react";
 import { labelOf, petSizes, petSpecies, temperaments, transportItems } from "@/lib/rides";
+import { PetPhoto } from "@/components/PetPhoto";
 
 export type PetInfo = {
   name: string;
@@ -25,18 +25,13 @@ export function PetDetails({ pet }: { pet: PetInfo }) {
 
   return (
     <div className="flex gap-3 rounded-xl border border-border p-3">
-      {pet.photo_url ? (
-        <img
-          src={pet.photo_url}
-          alt={`Foto de ${pet.name}`}
-          loading="lazy"
-          className="size-16 shrink-0 rounded-xl object-cover"
-        />
-      ) : (
-        <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-ink">
-          <PawPrint className="size-6" />
-        </span>
-      )}
+      <PetPhoto
+        path={pet.photo_url}
+        petName={pet.name}
+        imgClassName="size-16 shrink-0 rounded-xl object-cover"
+        fallbackClassName="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-ink"
+        iconClassName="size-6"
+      />
       <div className="min-w-0 space-y-1">
         <p className="font-semibold">{pet.name}</p>
         {facts.length > 0 && <p className="text-sm text-muted-foreground">{facts.join(" · ")}</p>}

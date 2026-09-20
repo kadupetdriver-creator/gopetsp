@@ -96,17 +96,13 @@ function PetSelector({ pets, selectedIds, toggle, maxPets }: PetSelectorProps) {
                   active ? "border-primary bg-primary/10" : "border-border hover:bg-muted"
                 } ${blocked ? "cursor-not-allowed opacity-50" : ""}`}
               >
-                {p.photo_url ? (
-                  <img
-                    src={p.photo_url}
-                    alt={`Foto de ${p.name}`}
-                    className="size-10 shrink-0 rounded-lg object-cover"
-                  />
-                ) : (
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                    <PawPrint className="size-4 text-primary-ink" />
-                  </span>
-                )}
+                <PetPhoto
+                  path={p.photo_url}
+                  petName={p.name}
+                  imgClassName="size-10 shrink-0 rounded-lg object-cover"
+                  fallbackClassName="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary-ink"
+                  iconClassName="size-4"
+                />
                 <span className="min-w-0">
                   <span className="block truncate font-medium">{p.name}</span>
                   <span className="block truncate text-xs text-muted-foreground">
