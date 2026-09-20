@@ -157,6 +157,9 @@ function MotoristaPage() {
     };
   }, [user, qc]);
 
+  // Guarda qual corrida do bolsão está sendo aceita, para travar só aquele botão.
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
+
   const update = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: RideStatus }) => {
       // Aceite e mudança de status são validados no backend (transições e disputa).
@@ -166,16 +169,22 @@ function MotoristaPage() {
           : await supabase.rpc("set_ride_status", { _ride_id: id, _status: status });
       if (error) throw error;
     },
-    onSuccess: () => {
-      toast.success("Corrida atualizada.");
+    onSuccess: (_data, variables) => {
+      toast.success(
+        variables.status === "accepted" ? "Corrida sua! Já está em Minhas corridas." : "Corrida atualizada.",
+      );
       void qc.invalidateQueries({ queryKey: ["rides"] });
     },
-    onError: (error) =>
+    onError: (error) => {
       toast.error(
         error instanceof Error && error.message
           ? error.message
           : "Não foi possível atualizar a corrida.",
-      ),
+      );
+      // Se outro motorista pegou primeiro, o bolsão é atualizado na hora.
+      void qc.invalidateQueries({ queryKey: ["rides"] });
+    },
+    onSettled: () => setAcceptingId(null),
   });
 
 
@@ -361,24 +370,37 @@ function MotoristaPage() {
 
       <Tabs defaultValue="abertas" className="mt-8">
         <TabsList className="flex h-auto w-full flex-wrap justify-start">
-          <TabsTrigger value="abertas">Chamadas abertas ({open.length})</TabsTrigger>
+          <TabsTrigger value="abertas">Bolsão de corridas ({open.length})</TabsTrigger>
           <TabsTrigger value="minhas">Minhas corridas ({active.length})</TabsTrigger>
           <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
           <TabsTrigger value="veiculo">Meu veículo</TabsTrigger>
         </TabsList>
 
         <TabsContent value="abertas" className="mt-5 space-y-4">
+          <div className="rounded-2xl border border-border bg-muted/40 p-4">
+            <p className="flex items-center gap-2 font-semibold">
+              <RouteIcon className="size-5 text-primary-ink" />
+              Corridas disponíveis ({open.length})
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Todas as corridas pagas e sem motorista aparecem aqui. Cada corrida vai para um único
+              motorista: o primeiro que aceitar fica com ela e a chamada some para os demais.
+            </p>
+          </div>
           {isLoading && <Skeleton className="h-40 w-full rounded-2xl" />}
           {!isLoading && open.length === 0 && (
-            <EmptyState text="Nenhuma chamada aberta agora. Deixe a página aberta — avisamos assim que aparecer." />
+            <EmptyState text="Nenhuma corrida disponível agora. Deixe a página aberta — avisamos assim que aparecer." />
           )}
           {open.map((ride) => (
             <RideCard key={ride.id} ride={ride}>
               <Button
-                onClick={() => update.mutate({ id: ride.id, status: "accepted" })}
+                onClick={() => {
+                  setAcceptingId(ride.id);
+                  update.mutate({ id: ride.id, status: "accepted" });
+                }}
                 disabled={update.isPending}
               >
-                Aceitar chamada
+                {acceptingId === ride.id ? "Aceitando…" : "Aceitar chamada"}
               </Button>
             </RideCard>
           ))}
