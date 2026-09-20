@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, PawPrint, Trash2 } from "lucide-react";
+import { Camera, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { petSizes, petSpecies, labelOf } from "@/lib/rides";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { PetPhoto, uploadPetPhoto } from "@/components/PetPhoto";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 const phonePattern = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
@@ -54,6 +55,10 @@ function PerfilPage() {
   const [petName, setPetName] = useState("");
   const [petSize, setPetSize] = useState("medio");
   const [petSpeciesValue, setPetSpeciesValue] = useState("");
+  const [petPhoto, setPetPhoto] = useState<File | null>(null);
+  const petPhotoInputRef = useRef<HTMLInputElement>(null);
+  const changePhotoInputRef = useRef<HTMLInputElement>(null);
+  const changePhotoPetId = useRef<string | null>(null);
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
 
@@ -81,7 +86,7 @@ function PerfilPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pets")
-        .select("id, name, size, species")
+        .select("id, name, size, species, photo_url")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -129,19 +134,45 @@ function PerfilPage() {
   const addPet = useMutation({
     mutationFn: async () => {
       if (!petSpeciesValue) throw new Error("Selecione a espécie do pet.");
-      const { error } = await supabase
+      const { data: created, error } = await supabase
         .from("pets")
-        .insert({ owner_id: user!.id, name: petName, size: petSize, species: petSpeciesValue });
+        .insert({ owner_id: user!.id, name: petName, size: petSize, species: petSpeciesValue })
+        .select("id")
+        .single();
       if (error) throw error;
+      if (petPhoto && created) {
+        const path = await uploadPetPhoto(user!.id, created.id, petPhoto);
+        const { error: photoError } = await supabase
+          .from("pets")
+          .update({ photo_url: path })
+          .eq("id", created.id);
+        if (photoError) throw photoError;
+      }
     },
     onSuccess: () => {
       setPetName("");
       setPetSpeciesValue("");
+      setPetPhoto(null);
+      if (petPhotoInputRef.current) petPhotoInputRef.current.value = "";
       toast.success("Pet cadastrado.");
       void qc.invalidateQueries({ queryKey: ["pets"] });
     },
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Não foi possível cadastrar o pet."),
+  });
+
+  const changePetPhoto = useMutation({
+    mutationFn: async ({ petId, file }: { petId: string; file: File }) => {
+      const path = await uploadPetPhoto(user!.id, petId, file);
+      const { error } = await supabase.from("pets").update({ photo_url: path }).eq("id", petId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Foto atualizada.");
+      void qc.invalidateQueries({ queryKey: ["pets"] });
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Não foi possível enviar a foto."),
   });
 
   const removePet = useMutation({
@@ -326,10 +357,41 @@ function PerfilPage() {
                   ))}
                 </SelectContent>
               </Select>
+              <input
+                ref={petPhotoInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                aria-label="Foto do pet"
+                onChange={(e) => setPetPhoto(e.target.files?.[0] ?? null)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="sm:w-auto"
+                onClick={() => petPhotoInputRef.current?.click()}
+              >
+                <Camera className="mr-2 size-4" />
+                {petPhoto ? petPhoto.name : "Foto (opcional)"}
+              </Button>
               <Button type="submit" disabled={addPet.isPending}>
                 Adicionar
               </Button>
             </form>
+
+            <input
+              ref={changePhotoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              aria-label="Trocar foto do pet"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                const petId = changePhotoPetId.current;
+                if (file && petId) changePetPhoto.mutate({ petId, file });
+                e.target.value = "";
+              }}
+            />
 
             <div className="space-y-2">
               {pets?.length === 0 && (
@@ -340,22 +402,42 @@ function PerfilPage() {
                   key={pet.id}
                   className="flex items-center justify-between rounded-xl border border-border px-4 py-3"
                 >
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    <PawPrint className="size-4 text-primary-ink" />
+                  <span className="flex items-center gap-3 text-sm font-medium">
+                    <PetPhoto
+                      path={pet.photo_url}
+                      petName={pet.name}
+                      imgClassName="size-10 shrink-0 rounded-lg object-cover"
+                      fallbackClassName="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-ink"
+                      iconClassName="size-4"
+                    />
                     {pet.name}
                     <span className="font-normal text-muted-foreground">
                       · {labelOf(petSpecies, pet.species)} ·{" "}
                       {petSizes.find((s) => s.value === pet.size)?.label ?? pet.size}
                     </span>
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Remover ${pet.name}`}
-                    onClick={() => removePet.mutate(pet.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  <span className="flex items-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Trocar foto de ${pet.name}`}
+                      disabled={changePetPhoto.isPending}
+                      onClick={() => {
+                        changePhotoPetId.current = pet.id;
+                        changePhotoInputRef.current?.click();
+                      }}
+                    >
+                      <Camera className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Remover ${pet.name}`}
+                      onClick={() => removePet.mutate(pet.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </span>
                 </div>
               ))}
             </div>
