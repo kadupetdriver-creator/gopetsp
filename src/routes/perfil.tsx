@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, PawPrint, Trash2 } from "lucide-react";
+import { Camera, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { petSizes, petSpecies, labelOf } from "@/lib/rides";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { PetPhoto, uploadPetPhoto } from "@/components/PetPhoto";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 const phonePattern = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
@@ -54,6 +55,10 @@ function PerfilPage() {
   const [petName, setPetName] = useState("");
   const [petSize, setPetSize] = useState("medio");
   const [petSpeciesValue, setPetSpeciesValue] = useState("");
+  const [petPhoto, setPetPhoto] = useState<File | null>(null);
+  const petPhotoInputRef = useRef<HTMLInputElement>(null);
+  const changePhotoInputRef = useRef<HTMLInputElement>(null);
+  const changePhotoPetId = useRef<string | null>(null);
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
 
@@ -81,7 +86,7 @@ function PerfilPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pets")
-        .select("id, name, size, species")
+        .select("id, name, size, species, photo_url")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
