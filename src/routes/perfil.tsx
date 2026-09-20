@@ -357,10 +357,41 @@ function PerfilPage() {
                   ))}
                 </SelectContent>
               </Select>
+              <input
+                ref={petPhotoInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                aria-label="Foto do pet"
+                onChange={(e) => setPetPhoto(e.target.files?.[0] ?? null)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="sm:w-auto"
+                onClick={() => petPhotoInputRef.current?.click()}
+              >
+                <Camera className="mr-2 size-4" />
+                {petPhoto ? petPhoto.name : "Foto (opcional)"}
+              </Button>
               <Button type="submit" disabled={addPet.isPending}>
                 Adicionar
               </Button>
             </form>
+
+            <input
+              ref={changePhotoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              aria-label="Trocar foto do pet"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                const petId = changePhotoPetId.current;
+                if (file && petId) changePetPhoto.mutate({ petId, file });
+                e.target.value = "";
+              }}
+            />
 
             <div className="space-y-2">
               {pets?.length === 0 && (
