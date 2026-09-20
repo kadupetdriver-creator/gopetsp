@@ -33,6 +33,7 @@ import { AddressAutocomplete, type SelectedPlace } from "@/components/AddressAut
 
 import { RideMap } from "@/components/RideMap";
 import { ActiveRideTracker } from "@/components/ActiveRideTracker";
+import { PetPhoto } from "@/components/PetPhoto";
 
 type PetItem = {
   id: string;
