@@ -402,22 +402,42 @@ function PerfilPage() {
                   key={pet.id}
                   className="flex items-center justify-between rounded-xl border border-border px-4 py-3"
                 >
-                  <span className="flex items-center gap-2 text-sm font-medium">
-                    <PawPrint className="size-4 text-primary-ink" />
+                  <span className="flex items-center gap-3 text-sm font-medium">
+                    <PetPhoto
+                      path={pet.photo_url}
+                      petName={pet.name}
+                      imgClassName="size-10 shrink-0 rounded-lg object-cover"
+                      fallbackClassName="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-ink"
+                      iconClassName="size-4"
+                    />
                     {pet.name}
                     <span className="font-normal text-muted-foreground">
                       · {labelOf(petSpecies, pet.species)} ·{" "}
                       {petSizes.find((s) => s.value === pet.size)?.label ?? pet.size}
                     </span>
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Remover ${pet.name}`}
-                    onClick={() => removePet.mutate(pet.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  <span className="flex items-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Trocar foto de ${pet.name}`}
+                      disabled={changePetPhoto.isPending}
+                      onClick={() => {
+                        changePhotoPetId.current = pet.id;
+                        changePhotoInputRef.current?.click();
+                      }}
+                    >
+                      <Camera className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Remover ${pet.name}`}
+                      onClick={() => removePet.mutate(pet.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </span>
                 </div>
               ))}
             </div>
