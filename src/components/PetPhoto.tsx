@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 type PetPhotoProps = {
   /** Caminho do arquivo no bucket pet-photos (pets.photo_url). */
-  path?: string | null;
+  path?: string | null | undefined;
   petName: string;
   imgClassName: string;
   fallbackClassName: string;
