@@ -3,6 +3,7 @@
 ## Concluído
 - [x] Marketplace com cadastro, pets, corridas e perfis de tutor/motorista
 - [x] Chat, avaliações, mapas, rastreamento e compartilhamento seguro
+- [x] Avaliação mútua com patinhas e resultado oculto até ambas as partes avaliarem
 - [x] Administração, relatórios, bônus, documentos e exportação de cadastros
 - [x] Tarifas, rotas, ida/volta, espera, paradas e estimativa de trânsito
 - [x] Checkout Mercado Pago no app com crédito, débito e Pix pela API de Orders

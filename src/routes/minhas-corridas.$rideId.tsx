@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { RideMap } from "@/components/RideMap";
 import { RideChat } from "@/components/RideChat";
+import { RideReview } from "@/components/RideReview";
 import {
   coordsFor,
   estimateMinutes,
@@ -403,6 +404,19 @@ function RideDetails() {
             counterpartName={driver?.fullName ?? "Motorista"}
           />
         </div>
+      )}
+
+      {ride.status === "completed" && user && (
+        <Card className="mt-4 shadow-soft">
+          <CardContent className="py-6">
+            <RideReview
+              rideId={ride.id}
+              reviewerId={user.id}
+              revieweeId={ride.driver_id}
+              revieweeName={driver?.fullName ?? "seu motorista"}
+            />
+          </CardContent>
+        </Card>
       )}
 
       <div className="mt-6 flex flex-wrap gap-2">

@@ -28,6 +28,7 @@ import { RideMap } from "@/components/RideMap";
 import { cn } from "@/lib/utils";
 import { PetDetails, type PetInfo } from "@/components/PetDetails";
 import { AddressLink } from "@/components/AddressLink";
+import { RideReview } from "@/components/RideReview";
 import { StatusCard } from "@/routes/seja-motorista";
 import type { DriverStatus } from "@/lib/drivers";
 
@@ -52,6 +53,7 @@ export const Route = createFileRoute("/motorista")({
 
 type Ride = {
   id: string;
+  tutor_id: string;
   pet_name: string;
   pet_size: string;
   service_type: string;
@@ -79,7 +81,7 @@ type Ride = {
 };
 
 const selectCols =
-  "id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, stops, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
+  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, stops, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
 const driverValueOf = (ride: Pick<Ride, "price_cents">) => Math.round(ride.price_cents * 0.75);
 
@@ -476,31 +478,43 @@ function MotoristaPage() {
               .sort((a, b) => b.scheduled_at.localeCompare(a.scheduled_at))
               .map((ride) => (
                 <Card key={ride.id} className="shadow-soft">
-                  <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4 text-sm">
-                    <div>
-                      <p className="font-semibold">
-                        {ride.pet_name}{" "}
-                        <span className="font-normal text-muted-foreground">
-                          · {formatDateTime(ride.scheduled_at)}
+                  <CardContent className="space-y-5 py-4 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="font-semibold">
+                          {ride.pet_name}{" "}
+                          <span className="font-normal text-muted-foreground">
+                            · {formatDateTime(ride.scheduled_at)}
+                          </span>
+                        </p>
+                        <p className="text-muted-foreground">
+                          {ride.origin_address} → {ride.destination_address}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={cn(
+                            "rounded-full px-3 py-1 text-xs font-semibold",
+                            statusStyles[ride.status],
+                          )}
+                        >
+                          {statusLabels[ride.status]}
                         </span>
-                      </p>
-                      <p className="text-muted-foreground">
-                        {ride.origin_address} → {ride.destination_address}
-                      </p>
+                        <span className="font-semibold">
+                          {ride.status === "completed" ? formatBRL(driverValueOf(ride)) : "—"}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={cn(
-                          "rounded-full px-3 py-1 text-xs font-semibold",
-                          statusStyles[ride.status],
-                        )}
-                      >
-                        {statusLabels[ride.status]}
-                      </span>
-                      <span className="font-semibold">
-                        {ride.status === "completed" ? formatBRL(driverValueOf(ride)) : "—"}
-                      </span>
-                    </div>
+                    {ride.status === "completed" && user && (
+                      <div className="border-t border-border pt-5">
+                        <RideReview
+                          rideId={ride.id}
+                          reviewerId={user.id}
+                          revieweeId={ride.tutor_id}
+                          revieweeName="o tutor"
+                        />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
