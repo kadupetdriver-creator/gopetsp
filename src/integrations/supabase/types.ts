@@ -471,6 +471,7 @@ export type Database = {
           created_at: string
           id: string
           rating: number
+          revealed_at: string | null
           reviewee_id: string
           reviewer_id: string
           ride_id: string
@@ -480,6 +481,7 @@ export type Database = {
           created_at?: string
           id?: string
           rating: number
+          revealed_at?: string | null
           reviewee_id: string
           reviewer_id: string
           ride_id: string
@@ -489,6 +491,7 @@ export type Database = {
           created_at?: string
           id?: string
           rating?: number
+          revealed_at?: string | null
           reviewee_id?: string
           reviewer_id?: string
           ride_id?: string
