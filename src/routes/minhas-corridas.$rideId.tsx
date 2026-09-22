@@ -52,6 +52,8 @@ export const Route = createFileRoute("/minhas-corridas/$rideId")({
       },
       { property: "og:title", content: "Detalhes da corrida | GoPet" },
       { property: "og:description", content: "Detalhes e localização ao vivo da corrida do seu pet." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: RideDetails,
