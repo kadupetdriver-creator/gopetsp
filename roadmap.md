@@ -16,5 +16,5 @@
 - [ ] Configurar no Mercado Pago o webhook https://gopetsp.lovable.app/api/public/mp-webhook
 - [ ] Publicar e executar pagamentos reais de homologação após cadastrar os dados
 
-## Em andamento
-- [ ] Criar os relatórios Ganhos Sexta-Feira e Ganhos Segunda-Feira
+## Concluído
+- [x] Criar os relatórios Ganhos Sexta-Feira e Ganhos Segunda-Feira

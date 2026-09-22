@@ -288,6 +288,7 @@ export const adminRemoveAdmin = createServerFn({ method: "POST" })
 export type AdminReportRide = {
   id: string;
   createdAt: string;
+  paidAt: string | null;
   scheduledAt: string;
   status: string;
   priceCents: number;
@@ -386,6 +387,7 @@ export const adminGetReport = createServerFn({ method: "POST" })
       rides: (rides ?? []).map((r: any) => ({
         id: r.id,
         createdAt: r.created_at,
+        paidAt: r.paid_at,
         scheduledAt: r.scheduled_at,
         status: r.status,
         priceCents: r.price_cents,

@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, CalendarRange, WalletCards } from "lucide-react";
 import { adminGetReport } from "@/lib/admin.functions";
 import { refreshEtaCalibration } from "@/lib/eta.functions";
 import { formatBRL, formatDateTime, statusLabels, type RideStatus } from "@/lib/rides";
@@ -25,6 +25,8 @@ export const Route = createFileRoute("/admin/relatorios")({
       { name: "description", content: "Relatório de corridas, bônus e descontos da GoPet." },
       { property: "og:title", content: "Relatórios | GoPet Admin" },
       { property: "og:description", content: "Relatório de corridas, bônus e descontos da GoPet." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AdminRelatoriosPage,
@@ -35,6 +37,72 @@ const kindLabels: Record<string, string> = {
   credito: "Crédito manual",
   desconto: "Desconto",
 };
+
+type ReportRide = Awaited<ReturnType<typeof adminGetReport>>["rides"][number];
+
+const SAO_PAULO_OFFSET_HOURS = 3;
+
+function saoPauloDateParts(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short",
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
+  const weekdays: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return {
+    year: Number(value("year")),
+    month: Number(value("month")),
+    day: Number(value("day")),
+    weekday: weekdays[value("weekday")] ?? 0,
+  };
+}
+
+function localDateToUtc(year: number, month: number, day: number, endOfDay = false) {
+  return new Date(Date.UTC(year, month - 1, day, SAO_PAULO_OFFSET_HOURS + (endOfDay ? 23 : 0), endOfDay ? 59 : 0, endOfDay ? 59 : 0, endOfDay ? 999 : 0));
+}
+
+function addCalendarDays(date: Date, days: number, endOfDay = false) {
+  const shifted = new Date(date.getTime() + days * 86_400_000);
+  return endOfDay
+    ? new Date(shifted.getTime() + 86_400_000 - 1)
+    : shifted;
+}
+
+function latestCompletedEarningsPeriods(now = new Date()) {
+  const parts = saoPauloDateParts(now);
+  const todayStart = localDateToUtc(parts.year, parts.month, parts.day);
+  const daysSinceMonday = (parts.weekday + 6) % 7;
+  const thisMonday = addCalendarDays(todayStart, -daysSinceMonday);
+
+  const fridayBase = parts.weekday >= 5 ? thisMonday : addCalendarDays(thisMonday, -7);
+  const mondayBase = parts.weekday >= 1 ? addCalendarDays(thisMonday, -3) : addCalendarDays(thisMonday, -10);
+
+  return {
+    friday: {
+      title: "Ganhos Sexta-Feira",
+      subtitle: "Faturamento de segunda a quinta-feira",
+      start: fridayBase,
+      end: addCalendarDays(fridayBase, 3, true),
+    },
+    monday: {
+      title: "Ganhos Segunda-Feira",
+      subtitle: "Faturamento de sexta-feira a domingo",
+      start: mondayBase,
+      end: addCalendarDays(mondayBase, 2, true),
+    },
+  };
+}
+
+function paidWithin(rides: ReportRide[], start: Date, end: Date) {
+  return rides.filter((ride) => {
+    if (!ride.paidAt) return false;
+    const paidAt = new Date(ride.paidAt).getTime();
+    return paidAt >= start.getTime() && paidAt <= end.getTime();
+  });
+}
 
 function AdminRelatoriosPage() {
   const getReport = useServerFn(adminGetReport);
@@ -93,6 +161,15 @@ function AdminRelatoriosPage() {
   const totalRides = rides.reduce((acc, r) => acc + r.priceCents, 0);
   const totalBonus = entries.filter((e) => e.kind !== "desconto").reduce((acc, e) => acc + e.amountCents, 0);
   const totalDesconto = entries.filter((e) => e.kind === "desconto").reduce((acc, e) => acc + e.amountCents, 0);
+  const earningsPeriods = useMemo(() => latestCompletedEarningsPeriods(), []);
+  const fridayEarnings = useMemo(
+    () => paidWithin(rides, earningsPeriods.friday.start, earningsPeriods.friday.end),
+    [rides, earningsPeriods],
+  );
+  const mondayEarnings = useMemo(
+    () => paidWithin(rides, earningsPeriods.monday.start, earningsPeriods.monday.end),
+    [rides, earningsPeriods],
+  );
 
   return (
     <div className="space-y-4">
@@ -151,6 +228,11 @@ function AdminRelatoriosPage() {
 
       {!isLoading && (
         <>
+          <div className="grid gap-3 lg:grid-cols-2">
+            <EarningsReport period={earningsPeriods.friday} rides={fridayEarnings} />
+            <EarningsReport period={earningsPeriods.monday} rides={mondayEarnings} />
+          </div>
+
           <div className="grid gap-3 sm:grid-cols-3">
             <SummaryCard label="Corridas" value={`${rides.length}`} hint={formatBRL(totalRides)} />
             <SummaryCard label="Bônus e créditos" value={formatBRL(totalBonus)} hint={`${entries.filter((e) => e.kind !== "desconto").length} lançamentos`} />
@@ -210,6 +292,58 @@ function AdminRelatoriosPage() {
         </>
       )}
     </div>
+  );
+}
+
+function EarningsReport({
+  period,
+  rides,
+}: {
+  period: { title: string; subtitle: string; start: Date; end: Date };
+  rides: ReportRide[];
+}) {
+  const total = rides.reduce((sum, ride) => sum + ride.priceCents, 0);
+  const periodLabel = `${format(period.start, "dd/MM/yyyy")} a ${format(period.end, "dd/MM/yyyy")}`;
+
+  return (
+    <Card className="overflow-hidden shadow-soft">
+      <CardContent className="space-y-4 p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-semibold">{period.title}</p>
+            <p className="text-sm text-muted-foreground">{period.subtitle}</p>
+          </div>
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <WalletCards className="size-5" aria-hidden="true" />
+          </div>
+        </div>
+
+        <div>
+          <p className="text-3xl font-semibold">{formatBRL(total)}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <CalendarRange className="size-3.5" aria-hidden="true" />
+            {periodLabel} · {rides.length} {rides.length === 1 ? "corrida paga" : "corridas pagas"}
+          </p>
+        </div>
+
+        <div className="divide-y border-t">
+          {rides.length === 0 && (
+            <p className="py-4 text-sm text-muted-foreground">Nenhum pagamento confirmado neste período.</p>
+          )}
+          {rides.map((ride) => (
+            <div key={ride.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+              <div className="min-w-0">
+                <p className="truncate font-medium">{ride.tutorName}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {ride.driverName ?? "Sem motorista"} · pago em {ride.paidAt ? formatDateTime(ride.paidAt) : "—"}
+                </p>
+              </div>
+              <p className="shrink-0 font-semibold">{formatBRL(ride.priceCents)}</p>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
