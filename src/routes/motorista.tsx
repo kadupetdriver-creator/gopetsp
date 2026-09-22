@@ -46,6 +46,8 @@ export const Route = createFileRoute("/motorista")({
         property: "og:description",
         content: "Chamadas abertas e corridas aceitas para motoristas parceiros GoPet.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: MotoristaPage,

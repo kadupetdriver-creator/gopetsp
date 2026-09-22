@@ -62,6 +62,7 @@ export function PawRating({
                   ? "fill-primary text-primary-ink"
                   : "fill-transparent text-muted-foreground/45"
               }`}
+              aria-hidden="true"
             />
           </Button>
         ) : (
@@ -87,6 +88,7 @@ export function RideReview({ rideId, reviewerId, revieweeId, revieweeName }: Pro
 
   const { data: reviews } = useQuery({
     queryKey: ["ride-reviews", rideId],
+    refetchInterval: 5000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ride_reviews")
