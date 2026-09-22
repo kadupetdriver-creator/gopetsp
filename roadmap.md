@@ -15,3 +15,6 @@
 - [x] Cadastrar MP_ACCESS_TOKEN, MP_WEBHOOK_SECRET e MP_PUBLIC_KEY nos segredos do projeto
 - [ ] Configurar no Mercado Pago o webhook https://gopetsp.lovable.app/api/public/mp-webhook
 - [ ] Publicar e executar pagamentos reais de homologação após cadastrar os dados
+
+## Em andamento
+- [ ] Criar os relatórios Ganhos Sexta-Feira e Ganhos Segunda-Feira
