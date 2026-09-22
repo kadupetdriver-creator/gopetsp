@@ -78,7 +78,7 @@ function latestCompletedEarningsPeriods(now = new Date()) {
   const thisMonday = addCalendarDays(todayStart, -daysSinceMonday);
 
   const fridayBase = parts.weekday >= 5 ? thisMonday : addCalendarDays(thisMonday, -7);
-  const mondayBase = parts.weekday >= 1 ? addCalendarDays(thisMonday, -3) : addCalendarDays(thisMonday, -10);
+  const mondayBase = addCalendarDays(thisMonday, -3);
 
   return {
     friday: {
@@ -124,17 +124,22 @@ function AdminRelatoriosPage() {
       }),
   });
 
+  const { data: weeklyData, isLoading: isWeeklyLoading } = useQuery({
+    queryKey: ["admin-weekly-earnings"],
+    queryFn: () => getReport({ data: { startDate: null, endDate: null } }),
+  });
+
   const tutorOptions = useMemo(() => {
     const map = new Map<string, string>();
-    for (const r of data?.rides ?? []) map.set(r.tutorId, r.tutorName);
+    for (const r of [...(data?.rides ?? []), ...(weeklyData?.rides ?? [])]) map.set(r.tutorId, r.tutorName);
     return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
-  }, [data]);
+  }, [data, weeklyData]);
 
   const driverOptions = useMemo(() => {
     const map = new Map<string, string>();
-    for (const r of data?.rides ?? []) if (r.driverId && r.driverName) map.set(r.driverId, r.driverName);
+    for (const r of [...(data?.rides ?? []), ...(weeklyData?.rides ?? [])]) if (r.driverId && r.driverName) map.set(r.driverId, r.driverName);
     return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
-  }, [data]);
+  }, [data, weeklyData]);
 
   const rides = useMemo(
     () =>
@@ -162,13 +167,22 @@ function AdminRelatoriosPage() {
   const totalBonus = entries.filter((e) => e.kind !== "desconto").reduce((acc, e) => acc + e.amountCents, 0);
   const totalDesconto = entries.filter((e) => e.kind === "desconto").reduce((acc, e) => acc + e.amountCents, 0);
   const earningsPeriods = useMemo(() => latestCompletedEarningsPeriods(), []);
+  const weeklyRides = useMemo(
+    () =>
+      (weeklyData?.rides ?? []).filter(
+        (r) =>
+          (tutorId === "all" || r.tutorId === tutorId) &&
+          (driverId === "all" || r.driverId === driverId),
+      ),
+    [weeklyData, tutorId, driverId],
+  );
   const fridayEarnings = useMemo(
-    () => paidWithin(rides, earningsPeriods.friday.start, earningsPeriods.friday.end),
-    [rides, earningsPeriods],
+    () => paidWithin(weeklyRides, earningsPeriods.friday.start, earningsPeriods.friday.end),
+    [weeklyRides, earningsPeriods],
   );
   const mondayEarnings = useMemo(
-    () => paidWithin(rides, earningsPeriods.monday.start, earningsPeriods.monday.end),
-    [rides, earningsPeriods],
+    () => paidWithin(weeklyRides, earningsPeriods.monday.start, earningsPeriods.monday.end),
+    [weeklyRides, earningsPeriods],
   );
 
   return (
@@ -224,9 +238,9 @@ function AdminRelatoriosPage() {
         </Select>
       </div>
 
-      {isLoading && <Skeleton className="h-64 w-full rounded-2xl" />}
+      {(isLoading || isWeeklyLoading) && <Skeleton className="h-64 w-full rounded-2xl" />}
 
-      {!isLoading && (
+      {!isLoading && !isWeeklyLoading && (
         <>
           <div className="grid gap-3 lg:grid-cols-2">
             <EarningsReport period={earningsPeriods.friday} rides={fridayEarnings} />
