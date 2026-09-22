@@ -104,6 +104,15 @@ function paidWithin(rides: ReportRide[], start: Date, end: Date) {
   });
 }
 
+function formatSaoPauloDate(date: Date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
 function AdminRelatoriosPage() {
   const getReport = useServerFn(adminGetReport);
   const runCalibration = useServerFn(refreshEtaCalibration);
@@ -317,7 +326,7 @@ function EarningsReport({
   rides: ReportRide[];
 }) {
   const total = rides.reduce((sum, ride) => sum + ride.priceCents, 0);
-  const periodLabel = `${format(period.start, "dd/MM/yyyy")} a ${format(period.end, "dd/MM/yyyy")}`;
+  const periodLabel = `${formatSaoPauloDate(period.start)} a ${formatSaoPauloDate(period.end)}`;
 
   return (
     <Card className="overflow-hidden shadow-soft">
