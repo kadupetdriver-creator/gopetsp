@@ -169,6 +169,7 @@ export type CreateRideInput = {
   hasReturn?: boolean;
   returnScheduledAt?: string | null;
   driverWaits?: boolean;
+  preferredDriverId?: string | null;
 };
 
 
@@ -193,6 +194,12 @@ export const createRide = createServerFn({ method: "POST" })
     if (!SERVICE_TYPES.includes(serviceType)) throw new Error("Motivo da viagem inválido");
     const extras = validExtras(input);
     const notes = input?.notes ? String(input.notes).slice(0, 1000) : null;
+    const preferredDriverId = input?.preferredDriverId
+      ? String(input.preferredDriverId).trim()
+      : null;
+    if (preferredDriverId && !/^[0-9a-fA-F-]{36}$/.test(preferredDriverId)) {
+      throw new Error("Motorista preferencial inválido");
+    }
 
     const stops = validStops(input?.stops);
     if (stops.some((s) => !addressHasNumber(s.address))) {
@@ -212,6 +219,7 @@ export const createRide = createServerFn({ method: "POST" })
       scheduledAt: extras.scheduledAt,
       notes,
       needsTrunk: input?.needsTrunk === true,
+      preferredDriverId,
       extras,
     };
 
@@ -236,6 +244,17 @@ export const createRide = createServerFn({ method: "POST" })
         throw new Error("Sua conta está desativada. Fale com o suporte GoPet.");
       }
       const pets = await loadOwnedPets(context.supabase as any, context.userId, data.petIds);
+      if (data.preferredDriverId) {
+        const { data: availableDrivers, error: preferredError } = await context.supabase.rpc(
+          "list_preferred_drivers",
+        );
+        if (
+          preferredError ||
+          !(availableDrivers ?? []).some((driver) => driver.user_id === data.preferredDriverId)
+        ) {
+          throw new Error("O motorista preferencial não está disponível no momento.");
+        }
+      }
       const { drivingDistance } = await import("./routing.server");
       const route = await drivingDistance(
         [data.origin.lat, data.origin.lng],
@@ -270,6 +289,7 @@ export const createRide = createServerFn({ method: "POST" })
         distance_km: route.distanceKm,
         needs_trunk: data.needsTrunk,
         trunk_fee_cents: price.trunkFeeCents,
+        preferred_driver_id: data.preferredDriverId,
       };
 
       const insertRide = async (row: Record<string, unknown>) => {
@@ -344,6 +364,43 @@ export const createRide = createServerFn({ method: "POST" })
       };
     },
   );
+
+export type PreferredDriver = {
+  userId: string;
+  fullName: string;
+  avatarUrl: string | null;
+  vehicle: string | null;
+};
+
+/** Lista somente os dados públicos de motoristas aprovados para a escolha do tutor. */
+export const getPreferredDrivers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<PreferredDriver[]> => {
+    const { data, error } = await context.supabase.rpc("list_preferred_drivers");
+    if (error) throw new Error("Não foi possível carregar os motoristas disponíveis.");
+
+    const rows = data ?? [];
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    return Promise.all(
+      rows.map(async (driver) => {
+        let avatarUrl: string | null = null;
+        if (driver.avatar_path) {
+          const { data: signed } = await supabaseAdmin.storage
+            .from("driver-documents")
+            .createSignedUrl(driver.avatar_path, 60 * 15);
+          avatarUrl = signed?.signedUrl ?? null;
+        }
+        return {
+          userId: driver.user_id,
+          fullName: driver.full_name,
+          avatarUrl,
+          vehicle: [driver.vehicle_brand, driver.vehicle_model, driver.vehicle_color]
+            .filter(Boolean)
+            .join(" · ") || null,
+        };
+      }),
+    );
+  });
 
 
 export const getRideDriverDetails = createServerFn({ method: "GET" })
