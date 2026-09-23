@@ -80,10 +80,12 @@ type Ride = {
   arrived_at: string | null;
   stops: { address: string; lat: number; lng: number }[] | null;
   ride_pets: { pets: PetInfo | null }[] | null;
+  preferred_driver_id: string | null;
+  preferred_until: string | null;
 };
 
 const selectCols =
-  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, stops, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
+  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, stops, preferred_driver_id, preferred_until, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
 const driverValueOf = (ride: Pick<Ride, "price_cents">) => Math.round(ride.price_cents * 0.75);
 
@@ -397,6 +399,13 @@ function MotoristaPage() {
           )}
           {open.map((ride) => (
             <RideCard key={ride.id} ride={ride}>
+              {ride.preferred_driver_id === user.id &&
+                !!ride.preferred_until &&
+                new Date(ride.preferred_until).getTime() > Date.now() && (
+                  <span className="rounded-full bg-primary/10 px-3 py-2 text-xs font-semibold text-primary-ink">
+                    Preferência do tutor
+                  </span>
+                )}
               <Button
                 onClick={() => {
                   setAcceptingId(ride.id);

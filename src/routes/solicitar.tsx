@@ -1,12 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { dispatchRideToCentral } from "@/lib/whatsapp.functions";
-import { createRide, quoteRide } from "@/lib/rides.functions";
+import { createRide, getPreferredDrivers, quoteRide } from "@/lib/rides.functions";
 
 
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, MapPin, PawPrint, Plus, ShieldCheck, X } from "lucide-react";
+import { Car, Loader2, MapPin, PawPrint, Plus, ShieldCheck, UserRound, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -180,6 +180,7 @@ function SolicitarPage() {
   const dispatchRide = useServerFn(dispatchRideToCentral);
   const fetchQuote = useServerFn(quoteRide);
   const submitRide = useServerFn(createRide);
+  const fetchPreferredDrivers = useServerFn(getPreferredDrivers);
 
 
 
@@ -196,6 +197,7 @@ function SolicitarPage() {
   const [hasReturn, setHasReturn] = useState<boolean | null>(null);
   const [returnAt, setReturnAt] = useState("");
   const [driverWaits, setDriverWaits] = useState<boolean | null>(null);
+  const [preferredDriverId, setPreferredDriverId] = useState("none");
 
 
   useEffect(() => {
@@ -216,6 +218,13 @@ function SolicitarPage() {
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: preferredDrivers = [], isLoading: driversLoading } = useQuery({
+    queryKey: ["preferred-drivers"],
+    enabled: !!user,
+    queryFn: () => fetchPreferredDrivers(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const selectedPets = (pets ?? []).filter((p) => selectedPetIds.includes(p.id));
@@ -369,6 +378,7 @@ function SolicitarPage() {
           hasReturn: hasReturn === true,
           returnScheduledAt: hasReturn && returnAt ? new Date(returnAt).toISOString() : null,
           driverWaits: driverWaits === true,
+          preferredDriverId: preferredDriverId === "none" ? null : preferredDriverId,
 
         },
       });
@@ -754,6 +764,75 @@ function SolicitarPage() {
                   rows={3}
                   placeholder="Ex.: portão branco, cachorro ansioso, caixa de transporte necessária..."
                 />
+              </div>
+
+              <div className="space-y-3 sm:col-span-2">
+                <div>
+                  <Label>Motorista preferencial</Label>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Ele terá prioridade por 10 minutos após o pagamento. Depois, a chamada será
+                    liberada aos demais motoristas.
+                  </p>
+                </div>
+                {driversLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin" /> Carregando motoristas…
+                  </div>
+                ) : (
+                  <RadioGroup
+                    value={preferredDriverId}
+                    onValueChange={setPreferredDriverId}
+                    className="grid gap-2 sm:grid-cols-2"
+                  >
+                    <label
+                      htmlFor="driver-none"
+                      className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
+                        preferredDriverId === "none"
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:bg-muted"
+                      }`}
+                    >
+                      <RadioGroupItem id="driver-none" value="none" />
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        <UserRound className="size-5" />
+                      </span>
+                      <span>
+                        <span className="block font-medium">Sem preferência</span>
+                        <span className="block text-xs text-muted-foreground">Vai direto ao bolsão</span>
+                      </span>
+                    </label>
+                    {preferredDrivers.map((driver) => (
+                      <label
+                        key={driver.userId}
+                        htmlFor={`driver-${driver.userId}`}
+                        className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
+                          preferredDriverId === driver.userId
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:bg-muted"
+                        }`}
+                      >
+                        <RadioGroupItem id={`driver-${driver.userId}`} value={driver.userId} />
+                        {driver.avatarUrl ? (
+                          <img
+                            src={driver.avatarUrl}
+                            alt=""
+                            className="size-10 shrink-0 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                            <UserRound className="size-5" />
+                          </span>
+                        )}
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium">{driver.fullName}</span>
+                          <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
+                            <Car className="size-3 shrink-0" /> {driver.vehicle ?? "Veículo cadastrado"}
+                          </span>
+                        </span>
+                      </label>
+                    ))}
+                  </RadioGroup>
+                )}
               </div>
 
             </CardContent>
