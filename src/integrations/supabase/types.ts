@@ -532,6 +532,8 @@ export type Database = {
           pet_id: string | null
           pet_name: string
           pet_size: string
+          preferred_driver_id: string | null
+          preferred_until: string | null
           price_cents: number
           return_fee_cents: number
           return_of_ride_id: string | null
@@ -572,6 +574,8 @@ export type Database = {
           pet_id?: string | null
           pet_name: string
           pet_size?: string
+          preferred_driver_id?: string | null
+          preferred_until?: string | null
           price_cents?: number
           return_fee_cents?: number
           return_of_ride_id?: string | null
@@ -612,6 +616,8 @@ export type Database = {
           pet_id?: string | null
           pet_name?: string
           pet_size?: string
+          preferred_driver_id?: string | null
+          preferred_until?: string | null
           price_cents?: number
           return_fee_cents?: number
           return_of_ride_id?: string | null
@@ -744,6 +750,8 @@ export type Database = {
           pet_id: string | null
           pet_name: string
           pet_size: string
+          preferred_driver_id: string | null
+          preferred_until: string | null
           price_cents: number
           return_fee_cents: number
           return_of_ride_id: string | null
@@ -796,6 +804,17 @@ export type Database = {
         Args: { _ride_id: string; _user_id: string }
         Returns: boolean
       }
+      list_preferred_drivers: {
+        Args: never
+        Returns: {
+          avatar_path: string
+          full_name: string
+          user_id: string
+          vehicle_brand: string
+          vehicle_color: string
+          vehicle_model: string
+        }[]
+      }
       mark_driver_arrived: {
         Args: { _ride_id: string }
         Returns: {
@@ -823,6 +842,8 @@ export type Database = {
           pet_id: string | null
           pet_name: string
           pet_size: string
+          preferred_driver_id: string | null
+          preferred_until: string | null
           price_cents: number
           return_fee_cents: number
           return_of_ride_id: string | null
@@ -922,6 +943,8 @@ export type Database = {
           pet_id: string | null
           pet_name: string
           pet_size: string
+          preferred_driver_id: string | null
+          preferred_until: string | null
           price_cents: number
           return_fee_cents: number
           return_of_ride_id: string | null
