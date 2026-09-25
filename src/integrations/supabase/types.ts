@@ -105,6 +105,39 @@ export type Database = {
           },
         ]
       }
+      driver_referral_bonuses: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          driver_id: string
+          id: string
+          paid_at: string | null
+          revoked_reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          driver_id: string
+          id?: string
+          paid_at?: string | null
+          revoked_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          driver_id?: string
+          id?: string
+          paid_at?: string | null
+          revoked_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       drivers: {
         Row: {
           avatar_path: string | null
@@ -195,6 +228,7 @@ export type Database = {
       mercadopago_payments: {
         Row: {
           amount_cents: number
+          coupon_id: string | null
           created_at: string
           expires_at: string | null
           id: string
@@ -212,6 +246,7 @@ export type Database = {
         }
         Insert: {
           amount_cents: number
+          coupon_id?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
@@ -229,6 +264,7 @@ export type Database = {
         }
         Update: {
           amount_cents?: number
+          coupon_id?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
@@ -245,6 +281,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "mercadopago_payments_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "referral_coupons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "mercadopago_payments_ride_id_fkey"
             columns: ["ride_id"]
@@ -350,6 +393,101 @@ export type Database = {
           updated_at?: string
           vehicle_model?: string | null
           vehicle_plate?: string | null
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_coupons: {
+        Row: {
+          code: string
+          created_at: string
+          discount_percent: number
+          id: string
+          owner_id: string
+          revoked_reason: string | null
+          status: string
+          updated_at: string
+          used_at: string | null
+          used_ride_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_percent?: number
+          id?: string
+          owner_id: string
+          revoked_reason?: string | null
+          status?: string
+          updated_at?: string
+          used_at?: string | null
+          used_ride_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_percent?: number
+          id?: string
+          owner_id?: string
+          revoked_reason?: string | null
+          status?: string
+          updated_at?: string
+          used_at?: string | null
+          used_ride_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_coupons_used_ride_id_fkey"
+            columns: ["used_ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          code: string
+          created_at: string
+          driver_qualified_at: string | null
+          id: string
+          referred_id: string
+          referrer_id: string
+          tutor_qualified_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          driver_qualified_at?: string | null
+          id?: string
+          referred_id: string
+          referrer_id: string
+          tutor_qualified_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          driver_qualified_at?: string | null
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          tutor_qualified_at?: string | null
         }
         Relationships: []
       }
@@ -782,6 +920,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      apply_referral_code: { Args: { _code: string }; Returns: undefined }
       cpf_disponivel: { Args: { _cpf: string }; Returns: boolean }
       eta_avg_speed: {
         Args: { _hour: number; _weekday: number }
@@ -792,6 +931,7 @@ export type Database = {
           updated_at: string
         }[]
       }
+      generate_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["platform_role"]
@@ -868,6 +1008,7 @@ export type Database = {
       }
       my_credit_balance_cents: { Args: never; Returns: number }
       pet_photo_readable: { Args: { _name: string }; Returns: boolean }
+      referral_code_valid: { Args: { _code: string }; Returns: boolean }
       refresh_eta_calibration: { Args: { _days?: number }; Returns: number }
       review_driver_application: {
         Args: {
