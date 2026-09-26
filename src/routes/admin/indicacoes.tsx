@@ -44,7 +44,7 @@ function AdminReferrals() {
     const reason = window.prompt("Motivo da revogação:");
     if (!reason) return;
     const { error } = await supabase.from("referral_coupons").update({ status: "revoked", revoked_reason: reason }).eq("id", id);
-    if (error) return toast.error("Não foi possível revogar.");
+    if (error) { toast.error("Não foi possível revogar."); return; }
     toast.success("Cupom revogado."); void refresh();
   };
   const updateBonus = async (id: string, status: "paid" | "revoked") => {
@@ -52,7 +52,7 @@ function AdminReferrals() {
     if (status === "revoked") { reason = window.prompt("Motivo da revogação:"); if (!reason) return; }
     const { error } = await supabase.from("driver_referral_bonuses")
       .update({ status, revoked_reason: reason, paid_at: status === "paid" ? new Date().toISOString() : null }).eq("id", id);
-    if (error) return toast.error("Não foi possível atualizar.");
+    if (error) { toast.error("Não foi possível atualizar."); return; }
     toast.success("Bônus atualizado."); void refresh();
   };
 
