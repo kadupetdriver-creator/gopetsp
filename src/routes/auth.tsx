@@ -52,6 +52,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [referral, setReferral] = useState("");
 
   // Após o login, o papel do perfil decide a tela — nunca a escolha feita na tela inicial.
   useEffect(() => {
@@ -77,12 +78,21 @@ function AuthPage() {
       );
       return;
     }
+    const refCode = referral.trim().toUpperCase();
+    if (refCode) {
+      const { data: ok } = await supabase.rpc("referral_code_valid", { _code: refCode });
+      if (!ok) {
+        setBusy(false);
+        toast.error("Código de indicação inválido.");
+        return;
+      }
+    }
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: fullName, phone, cpf: cpfDigits, role: "tutor" },
+        data: { full_name: fullName, phone, cpf: cpfDigits, role: "tutor", ...(refCode ? { referral_code: refCode } : {}) },
       },
     });
     setBusy(false);
@@ -191,6 +201,10 @@ function AuthPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="referral">Código de indicação (opcional)</Label>
+                  <Input id="referral" placeholder="GOPET-XXXX" value={referral} onChange={(e) => setReferral(e.target.value.toUpperCase())} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">E-mail</Label>
