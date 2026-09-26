@@ -57,6 +57,14 @@ function PagamentoCorrida() {
   const { user } = useRoleGuard("tutor");
   const qc = useQueryClient();
   const createPayment = useServerFn(createMercadoPagoPayment);
+  const [couponId, setCouponId] = useState<string | null>(null);
+  const { data: coupons = [] } = useQuery({
+    queryKey: ["my-coupons-available"],
+    queryFn: async () => {
+      const { data } = await supabase.from("referral_coupons").select("id, code, discount_percent").eq("status", "available").order("created_at");
+      return data ?? [];
+    },
+  });
   const syncPayment = useServerFn(syncMercadoPagoPayment);
   const [cpf, setCpf] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -157,7 +165,7 @@ function PagamentoCorrida() {
     setSubmitted(true);
     setFormError(null);
     try {
-      const result = await createPayment({ data: { rideId, cpf, brickData } });
+      const result = await createPayment({ data: { rideId, cpf, brickData, couponId } });
       if ("error" in result) { setFormError(result.error); toast.error(result.error); throw new Error(result.error); }
       await qc.invalidateQueries({ queryKey: ["mercadopago-payment", rideId] });
       if (result.status === "approved") toast.success("Pagamento recebido. Aguarde a confirmação segura.");
@@ -183,13 +191,13 @@ function PagamentoCorrida() {
       {ride && <Card><CardContent className="space-y-3 py-5 text-sm">
         <p className="font-semibold">{ride.pet_name}</p>
         <p className="text-muted-foreground">{ride.origin_address} → {ride.destination_address}</p>
-        <div className="flex justify-between border-t pt-3 text-lg font-semibold"><span>Total</span><span>{formatBRL(ride.price_cents)}</span></div>
+        <div className="flex justify-between border-t pt-3 text-lg font-semibold"><span>Total</span><span>{formatBRL(payAmount)}</span></div>{coupons.length > 0 && <div className="space-y-2 border-t pt-3"><Label htmlFor="cupom">Cupom de indicação</Label><select id="cupom" className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={couponId ?? ""} onChange={(e) => setCouponId(e.target.value || null)}><option value="">Não usar cupom</option>{coupons.map((c) => <option key={c.id} value={c.id}>{c.code} — {c.discount_percent}% de desconto</option>)}</select>{couponId && <p className="text-xs text-primary">Desconto de {formatBRL(ride.price_cents - payAmount)} aplicado.</p>}</div>}
         <p className="flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="size-4 text-primary" /> Processamento seguro pelo Mercado Pago. A GoPet não armazena dados do cartão.</p>
       </CardContent></Card>}
 
       {approved ? <Card className="border-success/40 bg-success/10"><CardContent className="flex flex-col items-center gap-3 py-10 text-center"><CheckCircle2 className="size-9 text-success"/><p className="font-semibold">Pagamento confirmado</p><p className="text-sm text-muted-foreground">Sua corrida foi liberada para os motoristas parceiros.</p><div className="flex flex-wrap justify-center gap-2">{returnRide && <Button asChild><Link to="/pagamento/$rideId" params={{ rideId: returnRide.id }}>Pagar corrida de volta</Link></Button>}<Button asChild variant="secondary"><Link to="/minhas-corridas/$rideId" params={{ rideId }}>Acompanhar corrida</Link></Button></div></CardContent></Card>
       : showPix ? <Card><CardHeader><CardTitle>Pix gerado</CardTitle><CardDescription>Escaneie ou copie o código. A corrida será liberada somente após a confirmação.</CardDescription></CardHeader><CardContent className="space-y-4 text-center">{payment?.qr_code_base64 && <img className="mx-auto size-60" src={`data:image/png;base64,${payment.qr_code_base64}`} alt="QR Code Pix"/>}<div className="flex items-center justify-center gap-2 font-semibold"><Clock3 className="size-4"/> Expira em {countdown}</div><div className="flex gap-2"><Input readOnly value={payment?.qr_code ?? ""} aria-label="Código Pix copia e cola"/><Button size="icon" variant="outline" title="Copiar código Pix" onClick={async () => { await navigator.clipboard.writeText(payment?.qr_code ?? ""); toast.success("Código Pix copiado."); }}><Copy className="size-4"/></Button></div></CardContent></Card>
-      : <Card><CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className="size-5 text-primary"/> Escolha como pagar</CardTitle><CardDescription>Informe um CPF válido. Ele é obrigatório para pagamentos via Pix.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="space-y-2"><Label htmlFor="cpf-pagador">CPF do pagador</Label><Input id="cpf-pagador" inputMode="numeric" maxLength={14} value={cpf} onChange={(event) => setCpf(maskCPF(event.target.value))} placeholder="000.000.000-00"/><p className="text-xs text-muted-foreground">Obrigatório para Pix e validação do pagamento.</p></div>{payment && statusMessage[payment.status] && <p className={payment.status === "rejected" ? "text-sm text-destructive" : "text-sm text-muted-foreground"}>{statusMessage[payment.status]}</p>}{configurationError && <p className="text-sm text-destructive">{configurationError}</p>}{publicKey && ride && isValidCPF(cpf) && canTryAgain && <Suspense fallback={<Skeleton className="h-80 w-full"/>}><MercadoPagoPaymentBrick publicKey={publicKey} amountCents={ride.price_cents} {...(user?.email ? { email: user.email } : {})} cpf={cpf.replace(/\D/g, "")} onSubmit={submitPayment} onError={(message) => { setSubmitted(false); setFormError(message); toast.error(message); }}/></Suspense>}{formError && <p className="text-sm text-destructive">{formError}</p>}{submitted && <p className="flex items-center justify-center gap-2 text-sm"><Loader2 className="size-4 animate-spin"/> Processando pagamento…</p>}{!isValidCPF(cpf) && <p className="text-sm text-muted-foreground">Digite o CPF para liberar as formas de pagamento.</p>}</CardContent></Card>}
+      : <Card><CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className="size-5 text-primary"/> Escolha como pagar</CardTitle><CardDescription>Informe um CPF válido. Ele é obrigatório para pagamentos via Pix.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="space-y-2"><Label htmlFor="cpf-pagador">CPF do pagador</Label><Input id="cpf-pagador" inputMode="numeric" maxLength={14} value={cpf} onChange={(event) => setCpf(maskCPF(event.target.value))} placeholder="000.000.000-00"/><p className="text-xs text-muted-foreground">Obrigatório para Pix e validação do pagamento.</p></div>{payment && statusMessage[payment.status] && <p className={payment.status === "rejected" ? "text-sm text-destructive" : "text-sm text-muted-foreground"}>{statusMessage[payment.status]}</p>}{configurationError && <p className="text-sm text-destructive">{configurationError}</p>}{publicKey && ride && isValidCPF(cpf) && canTryAgain && <Suspense fallback={<Skeleton className="h-80 w-full"/>}><MercadoPagoPaymentBrick publicKey={publicKey} amountCents={payAmount} {...(user?.email ? { email: user.email } : {})} cpf={cpf.replace(/\D/g, "")} onSubmit={submitPayment} onError={(message) => { setSubmitted(false); setFormError(message); toast.error(message); }}/></Suspense>}{formError && <p className="text-sm text-destructive">{formError}</p>}{submitted && <p className="flex items-center justify-center gap-2 text-sm"><Loader2 className="size-4 animate-spin"/> Processando pagamento…</p>}{!isValidCPF(cpf) && <p className="text-sm text-muted-foreground">Digite o CPF para liberar as formas de pagamento.</p>}</CardContent></Card>}
     </div>
   );
 }

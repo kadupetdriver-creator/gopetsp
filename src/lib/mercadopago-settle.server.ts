@@ -13,7 +13,7 @@ export async function settleMercadoPagoOrder(orderId: string): Promise<{ status:
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: row } = await supabaseAdmin
     .from("mercadopago_payments")
-    .select("id, ride_id, amount_cents, status")
+    .select("id, ride_id, amount_cents, status, coupon_id")
     .eq("mp_order_id", order.id)
     .maybeSingle();
   if (!row || row.ride_id !== rideId || row.amount_cents !== amountCents) return null;
@@ -39,6 +39,13 @@ export async function settleMercadoPagoOrder(orderId: string): Promise<{ status:
       .update({ paid_at: new Date().toISOString() })
       .eq("id", row.ride_id)
       .is("paid_at", null);
+    if (row.coupon_id) {
+      await supabaseAdmin
+        .from("referral_coupons")
+        .update({ status: "used", used_ride_id: row.ride_id, used_at: new Date().toISOString() })
+        .eq("id", row.coupon_id)
+        .eq("status", "available");
+    }
   }
   if (["refunded", "cancelled", "expired", "rejected"].includes(status)) {
     await supabaseAdmin.from("rides").update({ paid_at: null }).eq("id", row.ride_id);
