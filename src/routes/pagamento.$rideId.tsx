@@ -82,6 +82,12 @@ function PagamentoCorrida() {
       return data;
     },
   });
+  const selectedCoupon = coupons.find((c) => c.id === couponId);
+  const payAmount = ride
+    ? selectedCoupon
+      ? Math.max(1, Math.round((ride.price_cents * (100 - selectedCoupon.discount_percent)) / 100))
+      : ride.price_cents
+    : 0;
 
   const { data: returnRide } = useQuery({
     queryKey: ["ride-return-pair", rideId], enabled: !!user,
