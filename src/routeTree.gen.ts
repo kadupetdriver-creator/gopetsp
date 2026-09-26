@@ -23,6 +23,7 @@ import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAdministradoresRouteImport } from './routes/admin/administradores'
 import { Route as AdminCorridasRouteImport } from './routes/admin/corridas'
+import { Route as AdminIndicacoesRouteImport } from './routes/admin/indicacoes'
 import { Route as AdminMotoristasRouteImport } from './routes/admin/motoristas'
 import { Route as AdminRelatoriosRouteImport } from './routes/admin/relatorios'
 import { Route as AdminTutoresRouteImport } from './routes/admin/tutores'
@@ -101,6 +102,11 @@ const AdminCorridasRoute = AdminCorridasRouteImport.update({
   path: '/corridas',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminIndicacoesRoute = AdminIndicacoesRouteImport.update({
+  id: '/indicacoes',
+  path: '/indicacoes',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminMotoristasRoute = AdminMotoristasRouteImport.update({
   id: '/motoristas',
   path: '/motoristas',
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/administradores': typeof AdminAdministradoresRoute
   '/admin/corridas': typeof AdminCorridasRoute
+  '/admin/indicacoes': typeof AdminIndicacoesRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/tutores': typeof AdminTutoresRoute
@@ -172,6 +179,7 @@ export interface FileRoutesByTo {
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/administradores': typeof AdminAdministradoresRoute
   '/admin/corridas': typeof AdminCorridasRoute
+  '/admin/indicacoes': typeof AdminIndicacoesRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/tutores': typeof AdminTutoresRoute
@@ -196,6 +204,7 @@ export interface FileRoutesById {
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/administradores': typeof AdminAdministradoresRoute
   '/admin/corridas': typeof AdminCorridasRoute
+  '/admin/indicacoes': typeof AdminIndicacoesRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/tutores': typeof AdminTutoresRoute
@@ -221,6 +230,7 @@ export interface FileRouteTypes {
     | '/acompanhar/$token'
     | '/admin/administradores'
     | '/admin/corridas'
+    | '/admin/indicacoes'
     | '/admin/motoristas'
     | '/admin/relatorios'
     | '/admin/tutores'
@@ -242,6 +252,7 @@ export interface FileRouteTypes {
     | '/acompanhar/$token'
     | '/admin/administradores'
     | '/admin/corridas'
+    | '/admin/indicacoes'
     | '/admin/motoristas'
     | '/admin/relatorios'
     | '/admin/tutores'
@@ -265,6 +276,7 @@ export interface FileRouteTypes {
     | '/acompanhar/$token'
     | '/admin/administradores'
     | '/admin/corridas'
+    | '/admin/indicacoes'
     | '/admin/motoristas'
     | '/admin/relatorios'
     | '/admin/tutores'
@@ -391,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCorridasRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/indicacoes': {
+      id: '/admin/indicacoes'
+      path: '/indicacoes'
+      fullPath: '/admin/indicacoes'
+      preLoaderRoute: typeof AdminIndicacoesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/motoristas': {
       id: '/admin/motoristas'
       path: '/motoristas'
@@ -446,6 +465,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteRouteChildren {
   AdminAdministradoresRoute: typeof AdminAdministradoresRoute
   AdminCorridasRoute: typeof AdminCorridasRoute
+  AdminIndicacoesRoute: typeof AdminIndicacoesRoute
   AdminMotoristasRoute: typeof AdminMotoristasRoute
   AdminRelatoriosRoute: typeof AdminRelatoriosRoute
   AdminTutoresRoute: typeof AdminTutoresRoute
@@ -455,6 +475,7 @@ interface AdminRouteRouteChildren {
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAdministradoresRoute: AdminAdministradoresRoute,
   AdminCorridasRoute: AdminCorridasRoute,
+  AdminIndicacoesRoute: AdminIndicacoesRoute,
   AdminMotoristasRoute: AdminMotoristasRoute,
   AdminRelatoriosRoute: AdminRelatoriosRoute,
   AdminTutoresRoute: AdminTutoresRoute,

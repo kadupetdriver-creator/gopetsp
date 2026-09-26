@@ -19,11 +19,12 @@ export const getMercadoPagoPublicKey = createServerFn({ method: "GET" }).handler
 
 export const createMercadoPagoPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { rideId: string; cpf: string; brickData: PaymentBrickData }) => {
+  .inputValidator((input: { rideId: string; cpf: string; brickData: PaymentBrickData; couponId?: string | null }) => {
     if (!/^[0-9a-fA-F-]{36}$/.test(input.rideId)) throw new Error("Corrida inválida.");
     if (!isValidCPF(input.cpf)) throw new Error("CPF inválido. Confira os números digitados.");
     if (!input.brickData?.payment_method_id) throw new Error("Escolha uma forma de pagamento.");
-    return { rideId: input.rideId, cpf: onlyDigits(input.cpf), brickData: input.brickData };
+    const couponId = input.couponId && /^[0-9a-fA-F-]{36}$/.test(input.couponId) ? input.couponId : null;
+    return { rideId: input.rideId, cpf: onlyDigits(input.cpf), brickData: input.brickData, couponId };
   })
   .handler(async ({ data, context }) => {
     const { data: ride } = await context.supabase
@@ -39,13 +40,26 @@ export const createMercadoPagoPayment = createServerFn({ method: "POST" })
     const email = data.brickData.payer?.email ?? authData.user?.email;
     if (!email) return { error: "Não foi possível identificar o e-mail do pagador." };
 
+    let amountCents = ride.price_cents;
+    if (data.couponId) {
+      const { data: coupon } = await context.supabase
+        .from("referral_coupons")
+        .select("id, owner_id, status, discount_percent")
+        .eq("id", data.couponId)
+        .maybeSingle();
+      if (!coupon || coupon.owner_id !== context.userId || coupon.status !== "available") {
+        return { error: "Este cupom não está mais disponível." };
+      }
+      amountCents = Math.max(1, Math.round(ride.price_cents * (100 - coupon.discount_percent) / 100));
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const idempotencyKey = crypto.randomUUID();
     const method = data.brickData.payment_method_id;
     if (!method) return { error: "Escolha uma forma de pagamento." };
     const { data: attempt, error: insertError } = await supabaseAdmin
       .from("mercadopago_payments")
-      .insert({ ride_id: ride.id, tutor_id: context.userId, payment_method: method, status: "pending", amount_cents: ride.price_cents, idempotency_key: idempotencyKey })
+      .insert({ ride_id: ride.id, tutor_id: context.userId, payment_method: method, status: "pending", amount_cents: amountCents, idempotency_key: idempotencyKey, coupon_id: data.couponId })
       .select("id")
       .single();
     if (insertError || !attempt) return { error: "Não foi possível iniciar o pagamento. Tente novamente." };
@@ -55,7 +69,7 @@ export const createMercadoPagoPayment = createServerFn({ method: "POST" })
       const isPix = method === "pix";
       const expiresAt = isPix ? new Date(Date.now() + 30 * 60 * 1000).toISOString() : undefined;
       const orderPaymentData: Record<string, unknown> = {
-        amount: (ride.price_cents / 100).toFixed(2),
+        amount: (amountCents / 100).toFixed(2),
         payment_method: isPix
           ? { id: "pix", type: "bank_transfer" }
           : {
@@ -72,7 +86,7 @@ export const createMercadoPagoPayment = createServerFn({ method: "POST" })
         type: "online",
         processing_mode: "automatic",
         external_reference: ride.id,
-        total_amount: (ride.price_cents / 100).toFixed(2),
+        total_amount: (amountCents / 100).toFixed(2),
         payer: { email, identification: { type: "CPF", number: data.cpf } },
         transactions: { payments: [orderPaymentData] },
       };
