@@ -44,7 +44,10 @@ export function ReferralCard({ userId, mode }: { userId: string; mode: "tutor" |
   };
   const applyCode = async () => {
     const { error } = await supabase.rpc("apply_referral_code", { _code: claim });
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Código de indicação aplicado!");
     void qc.invalidateQueries({ queryKey: ["referral", userId] });
   };

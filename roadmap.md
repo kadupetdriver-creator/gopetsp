@@ -19,3 +19,5 @@
 ## Concluído
 - [x] Criar os relatórios Ganhos Sexta-Feira e Ganhos Segunda-Feira
 - [x] Permitir motorista preferencial com prioridade de 10 minutos após o pagamento
+
+- [x] Programa de indicação (cupom 20% tutor, bônus R$ 50 motorista, admin)
