@@ -348,6 +348,45 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_change_requests: {
+        Row: {
+          created_at: string
+          file_path: string
+          id: string
+          kind: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_path: string
+          id?: string
+          kind: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_path?: string
+          id?: string
+          kind?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
@@ -1042,6 +1081,27 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      review_photo_change: {
+        Args: { _approve: boolean; _id: string; _reason?: string }
+        Returns: {
+          created_at: string
+          file_path: string
+          id: string
+          kind: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "photo_change_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       ride_counterpart_contact: {
         Args: { _ride_id: string }
         Returns: {
@@ -1104,6 +1164,27 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "rides"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      submit_photo_change: {
+        Args: { _kind: string; _path: string }
+        Returns: {
+          created_at: string
+          file_path: string
+          id: string
+          kind: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "photo_change_requests"
           isOneToOne: true
           isSetofReturn: false
         }
