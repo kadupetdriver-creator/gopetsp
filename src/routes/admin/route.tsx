@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Gift, BarChart3, Car, Route as RouteIcon, ShieldCheck, Users, Wallet } from "lucide-react";
+import { Camera, Gift, BarChart3, Car, Route as RouteIcon, ShieldCheck, Users, Wallet } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -23,6 +23,7 @@ const sections = [
   { to: "/admin/corridas", label: "Corridas", icon: RouteIcon },
   { to: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
   { to: "/admin/indicacoes", label: "Indicações", icon: Gift },
+  { to: "/admin/fotos", label: "Fotos", icon: Camera },
   { to: "/admin/administradores", label: "Administradores", icon: ShieldCheck },
 ] as const;
 
