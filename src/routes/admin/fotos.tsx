@@ -62,7 +62,7 @@ function AdminPhotos() {
       reason = window.prompt("Motivo da recusa (a pessoa verá esta mensagem):");
       if (!reason) return;
     }
-    const { error } = await supabase.rpc("review_photo_change", { _id: id, _approve: approve, _reason: reason ?? undefined });
+    const { error } = await supabase.rpc("review_photo_change", reason ? { _id: id, _approve: approve, _reason: reason } : { _id: id, _approve: approve });
     if (error) { toast.error(error.message); return; }
     toast.success(approve ? "Foto aprovada." : "Foto recusada.");
     void qc.invalidateQueries({ queryKey: ["admin-photos"] });
