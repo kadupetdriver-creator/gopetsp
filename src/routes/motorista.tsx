@@ -340,6 +340,11 @@ function MotoristaPage() {
   });
   const monthEarnings = thisMonth.reduce((sum, r) => sum + driverValueOf(r), 0);
   const kmTotal = completed.reduce((sum, r) => sum + Number(r.distance_km ?? 0), 0);
+
+  // Relatórios semanais: só corridas do próprio motorista (a consulta já vem filtrada pelas regras de acesso).
+  const earningsPeriods = latestCompletedEarningsPeriods();
+  const fridayEarnings = paidWithin(completed, earningsPeriods.friday.start, earningsPeriods.friday.end);
+  const mondayEarnings = paidWithin(completed, earningsPeriods.monday.start, earningsPeriods.monday.end);
   const rawVehicles = application?.vehicles ?? null;
   const vehicle = (Array.isArray(rawVehicles) ? (rawVehicles[0] ?? null) : rawVehicles) ?? null;
 
@@ -550,6 +555,11 @@ function MotoristaPage() {
             <StatCard icon={CheckCircle2} label="Corridas realizadas" value={String(completed.length)} />
             <StatCard icon={Wallet} label="Ganhos neste mês" value={formatBRL(monthEarnings)} />
             <StatCard icon={RouteIcon} label="Km percorridos" value={`${kmTotal.toFixed(1)} km`} />
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <DriverEarningsReport period={earningsPeriods.friday} rides={fridayEarnings} />
+            <DriverEarningsReport period={earningsPeriods.monday} rides={mondayEarnings} />
           </div>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Histórico</h2>
