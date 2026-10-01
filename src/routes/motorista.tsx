@@ -90,6 +90,79 @@ const selectCols =
 
 const driverValueOf = (ride: Pick<Ride, "price_cents">) => Math.round(ride.price_cents * 0.75);
 
+// Períodos semanais de ganhos (horário de São Paulo), iguais aos do painel admin:
+// "Ganhos Sexta-Feira" = corridas pagas de segunda a quinta; "Ganhos Segunda-Feira" = sexta a domingo.
+const SAO_PAULO_OFFSET_HOURS = 3;
+
+function saoPauloDateParts(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short",
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
+  const weekdays: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return {
+    year: Number(value("year")),
+    month: Number(value("month")),
+    day: Number(value("day")),
+    weekday: weekdays[value("weekday")] ?? 0,
+  };
+}
+
+function localDateToUtc(year: number, month: number, day: number) {
+  return new Date(Date.UTC(year, month - 1, day, SAO_PAULO_OFFSET_HOURS, 0, 0, 0));
+}
+
+function addCalendarDays(date: Date, days: number, endOfDay = false) {
+  const shifted = new Date(date.getTime() + days * 86_400_000);
+  return endOfDay ? new Date(shifted.getTime() + 86_400_000 - 1) : shifted;
+}
+
+function latestCompletedEarningsPeriods(now = new Date()) {
+  const parts = saoPauloDateParts(now);
+  const todayStart = localDateToUtc(parts.year, parts.month, parts.day);
+  const daysSinceMonday = (parts.weekday + 6) % 7;
+  const thisMonday = addCalendarDays(todayStart, -daysSinceMonday);
+
+  const fridayBase = parts.weekday >= 5 ? thisMonday : addCalendarDays(thisMonday, -7);
+  const mondayBase = addCalendarDays(thisMonday, -3);
+
+  return {
+    friday: {
+      title: "Ganhos Sexta-Feira",
+      subtitle: "Corridas pagas de segunda a quinta-feira",
+      start: fridayBase,
+      end: addCalendarDays(fridayBase, 3, true),
+    },
+    monday: {
+      title: "Ganhos Segunda-Feira",
+      subtitle: "Corridas pagas de sexta-feira a domingo",
+      start: mondayBase,
+      end: addCalendarDays(mondayBase, 2, true),
+    },
+  };
+}
+
+function paidWithin(rides: Ride[], start: Date, end: Date) {
+  return rides.filter((ride) => {
+    if (!ride.paid_at) return false;
+    const paidAt = new Date(ride.paid_at).getTime();
+    return paidAt >= start.getTime() && paidAt <= end.getTime();
+  });
+}
+
+function formatSaoPauloDate(date: Date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
 type Application = {
   id: string;
   status: DriverStatus;
