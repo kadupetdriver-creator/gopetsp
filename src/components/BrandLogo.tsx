@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import logoAsset from "@/assets/gopet-logo.jpg.asset.json";
+import logoAsset from "@/assets/gopet-logo.png.asset.json";
 import { cn } from "@/lib/utils";
 
 export const goPetLogoUrl = logoAsset.url;
