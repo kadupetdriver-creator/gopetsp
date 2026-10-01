@@ -876,3 +876,55 @@ function RideCard({
     </Card>
   );
 }
+
+function DriverEarningsReport({
+  period,
+  rides,
+}: {
+  period: { title: string; subtitle: string; start: Date; end: Date };
+  rides: Ride[];
+}) {
+  const total = rides.reduce((sum, ride) => sum + driverValueOf(ride), 0);
+  const periodLabel = `${formatSaoPauloDate(period.start)} a ${formatSaoPauloDate(period.end)}`;
+
+  return (
+    <Card className="overflow-hidden shadow-soft">
+      <CardContent className="space-y-4 p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-semibold">{period.title}</p>
+            <p className="text-sm text-muted-foreground">{period.subtitle}</p>
+          </div>
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary-ink">
+            <WalletCards className="size-5" aria-hidden="true" />
+          </div>
+        </div>
+
+        <div>
+          <p className="text-3xl font-semibold">{formatBRL(total)}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <CalendarRange className="size-3.5" aria-hidden="true" />
+            {periodLabel} · {rides.length} {rides.length === 1 ? "corrida paga" : "corridas pagas"}
+          </p>
+        </div>
+
+        <div className="divide-y border-t">
+          {rides.length === 0 && (
+            <p className="py-4 text-sm text-muted-foreground">Nenhuma corrida paga neste período.</p>
+          )}
+          {rides.map((ride) => (
+            <div key={ride.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+              <div className="min-w-0">
+                <p className="truncate font-medium">{ride.pet_name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  paga em {ride.paid_at ? formatDateTime(ride.paid_at) : "—"}
+                </p>
+              </div>
+              <p className="shrink-0 font-semibold">{formatBRL(driverValueOf(ride))}</p>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
