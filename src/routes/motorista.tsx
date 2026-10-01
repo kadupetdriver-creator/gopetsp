@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellRing, CalendarClock, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet } from "lucide-react";
+import { BellRing, CalendarClock, CalendarRange, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -78,6 +78,7 @@ type Ride = {
   destination_lat: number | null;
   destination_lng: number | null;
   arrived_at: string | null;
+  paid_at: string | null;
   stops: { address: string; lat: number; lng: number }[] | null;
   ride_pets: { pets: PetInfo | null }[] | null;
   preferred_driver_id: string | null;
@@ -85,9 +86,82 @@ type Ride = {
 };
 
 const selectCols =
-  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, stops, preferred_driver_id, preferred_until, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
+  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, paid_at, stops, preferred_driver_id, preferred_until, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
 const driverValueOf = (ride: Pick<Ride, "price_cents">) => Math.round(ride.price_cents * 0.75);
+
+// Períodos semanais de ganhos (horário de São Paulo), iguais aos do painel admin:
+// "Ganhos Sexta-Feira" = corridas pagas de segunda a quinta; "Ganhos Segunda-Feira" = sexta a domingo.
+const SAO_PAULO_OFFSET_HOURS = 3;
+
+function saoPauloDateParts(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short",
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
+  const weekdays: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return {
+    year: Number(value("year")),
+    month: Number(value("month")),
+    day: Number(value("day")),
+    weekday: weekdays[value("weekday")] ?? 0,
+  };
+}
+
+function localDateToUtc(year: number, month: number, day: number) {
+  return new Date(Date.UTC(year, month - 1, day, SAO_PAULO_OFFSET_HOURS, 0, 0, 0));
+}
+
+function addCalendarDays(date: Date, days: number, endOfDay = false) {
+  const shifted = new Date(date.getTime() + days * 86_400_000);
+  return endOfDay ? new Date(shifted.getTime() + 86_400_000 - 1) : shifted;
+}
+
+function latestCompletedEarningsPeriods(now = new Date()) {
+  const parts = saoPauloDateParts(now);
+  const todayStart = localDateToUtc(parts.year, parts.month, parts.day);
+  const daysSinceMonday = (parts.weekday + 6) % 7;
+  const thisMonday = addCalendarDays(todayStart, -daysSinceMonday);
+
+  const fridayBase = parts.weekday >= 5 ? thisMonday : addCalendarDays(thisMonday, -7);
+  const mondayBase = addCalendarDays(thisMonday, -3);
+
+  return {
+    friday: {
+      title: "Ganhos Sexta-Feira",
+      subtitle: "Corridas pagas de segunda a quinta-feira",
+      start: fridayBase,
+      end: addCalendarDays(fridayBase, 3, true),
+    },
+    monday: {
+      title: "Ganhos Segunda-Feira",
+      subtitle: "Corridas pagas de sexta-feira a domingo",
+      start: mondayBase,
+      end: addCalendarDays(mondayBase, 2, true),
+    },
+  };
+}
+
+function paidWithin(rides: Ride[], start: Date, end: Date) {
+  return rides.filter((ride) => {
+    if (!ride.paid_at) return false;
+    const paidAt = new Date(ride.paid_at).getTime();
+    return paidAt >= start.getTime() && paidAt <= end.getTime();
+  });
+}
+
+function formatSaoPauloDate(date: Date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
 
 type Application = {
   id: string;
@@ -266,6 +340,11 @@ function MotoristaPage() {
   });
   const monthEarnings = thisMonth.reduce((sum, r) => sum + driverValueOf(r), 0);
   const kmTotal = completed.reduce((sum, r) => sum + Number(r.distance_km ?? 0), 0);
+
+  // Relatórios semanais: só corridas do próprio motorista (a consulta já vem filtrada pelas regras de acesso).
+  const earningsPeriods = latestCompletedEarningsPeriods();
+  const fridayEarnings = paidWithin(completed, earningsPeriods.friday.start, earningsPeriods.friday.end);
+  const mondayEarnings = paidWithin(completed, earningsPeriods.monday.start, earningsPeriods.monday.end);
   const rawVehicles = application?.vehicles ?? null;
   const vehicle = (Array.isArray(rawVehicles) ? (rawVehicles[0] ?? null) : rawVehicles) ?? null;
 
@@ -476,6 +555,11 @@ function MotoristaPage() {
             <StatCard icon={CheckCircle2} label="Corridas realizadas" value={String(completed.length)} />
             <StatCard icon={Wallet} label="Ganhos neste mês" value={formatBRL(monthEarnings)} />
             <StatCard icon={RouteIcon} label="Km percorridos" value={`${kmTotal.toFixed(1)} km`} />
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <DriverEarningsReport period={earningsPeriods.friday} rides={fridayEarnings} />
+            <DriverEarningsReport period={earningsPeriods.monday} rides={mondayEarnings} />
           </div>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Histórico</h2>
@@ -788,6 +872,58 @@ function RideCard({
         )}
 
         {children && <div className="flex flex-wrap gap-2">{children}</div>}
+      </CardContent>
+    </Card>
+  );
+}
+
+function DriverEarningsReport({
+  period,
+  rides,
+}: {
+  period: { title: string; subtitle: string; start: Date; end: Date };
+  rides: Ride[];
+}) {
+  const total = rides.reduce((sum, ride) => sum + driverValueOf(ride), 0);
+  const periodLabel = `${formatSaoPauloDate(period.start)} a ${formatSaoPauloDate(period.end)}`;
+
+  return (
+    <Card className="overflow-hidden shadow-soft">
+      <CardContent className="space-y-4 p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-semibold">{period.title}</p>
+            <p className="text-sm text-muted-foreground">{period.subtitle}</p>
+          </div>
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary-ink">
+            <WalletCards className="size-5" aria-hidden="true" />
+          </div>
+        </div>
+
+        <div>
+          <p className="text-3xl font-semibold">{formatBRL(total)}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <CalendarRange className="size-3.5" aria-hidden="true" />
+            {periodLabel} · {rides.length} {rides.length === 1 ? "corrida paga" : "corridas pagas"}
+          </p>
+        </div>
+
+        <div className="divide-y border-t">
+          {rides.length === 0 && (
+            <p className="py-4 text-sm text-muted-foreground">Nenhuma corrida paga neste período.</p>
+          )}
+          {rides.map((ride) => (
+            <div key={ride.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+              <div className="min-w-0">
+                <p className="truncate font-medium">{ride.pet_name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  paga em {ride.paid_at ? formatDateTime(ride.paid_at) : "—"}
+                </p>
+              </div>
+              <p className="shrink-0 font-semibold">{formatBRL(driverValueOf(ride))}</p>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
