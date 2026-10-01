@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellRing, CalendarClock, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet } from "lucide-react";
+import { BellRing, CalendarClock, CalendarRange, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -78,6 +78,7 @@ type Ride = {
   destination_lat: number | null;
   destination_lng: number | null;
   arrived_at: string | null;
+  paid_at: string | null;
   stops: { address: string; lat: number; lng: number }[] | null;
   ride_pets: { pets: PetInfo | null }[] | null;
   preferred_driver_id: string | null;
@@ -85,7 +86,7 @@ type Ride = {
 };
 
 const selectCols =
-  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, stops, preferred_driver_id, preferred_until, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
+  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, paid_at, stops, preferred_driver_id, preferred_until, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
 const driverValueOf = (ride: Pick<Ride, "price_cents">) => Math.round(ride.price_cents * 0.75);
 
