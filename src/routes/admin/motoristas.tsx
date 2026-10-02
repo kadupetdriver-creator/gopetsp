@@ -79,6 +79,7 @@ type Application = {
   city: string;
   neighborhood: string;
   avatar_path: string | null;
+  pix_key: string | null;
   status: DriverStatus;
   rejection_reason: string | null;
   submitted_at: string | null;
@@ -337,6 +338,13 @@ function ApplicationCard({
             Ver foto de perfil <ExternalLink className="ml-1 size-3" />
           </Button>
         )}
+
+        <div className="rounded-xl bg-secondary p-3 text-sm">
+          <p className="font-medium">Chave Pix</p>
+          <p className="mt-1 break-all text-secondary-foreground">
+            {app.pix_key ?? "Não informada"}
+          </p>
+        </div>
 
         <div className="rounded-xl bg-secondary p-3 text-sm">
           <p className="flex items-center gap-2 font-medium">
