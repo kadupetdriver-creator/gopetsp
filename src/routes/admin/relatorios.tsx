@@ -258,8 +258,10 @@ function AdminRelatoriosPage() {
             <EarningsReport period={earningsPeriods.monday} rides={mondayEarnings} />
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <SummaryCard label="Corridas" value={`${rides.length}`} hint={formatBRL(totalRides)} />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <SummaryCard label="Corridas" value={`${rides.length}`} hint="no período selecionado" />
+            <SummaryCard label="Valor total" value={formatBRL(totalRides)} hint="soma das corridas" />
+            <SummaryCard label="Repasse motoristas" value={formatBRL(totalDriverShare)} hint="75% do valor total" />
             <SummaryCard label="Bônus e créditos" value={formatBRL(totalBonus)} hint={`${entries.filter((e) => e.kind !== "desconto").length} lançamentos`} />
             <SummaryCard label="Descontos" value={formatBRL(totalDesconto)} hint={`${entries.filter((e) => e.kind === "desconto").length} lançamentos`} />
           </div>
@@ -285,7 +287,12 @@ function AdminRelatoriosPage() {
                         {r.paymentStatus ? ` · pagamento ${r.paymentStatus}` : ""}
                       </p>
                     </div>
-                    <p className="font-semibold">{formatBRL(r.priceCents)}</p>
+                    <div className="text-right">
+                      <p className="font-semibold">{formatBRL(r.priceCents)}</p>
+                      {r.driverId && (
+                        <p className="text-xs text-muted-foreground">Motorista {formatBRL(driverShareCents(r.priceCents))}</p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
