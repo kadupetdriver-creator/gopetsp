@@ -53,6 +53,7 @@ function PerfilPage() {
   const [phone, setPhone] = useState("");
   const [vehicleModel, setVehicleModel] = useState("");
   const [vehiclePlate, setVehiclePlate] = useState("");
+  const [pixKey, setPixKey] = useState("");
   const [email, setEmail] = useState("");
   const [petName, setPetName] = useState("");
   const [petSize, setPetSize] = useState("medio");
@@ -216,6 +217,24 @@ function PerfilPage() {
   });
 
   const isDriver = profile?.role === "driver";
+
+  const { data: driverRow } = useQuery({
+    queryKey: ["my-driver-row", user?.id],
+    enabled: !!user && isDriver,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("drivers")
+        .select("id, pix_key")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (driverRow) setPixKey(driverRow.pix_key ?? "");
+  }, [driverRow]);
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8">
