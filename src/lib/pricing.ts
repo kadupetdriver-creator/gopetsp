@@ -97,3 +97,11 @@ export function calculateRidePrice(
   };
 }
 
+/** Parcela do motorista sobre o valor da corrida: 75%. */
+export const DRIVER_SHARE_RATE = 0.75;
+
+/** Valor que o motorista recebe de uma corrida (75% do valor cobrado). */
+export function driverShareCents(priceCents: number): number {
+  return Math.round(priceCents * DRIVER_SHARE_RATE);
+}
+

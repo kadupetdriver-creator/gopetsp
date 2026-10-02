@@ -8,6 +8,7 @@ import { CalendarIcon, CalendarRange, WalletCards } from "lucide-react";
 import { adminGetReport } from "@/lib/admin.functions";
 import { refreshEtaCalibration } from "@/lib/eta.functions";
 import { formatBRL, formatDateTime, statusLabels, type RideStatus } from "@/lib/rides";
+import { driverShareCents } from "@/lib/pricing";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -173,6 +174,7 @@ function AdminRelatoriosPage() {
   );
 
   const totalRides = rides.reduce((acc, r) => acc + r.priceCents, 0);
+  const totalDriverShare = rides.reduce((acc, r) => acc + driverShareCents(r.priceCents), 0);
   const totalBonus = entries.filter((e) => e.kind !== "desconto").reduce((acc, e) => acc + e.amountCents, 0);
   const totalDesconto = entries.filter((e) => e.kind === "desconto").reduce((acc, e) => acc + e.amountCents, 0);
   const earningsPeriods = useMemo(() => latestCompletedEarningsPeriods(), []);
