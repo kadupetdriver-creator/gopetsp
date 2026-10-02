@@ -496,6 +496,7 @@ function EditDriverDialog({
     birth_date: app.birth_date,
     phone: maskPhone(app.phone),
     email: app.email,
+    pix_key: app.pix_key ?? "",
     city: app.city,
     neighborhood: app.neighborhood,
     plate: v?.plate ?? "",
@@ -518,6 +519,7 @@ function EditDriverDialog({
           birth_date: form.birth_date,
           phone: onlyDigits(form.phone),
           email: form.email.trim(),
+          pix_key: form.pix_key.trim() || null,
           city: form.city.trim(),
           neighborhood: form.neighborhood.trim(),
         })
@@ -607,6 +609,15 @@ function EditDriverDialog({
           <Field label="E-mail de contato">
             <Input type="email" value={form.email} onChange={set("email")} />
           </Field>
+          <div className="sm:col-span-2">
+            <Field label="Chave Pix">
+              <Input
+                placeholder="CPF, e-mail, telefone ou chave aleatória"
+                value={form.pix_key}
+                onChange={set("pix_key")}
+              />
+            </Field>
+          </div>
           <Field label="Cidade">
             <Input value={form.city} onChange={set("city")} />
           </Field>
