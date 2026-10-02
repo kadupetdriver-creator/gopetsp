@@ -177,6 +177,11 @@ function AdminCorridasPage() {
                   {formatDateTime(r.scheduled_at)} · <strong>{formatBRL(r.price_cents)}</strong> · {r.distance_km} km
                   <span className="ml-2 text-xs text-muted-foreground">{pay}</span>
                 </p>
+                {r.driver_id && (
+                  <p className="text-sm text-muted-foreground">
+                    Motorista recebe: <strong className="text-foreground">{formatBRL(Math.round(r.price_cents * 0.75))}</strong>
+                  </p>
+                )}
                 <div className="flex flex-wrap gap-2 pt-1">
                   <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
                     <Pencil className="mr-2 size-4" /> Editar
