@@ -21,3 +21,4 @@
 - [x] Permitir motorista preferencial com prioridade de 10 minutos após o pagamento
 
 - [x] Programa de indicação (cupom 20% tutor, bônus R$ 50 motorista, admin)
+- [x] Relatórios administrativos com valor total das corridas e repasse de 75%

@@ -8,6 +8,7 @@ import { CalendarIcon, CalendarRange, WalletCards } from "lucide-react";
 import { adminGetReport } from "@/lib/admin.functions";
 import { refreshEtaCalibration } from "@/lib/eta.functions";
 import { formatBRL, formatDateTime, statusLabels, type RideStatus } from "@/lib/rides";
+import { driverShareCents } from "@/lib/pricing";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -173,6 +174,7 @@ function AdminRelatoriosPage() {
   );
 
   const totalRides = rides.reduce((acc, r) => acc + r.priceCents, 0);
+  const totalDriverShare = rides.reduce((acc, r) => acc + driverShareCents(r.priceCents), 0);
   const totalBonus = entries.filter((e) => e.kind !== "desconto").reduce((acc, e) => acc + e.amountCents, 0);
   const totalDesconto = entries.filter((e) => e.kind === "desconto").reduce((acc, e) => acc + e.amountCents, 0);
   const earningsPeriods = useMemo(() => latestCompletedEarningsPeriods(), []);
@@ -256,8 +258,10 @@ function AdminRelatoriosPage() {
             <EarningsReport period={earningsPeriods.monday} rides={mondayEarnings} />
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <SummaryCard label="Corridas" value={`${rides.length}`} hint={formatBRL(totalRides)} />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <SummaryCard label="Corridas" value={`${rides.length}`} hint="no período selecionado" />
+            <SummaryCard label="Valor total" value={formatBRL(totalRides)} hint="soma das corridas" />
+            <SummaryCard label="Repasse motoristas" value={formatBRL(totalDriverShare)} hint="75% do valor total" />
             <SummaryCard label="Bônus e créditos" value={formatBRL(totalBonus)} hint={`${entries.filter((e) => e.kind !== "desconto").length} lançamentos`} />
             <SummaryCard label="Descontos" value={formatBRL(totalDesconto)} hint={`${entries.filter((e) => e.kind === "desconto").length} lançamentos`} />
           </div>
@@ -283,7 +287,12 @@ function AdminRelatoriosPage() {
                         {r.paymentStatus ? ` · pagamento ${r.paymentStatus}` : ""}
                       </p>
                     </div>
-                    <p className="font-semibold">{formatBRL(r.priceCents)}</p>
+                    <div className="text-right">
+                      <p className="font-semibold">{formatBRL(r.priceCents)}</p>
+                      {r.driverId && (
+                        <p className="text-xs text-muted-foreground">Motorista {formatBRL(driverShareCents(r.priceCents))}</p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -326,6 +335,7 @@ function EarningsReport({
   rides: ReportRide[];
 }) {
   const total = rides.reduce((sum, ride) => sum + ride.priceCents, 0);
+  const driverShare = rides.reduce((sum, ride) => sum + driverShareCents(ride.priceCents), 0);
   const periodLabel = `${formatSaoPauloDate(period.start)} a ${formatSaoPauloDate(period.end)}`;
 
   return (
@@ -341,13 +351,22 @@ function EarningsReport({
           </div>
         </div>
 
-        <div>
-          <p className="text-3xl font-semibold">{formatBRL(total)}</p>
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <CalendarRange className="size-3.5" aria-hidden="true" />
-            {periodLabel} · {rides.length} {rides.length === 1 ? "corrida paga" : "corridas pagas"}
-          </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Valor total</p>
+            <p className="mt-1 text-2xl font-semibold">{formatBRL(total)}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Repasse motoristas</p>
+            <p className="mt-1 text-2xl font-semibold">{formatBRL(driverShare)}</p>
+            <p className="text-xs text-muted-foreground">75% do valor total</p>
+          </div>
         </div>
+
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <CalendarRange className="size-3.5" aria-hidden="true" />
+          {periodLabel} · {rides.length} {rides.length === 1 ? "corrida paga" : "corridas pagas"}
+        </p>
 
         <div className="divide-y border-t">
           {rides.length === 0 && (
@@ -361,7 +380,10 @@ function EarningsReport({
                   {ride.driverName ?? "Sem motorista"} · pago em {ride.paidAt ? formatDateTime(ride.paidAt) : "—"}
                 </p>
               </div>
-              <p className="shrink-0 font-semibold">{formatBRL(ride.priceCents)}</p>
+              <div className="shrink-0 text-right">
+                <p className="font-semibold">{formatBRL(ride.priceCents)}</p>
+                <p className="text-xs text-muted-foreground">Motorista {formatBRL(driverShareCents(ride.priceCents))}</p>
+              </div>
             </div>
           ))}
         </div>

@@ -6,6 +6,7 @@ import { Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { refundRidePayment } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { driverShareCents } from "@/lib/pricing";
 import { formatBRL, formatDateTime, serviceTypes, statusLabels, statusStyles, type RideStatus } from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -179,7 +180,7 @@ function AdminCorridasPage() {
                 </p>
                 {r.driver_id && (
                   <p className="text-sm text-muted-foreground">
-                    Motorista recebe: <strong className="text-foreground">{formatBRL(Math.round(r.price_cents * 0.75))}</strong>
+                    Motorista recebe: <strong className="text-foreground">{formatBRL(driverShareCents(r.price_cents))}</strong>
                   </p>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">
