@@ -115,6 +115,14 @@ function PerfilPage() {
         .eq("id", user!.id);
       if (error) throw error;
 
+      if (profile?.role === "driver") {
+        const { error: pixError } = await supabase
+          .from("drivers")
+          .update({ pix_key: pixKey.trim() || null })
+          .eq("user_id", user!.id);
+        if (pixError) throw pixError;
+      }
+
       if (email.trim().toLowerCase() !== (user?.email ?? "").toLowerCase()) {
         const { error: emailError } = await supabase.auth.updateUser({ email: email.trim() });
         if (emailError) throw new Error("Não foi possível alterar o e-mail. Tente novamente.");
@@ -307,6 +315,18 @@ function PerfilPage() {
                     value={vehiclePlate}
                     onChange={(e) => setVehiclePlate(e.target.value)}
                   />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="pix">Chave Pix para recebimento</Label>
+                  <Input
+                    id="pix"
+                    placeholder="CPF, e-mail, telefone ou chave aleatória"
+                    value={pixKey}
+                    onChange={(e) => setPixKey(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Usada pela GoPet para pagar os seus repasses. Só você e a administração veem esta chave.
+                  </p>
                 </div>
               </>
             )}
