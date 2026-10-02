@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BellRing, CalendarClock, CalendarRange, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { driverShareCents } from "@/lib/pricing";
 
 import { useAuth } from "@/hooks/useAuth";
 

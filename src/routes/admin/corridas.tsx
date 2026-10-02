@@ -6,6 +6,7 @@ import { Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { refundRidePayment } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { driverShareCents } from "@/lib/pricing";
 import { formatBRL, formatDateTime, serviceTypes, statusLabels, statusStyles, type RideStatus } from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
