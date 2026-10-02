@@ -335,6 +335,7 @@ function EarningsReport({
   rides: ReportRide[];
 }) {
   const total = rides.reduce((sum, ride) => sum + ride.priceCents, 0);
+  const driverShare = rides.reduce((sum, ride) => sum + driverShareCents(ride.priceCents), 0);
   const periodLabel = `${formatSaoPauloDate(period.start)} a ${formatSaoPauloDate(period.end)}`;
 
   return (

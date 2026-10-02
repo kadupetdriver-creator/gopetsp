@@ -179,7 +179,7 @@ function AdminCorridasPage() {
                 </p>
                 {r.driver_id && (
                   <p className="text-sm text-muted-foreground">
-                    Motorista recebe: <strong className="text-foreground">{formatBRL(Math.round(r.price_cents * 0.75))}</strong>
+                    Motorista recebe: <strong className="text-foreground">{formatBRL(driverShareCents(r.price_cents))}</strong>
                   </p>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">
