@@ -95,7 +95,7 @@ type Application = {
 };
 
 const cols =
-  "id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, status, rejection_reason, submitted_at, created_at, vehicles(id, plate, brand, model, year, color, vehicle_type), driver_documents(id, document_type, file_path, status, notes)";
+  "id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, pix_key, status, rejection_reason, submitted_at, created_at, vehicles(id, plate, brand, model, year, color, vehicle_type), driver_documents(id, document_type, file_path, status, notes)";
 
 const statusOrder: Record<DriverStatus, number> = {
   pendente: 0,
