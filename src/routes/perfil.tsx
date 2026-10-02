@@ -53,6 +53,7 @@ function PerfilPage() {
   const [phone, setPhone] = useState("");
   const [vehicleModel, setVehicleModel] = useState("");
   const [vehiclePlate, setVehiclePlate] = useState("");
+  const [pixKey, setPixKey] = useState("");
   const [email, setEmail] = useState("");
   const [petName, setPetName] = useState("");
   const [petSize, setPetSize] = useState("medio");
@@ -113,6 +114,14 @@ function PerfilPage() {
         })
         .eq("id", user!.id);
       if (error) throw error;
+
+      if (profile?.role === "driver") {
+        const { error: pixError } = await supabase
+          .from("drivers")
+          .update({ pix_key: pixKey.trim() || null })
+          .eq("user_id", user!.id);
+        if (pixError) throw pixError;
+      }
 
       if (email.trim().toLowerCase() !== (user?.email ?? "").toLowerCase()) {
         const { error: emailError } = await supabase.auth.updateUser({ email: email.trim() });
@@ -217,6 +226,24 @@ function PerfilPage() {
 
   const isDriver = profile?.role === "driver";
 
+  const { data: driverRow } = useQuery({
+    queryKey: ["my-driver-row", user?.id],
+    enabled: !!user && isDriver,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("drivers")
+        .select("id, pix_key")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (driverRow) setPixKey(driverRow.pix_key ?? "");
+  }, [driverRow]);
+
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8">
       <div>
@@ -288,6 +315,18 @@ function PerfilPage() {
                     value={vehiclePlate}
                     onChange={(e) => setVehiclePlate(e.target.value)}
                   />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="pix">Chave Pix para recebimento</Label>
+                  <Input
+                    id="pix"
+                    placeholder="CPF, e-mail, telefone ou chave aleatória"
+                    value={pixKey}
+                    onChange={(e) => setPixKey(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Usada pela GoPet para pagar os seus repasses. Só você e a administração veem esta chave.
+                  </p>
                 </div>
               </>
             )}

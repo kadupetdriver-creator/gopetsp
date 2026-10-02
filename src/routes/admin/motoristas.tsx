@@ -79,6 +79,7 @@ type Application = {
   city: string;
   neighborhood: string;
   avatar_path: string | null;
+  pix_key: string | null;
   status: DriverStatus;
   rejection_reason: string | null;
   submitted_at: string | null;
@@ -94,7 +95,7 @@ type Application = {
 };
 
 const cols =
-  "id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, status, rejection_reason, submitted_at, created_at, vehicles(id, plate, brand, model, year, color, vehicle_type), driver_documents(id, document_type, file_path, status, notes)";
+  "id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, pix_key, status, rejection_reason, submitted_at, created_at, vehicles(id, plate, brand, model, year, color, vehicle_type), driver_documents(id, document_type, file_path, status, notes)";
 
 const statusOrder: Record<DriverStatus, number> = {
   pendente: 0,
@@ -210,6 +211,7 @@ function AdminMotoristasPage() {
                 "Nascimento",
                 "E-mail",
                 "Telefone",
+                "Chave Pix",
                 "Cidade",
                 "Bairro",
                 "Situação",
@@ -226,6 +228,7 @@ function AdminMotoristasPage() {
                 csvDate(d.birth_date),
                 d.email,
                 maskPhone(d.phone),
+                d.pix_key ?? "",
                 d.city,
                 d.neighborhood,
                 driverStatusLabels[d.status],
@@ -337,6 +340,13 @@ function ApplicationCard({
             Ver foto de perfil <ExternalLink className="ml-1 size-3" />
           </Button>
         )}
+
+        <div className="rounded-xl bg-secondary p-3 text-sm">
+          <p className="font-medium">Chave Pix</p>
+          <p className="mt-1 break-all text-secondary-foreground">
+            {app.pix_key ?? "Não informada"}
+          </p>
+        </div>
 
         <div className="rounded-xl bg-secondary p-3 text-sm">
           <p className="flex items-center gap-2 font-medium">
@@ -488,6 +498,7 @@ function EditDriverDialog({
     birth_date: app.birth_date,
     phone: maskPhone(app.phone),
     email: app.email,
+    pix_key: app.pix_key ?? "",
     city: app.city,
     neighborhood: app.neighborhood,
     plate: v?.plate ?? "",
@@ -510,6 +521,7 @@ function EditDriverDialog({
           birth_date: form.birth_date,
           phone: onlyDigits(form.phone),
           email: form.email.trim(),
+          pix_key: form.pix_key.trim() || null,
           city: form.city.trim(),
           neighborhood: form.neighborhood.trim(),
         })
@@ -599,6 +611,15 @@ function EditDriverDialog({
           <Field label="E-mail de contato">
             <Input type="email" value={form.email} onChange={set("email")} />
           </Field>
+          <div className="sm:col-span-2">
+            <Field label="Chave Pix">
+              <Input
+                placeholder="CPF, e-mail, telefone ou chave aleatória"
+                value={form.pix_key}
+                onChange={set("pix_key")}
+              />
+            </Field>
+          </div>
           <Field label="Cidade">
             <Input value={form.city} onChange={set("city")} />
           </Field>
