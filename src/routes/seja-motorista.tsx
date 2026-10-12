@@ -125,6 +125,8 @@ function SejaMotoristaPage() {
           .from("vehicles")
           .select("id, plate, model, brand, year, color, vehicle_type")
           .eq("driver_id", driver.id)
+          .order("is_active", { ascending: false })
+          .limit(1)
           .maybeSingle(),
         supabase
           .from("driver_documents")

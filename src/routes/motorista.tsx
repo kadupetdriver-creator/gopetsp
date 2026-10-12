@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { PetDetails, type PetInfo } from "@/components/PetDetails";
 import { AddressLink } from "@/components/AddressLink";
 import { RideReview } from "@/components/RideReview";
+import { DriverVehicles } from "@/components/DriverVehicles";
 import { StatusCard } from "@/routes/seja-motorista";
 import type { DriverStatus } from "@/lib/drivers";
 
@@ -179,6 +180,7 @@ type VehicleInfo = {
   year: number;
   color: string;
   vehicle_type: string;
+  is_active?: boolean;
 };
 
 function MotoristaPage() {
@@ -193,7 +195,7 @@ function MotoristaPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("drivers")
-        .select("id, status, rejection_reason, vehicles(plate, model, brand, year, color, vehicle_type)")
+        .select("id, status, rejection_reason, vehicles(plate, model, brand, year, color, vehicle_type, is_active)")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
@@ -347,7 +349,7 @@ function MotoristaPage() {
   const fridayEarnings = paidWithin(completed, earningsPeriods.friday.start, earningsPeriods.friday.end);
   const mondayEarnings = paidWithin(completed, earningsPeriods.monday.start, earningsPeriods.monday.end);
   const rawVehicles = application?.vehicles ?? null;
-  const vehicle = (Array.isArray(rawVehicles) ? (rawVehicles[0] ?? null) : rawVehicles) ?? null;
+  const vehicle = (Array.isArray(rawVehicles) ? (rawVehicles.find((v) => v.is_active) ?? rawVehicles[0] ?? null) : rawVehicles) ?? null;
 
   // Lembrete: avisa o motorista 30 minutos antes do horário de cada corrida aceita.
   const [tick, setTick] = useState(0);
@@ -618,47 +620,7 @@ function MotoristaPage() {
         </TabsContent>
 
         <TabsContent value="veiculo" className="mt-5">
-          {vehicle ? (
-            <Card className="shadow-soft">
-              <CardContent className="py-6">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary-ink">
-                    <Car className="size-5" />
-                  </span>
-                  <div>
-                    <p className="text-lg font-semibold">
-                      {vehicle.brand} {vehicle.model}
-                    </p>
-                    <p className="text-sm text-muted-foreground">Placa {vehicle.plate}</p>
-                  </div>
-                </div>
-                <dl className="mt-5 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-                  <div>
-                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Ano</dt>
-                    <dd className="font-medium">{vehicle.year}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Cor</dt>
-                    <dd className="font-medium">{vehicle.color}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Tipo</dt>
-                    <dd className="font-medium capitalize">{vehicle.vehicle_type}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Placa</dt>
-                    <dd className="font-medium">{vehicle.plate}</dd>
-                  </div>
-                </dl>
-                <p className="mt-5 text-xs text-muted-foreground">
-                  Precisa trocar de veículo? Fale com o suporte GoPet pelo WhatsApp para atualizar o
-                  cadastro.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <EmptyState text="Nenhum veículo encontrado no seu cadastro." />
-          )}
+          {application ? <DriverVehicles driverId={application.id} /> : <EmptyState text="Nenhum veículo encontrado no seu cadastro." />}
 
         </TabsContent>
       </Tabs>
