@@ -8,6 +8,13 @@
       "when": 1791825771584,
       "tag": "0000_multiple_vehicles",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791825792801,
+      "tag": "0001_active_vehicle_lookups",
+      "breakpoints": true
     }
   ]
 }
