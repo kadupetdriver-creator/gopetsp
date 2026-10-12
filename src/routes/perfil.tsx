@@ -21,6 +21,7 @@ import { deleteMyAccount } from "@/lib/account.functions";
 import { PetPhoto, uploadPetPhoto } from "@/components/PetPhoto";
 import { ReferralCard } from "@/components/ReferralCard";
 import { PhotoChangeCard } from "@/components/PhotoChangeCard";
+import { DriverVehicles } from "@/components/DriverVehicles";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 const phonePattern = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
@@ -51,8 +52,6 @@ function PerfilPage() {
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [vehicleModel, setVehicleModel] = useState("");
-  const [vehiclePlate, setVehiclePlate] = useState("");
   const [pixKey, setPixKey] = useState("");
   const [email, setEmail] = useState("");
   const [petName, setPetName] = useState("");
@@ -73,8 +72,6 @@ function PerfilPage() {
     if (profile) {
       setFullName(profile.full_name);
       setPhone(profile.phone ?? "");
-      setVehicleModel(profile.vehicle_model ?? "");
-      setVehiclePlate(profile.vehicle_plate ?? "");
     }
   }, [profile]);
 
@@ -109,8 +106,6 @@ function PerfilPage() {
         .update({
           full_name: fullName,
           phone: phone.trim() || null,
-          vehicle_model: vehicleModel || null,
-          vehicle_plate: vehiclePlate || null,
         })
         .eq("id", user!.id);
       if (error) throw error;
@@ -297,38 +292,18 @@ function PerfilPage() {
               />
             </div>
             {isDriver && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="veiculo">Veículo</Label>
-                  <Input
-                    id="veiculo"
-                    placeholder="Fiat Doblò 2021"
-                    value={vehicleModel}
-                    onChange={(e) => setVehicleModel(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="placa">Placa</Label>
-                  <Input
-                    id="placa"
-                    placeholder="ABC1D23"
-                    value={vehiclePlate}
-                    onChange={(e) => setVehiclePlate(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="pix">Chave Pix para recebimento</Label>
-                  <Input
-                    id="pix"
-                    placeholder="CPF, e-mail, telefone ou chave aleatória"
-                    value={pixKey}
-                    onChange={(e) => setPixKey(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Usada pela GoPet para pagar os seus repasses. Só você e a administração veem esta chave.
-                  </p>
-                </div>
-              </>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="pix">Chave Pix para recebimento</Label>
+                <Input
+                  id="pix"
+                  placeholder="CPF, e-mail, telefone ou chave aleatória"
+                  value={pixKey}
+                  onChange={(e) => setPixKey(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Usada pela GoPet para pagar os seus repasses. Só você e a administração veem esta chave.
+                </p>
+              </div>
             )}
             <div className="sm:col-span-2">
               <Button type="submit" disabled={saveProfile.isPending}>
@@ -339,6 +314,26 @@ function PerfilPage() {
           </form>
         </CardContent>
       </Card>
+
+      {isDriver && (
+        <Card className="shadow-soft">
+          <CardHeader>
+            <CardTitle className="text-lg">Meu veículo</CardTitle>
+            <CardDescription>
+              Cadastre mais de um veículo e escolha qual está em uso hoje.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {driverRow ? (
+              <DriverVehicles driverId={driverRow.id} />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Nenhum cadastro de motorista encontrado.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {!isDriver && (
         <Card className="shadow-soft">
