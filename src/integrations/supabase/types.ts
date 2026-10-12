@@ -858,6 +858,7 @@ export type Database = {
           created_at: string
           driver_id: string
           id: string
+          is_active: boolean
           model: string
           plate: string
           updated_at: string
@@ -870,6 +871,7 @@ export type Database = {
           created_at?: string
           driver_id: string
           id?: string
+          is_active?: boolean
           model: string
           plate: string
           updated_at?: string
@@ -882,6 +884,7 @@ export type Database = {
           created_at?: string
           driver_id?: string
           id?: string
+          is_active?: boolean
           model?: string
           plate?: string
           updated_at?: string
@@ -892,7 +895,7 @@ export type Database = {
           {
             foreignKeyName: "vehicles_driver_id_fkey"
             columns: ["driver_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
@@ -1118,6 +1121,7 @@ export type Database = {
           vehicle_plate: string
         }[]
       }
+      set_active_vehicle: { Args: { _vehicle_id: string }; Returns: undefined }
       set_ride_status: {
         Args: {
           _ride_id: string
