@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellRing, CalendarClock, CalendarRange, Car, CheckCircle2, MapPin, Route as RouteIcon, Wallet, WalletCards } from "lucide-react";
+import { BellRing, CalendarClock, CalendarRange, CheckCircle2, MapPin, Route as RouteIcon, Wallet, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { driverShareCents } from "@/lib/pricing";
@@ -30,7 +30,6 @@ import { cn } from "@/lib/utils";
 import { PetDetails, type PetInfo } from "@/components/PetDetails";
 import { AddressLink } from "@/components/AddressLink";
 import { RideReview } from "@/components/RideReview";
-import { DriverVehicles } from "@/components/DriverVehicles";
 import { StatusCard } from "@/routes/seja-motorista";
 import type { DriverStatus } from "@/lib/drivers";
 
@@ -461,7 +460,6 @@ function MotoristaPage() {
           <TabsTrigger value="abertas">Bolsão de corridas ({open.length})</TabsTrigger>
           <TabsTrigger value="minhas">Minhas corridas ({active.length})</TabsTrigger>
           <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
-          <TabsTrigger value="veiculo">Meu veículo</TabsTrigger>
         </TabsList>
 
         <TabsContent value="abertas" className="mt-5 space-y-4">
@@ -617,11 +615,6 @@ function MotoristaPage() {
                 </Card>
               ))}
           </div>
-        </TabsContent>
-
-        <TabsContent value="veiculo" className="mt-5">
-          {application ? <DriverVehicles driverId={application.id} /> : <EmptyState text="Nenhum veículo encontrado no seu cadastro." />}
-
         </TabsContent>
       </Tabs>
 
