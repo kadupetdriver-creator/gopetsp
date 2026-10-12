@@ -119,7 +119,7 @@ function AdminMotoristasPage() {
       // Motorista pode ter vários veículos: o painel mostra o que está ativo.
       return (data as unknown as (Omit<Application, "vehicles"> & { vehicles: (Vehicle & { is_active?: boolean })[] | Vehicle | null })[]).map((d) => {
         const list = Array.isArray(d.vehicles) ? d.vehicles : d.vehicles ? [d.vehicles] : [];
-        return { ...d, vehicles: list.find((v) => v.is_active) ?? list[0] ?? null } as Application;
+        return { ...d, vehicles: (list as (Vehicle & { is_active?: boolean })[]).find((v) => v.is_active) ?? list[0] ?? null } as Application;
       });
     },
   });
