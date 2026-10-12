@@ -95,7 +95,7 @@ type Application = {
 };
 
 const cols =
-  "id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, pix_key, status, rejection_reason, submitted_at, created_at, vehicles(id, plate, brand, model, year, color, vehicle_type), driver_documents(id, document_type, file_path, status, notes)";
+  "id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, pix_key, status, rejection_reason, submitted_at, created_at, vehicles(id, plate, brand, model, year, color, vehicle_type, is_active), driver_documents(id, document_type, file_path, status, notes)";
 
 const statusOrder: Record<DriverStatus, number> = {
   pendente: 0,
@@ -116,7 +116,11 @@ function AdminMotoristasPage() {
     queryFn: async () => {
       const { data, error } = await supabase.from("drivers").select(cols).order("created_at", { ascending: true });
       if (error) throw error;
-      return data as unknown as Application[];
+      // Motorista pode ter vários veículos: o painel mostra o que está ativo.
+      return (data as unknown as (Omit<Application, "vehicles"> & { vehicles: (Vehicle & { is_active?: boolean })[] | Vehicle | null })[]).map((d) => {
+        const list = Array.isArray(d.vehicles) ? d.vehicles : d.vehicles ? [d.vehicles] : [];
+        return { ...d, vehicles: list.find((v) => v.is_active) ?? list[0] ?? null } as Application;
+      });
     },
   });
 
