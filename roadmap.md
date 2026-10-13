@@ -24,3 +24,4 @@
 - [x] Relatórios administrativos com valor total das corridas e repasse de 75%
 
 - [x] Veículos do motorista (cadastro múltiplo e carro do dia) movidos para a aba Meu perfil
+- [x] Administração vê todos os dados de tutores e motoristas (CPF, nascimento, pets, veículos)
