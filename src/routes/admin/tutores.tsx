@@ -466,7 +466,7 @@ function EditTutorDialog({
           <Button variant="ghost" onClick={onClose}>
             Cancelar
           </Button>
-          <Button disabled={save.isPending || !form.full_name.trim()} onClick={() => save.mutate()}>
+          <Button disabled={save.isPending || !form.full_name.trim() || !validCpf} onClick={() => save.mutate()}>
             {save.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
             Salvar
           </Button>
