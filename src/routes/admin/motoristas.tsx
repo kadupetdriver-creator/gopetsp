@@ -66,6 +66,7 @@ type Vehicle = {
   year: number;
   color: string;
   vehicle_type: string;
+  is_active?: boolean;
 };
 
 type Application = {
@@ -85,6 +86,7 @@ type Application = {
   submitted_at: string | null;
   created_at: string;
   vehicles: Vehicle | null;
+  allVehicles: Vehicle[];
   driver_documents: {
     id: string;
     document_type: DocumentType;
@@ -116,10 +118,15 @@ function AdminMotoristasPage() {
     queryFn: async () => {
       const { data, error } = await supabase.from("drivers").select(cols).order("created_at", { ascending: true });
       if (error) throw error;
-      // Motorista pode ter vários veículos: o painel mostra o que está ativo.
-      return (data as unknown as (Omit<Application, "vehicles"> & { vehicles: (Vehicle & { is_active?: boolean })[] | Vehicle | null })[]).map((d) => {
+      // Motorista pode ter vários veículos: o painel lista todos e destaca o ativo.
+      type Raw = Omit<Application, "vehicles" | "allVehicles"> & { vehicles: Vehicle[] | Vehicle | null };
+      return ((data ?? []) as unknown as Raw[]).map((d) => {
         const list = Array.isArray(d.vehicles) ? d.vehicles : d.vehicles ? [d.vehicles] : [];
-        return { ...d, vehicles: (list as (Vehicle & { is_active?: boolean })[]).find((v) => v.is_active) ?? list[0] ?? null } as Application;
+        return {
+          ...d,
+          allVehicles: list,
+          vehicles: list.find((v) => v.is_active) ?? list[0] ?? null,
+        } as Application;
       });
     },
   });
@@ -224,6 +231,7 @@ function AdminMotoristasPage() {
                 "Ano",
                 "Cor",
                 "Tipo",
+                "Todos os veículos",
                 "Cadastro",
               ],
               ...list.map((d) => [
@@ -241,6 +249,7 @@ function AdminMotoristasPage() {
                 d.vehicles?.year ?? "",
                 d.vehicles?.color ?? "",
                 d.vehicles?.vehicle_type ?? "",
+                d.allVehicles.map((veh) => `${veh.plate} (${veh.brand} ${veh.model}${veh.is_active ? ", ativo" : ""})`).join(" | "),
                 csvDate(d.created_at),
               ]),
             ])
@@ -321,7 +330,10 @@ function ApplicationCard({
           <div>
             <CardTitle className="text-lg">{app.full_name}</CardTitle>
             <CardDescription>
-              {app.email} · {maskPhone(app.phone)} · CPF {maskCPF(app.cpf)} · {age} anos
+              {app.email} · {maskPhone(app.phone)} · CPF {maskCPF(app.cpf)}
+            </CardDescription>
+            <CardDescription>
+              Nascimento {new Date(app.birth_date).toLocaleDateString("pt-BR")} · {age} anos
             </CardDescription>
             <CardDescription>
               {app.neighborhood}, {app.city} · enviado em{" "}
@@ -354,13 +366,24 @@ function ApplicationCard({
 
         <div className="rounded-xl bg-secondary p-3 text-sm">
           <p className="flex items-center gap-2 font-medium">
-            <Car className="size-4" /> Veículo
+            <Car className="size-4" /> Veículos ({app.allVehicles.length})
           </p>
-          {v ? (
-            <p className="mt-1 text-secondary-foreground">
-              {v.brand} {v.model} {v.year} · {v.color} · placa {v.plate} ·{" "}
-              {vehicleTypes.find((t) => t.value === v.vehicle_type)?.label ?? v.vehicle_type}
-            </p>
+          {app.allVehicles.length > 0 ? (
+            <ul className="mt-2 space-y-1.5">
+              {app.allVehicles.map((veh) => (
+                <li key={veh.id} className="flex flex-wrap items-center gap-2 text-secondary-foreground">
+                  <span>
+                    {veh.brand} {veh.model} {veh.year} · {veh.color} · placa {veh.plate} ·{" "}
+                    {vehicleTypes.find((t) => t.value === veh.vehicle_type)?.label ?? veh.vehicle_type}
+                  </span>
+                  {veh.is_active && (
+                    <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
+                      Ativo hoje
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
           ) : (
             <p className="mt-1 text-muted-foreground">Veículo ainda não informado.</p>
           )}

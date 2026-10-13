@@ -191,8 +191,23 @@ function AdminTutoresPage() {
                   {t.email ?? "—"} · {t.phone ? maskPhone(t.phone) : "sem telefone"}
                 </p>
                 <p className="truncate text-sm text-muted-foreground">
-                  {t.address || t.city} · desde {new Date(t.created_at).toLocaleDateString("pt-BR")}
+                  CPF {t.cpf ? maskCPF(t.cpf) : "não informado"} · {t.address || t.city} · desde{" "}
+                  {new Date(t.created_at).toLocaleDateString("pt-BR")}
                 </p>
+                {t.pets.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {t.pets.map((p) => (
+                      <span
+                        key={p.id}
+                        className="rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground"
+                      >
+                        {p.name} · {p.species} · {p.size}
+                        {p.breed ? ` · ${p.breed}` : ""}
+                        {p.weight_kg ? ` · ${p.weight_kg} kg` : ""}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               <Button variant="outline" size="sm" onClick={() => setEditing(t)}>
                 <UserCog className="mr-2 size-4" /> Editar
