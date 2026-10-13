@@ -13,7 +13,7 @@ import {
   adminSetAccountActive,
   adminUpdateUserEmail,
 } from "@/lib/admin.functions";
-import { maskPhone } from "@/lib/drivers";
+import { isValidCPF, maskCPF, maskPhone, onlyDigits } from "@/lib/drivers";
 import { formatBRL } from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -45,16 +45,28 @@ export const Route = createFileRoute("/admin/tutores")({
   component: AdminTutoresPage,
 });
 
+type TutorPet = {
+  id: string;
+  owner_id: string;
+  name: string;
+  species: string;
+  size: string;
+  breed: string | null;
+  weight_kg: number | null;
+};
+
 type Tutor = {
   id: string;
   full_name: string;
   phone: string | null;
+  cpf: string | null;
   city: string;
   address: string | null;
   role: "tutor" | "driver";
   is_active: boolean;
   created_at: string;
   email?: string;
+  pets: TutorPet[];
 };
 
 function AdminTutoresPage() {
@@ -66,17 +78,31 @@ function AdminTutoresPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin-tutors"],
     queryFn: async () => {
-      const [{ data: profiles, error }, { data: emails }] = await Promise.all([
+      const [{ data: profiles, error }, { data: emails }, { data: petRows }] = await Promise.all([
         supabase
           .from("profiles")
-          .select("id, full_name, phone, city, address, role, is_active, created_at")
+          .select("id, full_name, phone, cpf, city, address, role, is_active, created_at")
           .eq("role", "tutor")
           .order("created_at", { ascending: false }),
         supabase.rpc("admin_user_emails"),
+        supabase
+          .from("pets")
+          .select("id, owner_id, name, species, size, breed, weight_kg")
+          .order("created_at", { ascending: true }),
       ]);
       if (error) throw error;
       const byId = new Map((emails ?? []).map((e) => [e.user_id, e.email]));
-      return (profiles ?? []).map((p) => ({ ...p, email: byId.get(p.id) ?? undefined })) as Tutor[];
+      const petsByOwner = new Map<string, TutorPet[]>();
+      for (const pet of (petRows ?? []) as TutorPet[]) {
+        const list = petsByOwner.get(pet.owner_id) ?? [];
+        list.push(pet);
+        petsByOwner.set(pet.owner_id, list);
+      }
+      return (profiles ?? []).map((p) => ({
+        ...p,
+        email: byId.get(p.id) ?? undefined,
+        pets: petsByOwner.get(p.id) ?? [],
+      })) as Tutor[];
     },
   });
 
@@ -86,7 +112,9 @@ function AdminTutoresPage() {
       if (filter === "ativos" && !t.is_active) return false;
       if (filter === "inativos" && t.is_active) return false;
       if (!q) return true;
-      return [t.full_name, t.email, t.phone, t.address, t.city].some((v) => v?.toLowerCase().includes(q));
+      return [t.full_name, t.email, t.phone, t.cpf, t.address, t.city, ...t.pets.map((p) => p.name)].some((v) =>
+        v?.toLowerCase().includes(q),
+      );
     });
   }, [data, search, filter]);
 
@@ -118,13 +146,15 @@ function AdminTutoresPage() {
           disabled={list.length === 0}
           onClick={() =>
             downloadCsvFile(`tutores-${new Date().toISOString().slice(0, 10)}.csv`, [
-              ["Nome", "E-mail", "Telefone", "Cidade", "Endereço", "Situação", "Cadastro"],
+              ["Nome", "CPF", "E-mail", "Telefone", "Cidade", "Endereço", "Pets", "Situação", "Cadastro"],
               ...list.map((t) => [
                 t.full_name,
+                t.cpf ? maskCPF(t.cpf) : "",
                 t.email ?? "",
                 t.phone ? maskPhone(t.phone) : "",
                 t.city,
                 t.address ?? "",
+                t.pets.map((p) => `${p.name} (${p.species}, ${p.size})`).join(" | "),
                 t.is_active ? "Ativo" : "Desativado",
                 csvDate(t.created_at),
               ]),

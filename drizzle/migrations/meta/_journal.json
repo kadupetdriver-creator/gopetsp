@@ -15,6 +15,13 @@
       "when": 1791825792801,
       "tag": "0001_active_vehicle_lookups",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791854042449,
+      "tag": "0002_admin_reads_all_user_data",
+      "breakpoints": true
     }
   ]
 }
