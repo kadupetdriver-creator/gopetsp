@@ -243,6 +243,7 @@ function EditTutorDialog({
   const [form, setForm] = useState({
     full_name: tutor.full_name,
     phone: tutor.phone ?? "",
+    cpf: tutor.cpf ?? "",
     email: tutor.email ?? "",
     address: tutor.address ?? "",
     city: tutor.city,
@@ -311,13 +312,18 @@ function EditTutorDialog({
     onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível lançar a cobrança."),
   });
 
+  const cpfDigits = onlyDigits(form.cpf);
+  const validCpf = cpfDigits.length === 0 || isValidCPF(cpfDigits);
+
   const save = useMutation({
     mutationFn: async () => {
+      if (!validCpf) throw new Error("CPF inválido.");
       const { error } = await supabase
         .from("profiles")
         .update({
           full_name: form.full_name.trim(),
           phone: form.phone.trim() || null,
+          cpf: cpfDigits || null,
           address: form.address.trim() || null,
           city: form.city.trim() || "São Paulo",
         })
@@ -350,6 +356,15 @@ function EditTutorDialog({
           </Field>
           <Field label="Telefone">
             <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+          </Field>
+          <Field label="CPF">
+            <Input
+              inputMode="numeric"
+              maxLength={14}
+              placeholder="000.000.000-00"
+              value={form.cpf}
+              onChange={(e) => setForm({ ...form, cpf: maskCPF(e.target.value) })}
+            />
           </Field>
           <Field label="E-mail de acesso">
             <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />

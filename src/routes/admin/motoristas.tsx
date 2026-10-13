@@ -310,7 +310,6 @@ function ApplicationCard({
 }) {
   const [reason, setReason] = useState("");
   const [mode, setMode] = useState<null | "rejeitado" | "suspenso">(null);
-  const v = app.vehicles;
   const age = Math.floor((Date.now() - new Date(app.birth_date).getTime()) / (365.25 * 24 * 3600e3));
   const highlight = app.status === "pendente" || app.status === "em_analise";
 
