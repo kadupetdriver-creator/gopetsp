@@ -369,6 +369,11 @@ function ApplicationCard({
           <p className="flex items-center gap-2 font-medium">
             <Car className="size-4" /> Veículos ({app.allVehicles.length})
           </p>
+          {activeVehicle && (
+            <p className="mt-1 text-secondary-foreground">
+              Placa ativa: <span className="font-semibold tracking-wide">{activeVehicle.plate}</span>
+            </p>
+          )}
           {app.allVehicles.length > 0 ? (
             <ul className="mt-2 space-y-1.5">
               {app.allVehicles.map((veh) => (
