@@ -380,7 +380,9 @@ function ForwardRideDialog({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Corrida encaminhada ao motorista.");
+      toast.success(
+        driverId === "none" ? "Corrida devolvida ao bolsão geral, sem motorista." : "Corrida encaminhada ao motorista.",
+      );
       onSaved();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível encaminhar."),
