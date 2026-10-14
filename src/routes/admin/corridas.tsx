@@ -369,9 +369,13 @@ function ForwardRideDialog({
 
   const send = useMutation({
     mutationFn: async () => {
+      const blank = driverId === "none";
       const { error } = await supabase
         .from("rides")
-        .update({ driver_id: driverId, status: "accepted" })
+        .update({
+          driver_id: blank ? null : driverId,
+          status: blank ? "pending" : "accepted",
+        })
         .eq("id", ride.id);
       if (error) throw error;
     },
@@ -389,7 +393,7 @@ function ForwardRideDialog({
           <DialogTitle>Encaminhar corrida</DialogTitle>
           <DialogDescription>
             A corrida é atribuída diretamente ao motorista escolhido, mesmo que ele já tenha outra corrida no mesmo
-            horário.
+            horário. Escolha "Em branco" para deixar sem motorista e devolver a corrida ao bolsão geral.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
@@ -399,6 +403,7 @@ function ForwardRideDialog({
                 <SelectValue placeholder="Selecione o motorista" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">Em branco (bolsão geral)</SelectItem>
                 {drivers.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.full_name || p.id.slice(0, 8)}
