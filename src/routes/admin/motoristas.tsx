@@ -249,7 +249,7 @@ function AdminMotoristasPage() {
                 d.vehicles?.year ?? "",
                 d.vehicles?.color ?? "",
                 d.vehicles?.vehicle_type ?? "",
-                d.allVehicles.map((veh) => `${veh.plate} (${veh.brand} ${veh.model}${veh.is_active ? ", ativo" : ""})`).join(" | "),
+                d.allVehicles.map((veh) => `${veh.plate} (${veh.brand} ${veh.model}${veh.is_active || d.allVehicles.length === 1 ? ", ativo" : ""})`).join(" | "),
                 csvDate(d.created_at),
               ]),
             ])
@@ -382,7 +382,7 @@ function ApplicationCard({
                     {veh.brand} {veh.model} {veh.year} · {veh.color} · placa {veh.plate} ·{" "}
                     {vehicleTypes.find((t) => t.value === veh.vehicle_type)?.label ?? veh.vehicle_type}
                   </span>
-                  {veh.is_active && (
+                  {(veh.is_active || (app.allVehicles.length === 1 && !veh.is_active)) && (
                     <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
                       Ativo hoje
                     </span>
