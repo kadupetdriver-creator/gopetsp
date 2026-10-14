@@ -312,6 +312,8 @@ function ApplicationCard({
   const [mode, setMode] = useState<null | "rejeitado" | "suspenso">(null);
   const age = Math.floor((Date.now() - new Date(app.birth_date).getTime()) / (365.25 * 24 * 3600e3));
   const highlight = app.status === "pendente" || app.status === "em_analise";
+  const activeVehicle =
+    app.allVehicles.find((v) => v.is_active) ?? (app.allVehicles.length === 1 ? app.allVehicles[0] : null);
 
   const openFile = async (path: string) => {
     const { data, error } = await supabase.storage.from("driver-documents").createSignedUrl(path, 60 * 5);
