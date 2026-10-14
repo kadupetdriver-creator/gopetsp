@@ -584,7 +584,11 @@ function MotoristaPage() {
                           </span>
                         </p>
                         <p className="text-muted-foreground">
-                          {ride.origin_address} → {ride.destination_address}
+                          {ride.origin_address}
+                          {(ride.stops ?? []).map((stop, i) => (
+                            <span key={`${stop.address}-${i}`}> → Parada {i + 1}: {stop.address}</span>
+                          ))}
+                          {" "}→ {ride.destination_address}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
