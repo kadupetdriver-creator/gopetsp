@@ -420,9 +420,9 @@ function ForwardRideDialog({
           <Button variant="ghost" onClick={onClose}>
             Cancelar
           </Button>
-          <Button disabled={!driverId || send.isPending} onClick={() => send.mutate()}>
+          <Button disabled={driverId === "" || send.isPending} onClick={() => send.mutate()}>
             {send.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Encaminhar
+            {driverId === "none" ? "Encaminhar em branco" : "Encaminhar"}
           </Button>
         </DialogFooter>
       </DialogContent>
