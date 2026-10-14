@@ -584,7 +584,11 @@ function MotoristaPage() {
                           </span>
                         </p>
                         <p className="text-muted-foreground">
-                          {ride.origin_address} → {ride.destination_address}
+                          {ride.origin_address}
+                          {(ride.stops ?? []).map((stop, i) => (
+                            <span key={`${stop.address}-${i}`}> → Parada {i + 1}: {stop.address}</span>
+                          ))}
+                          {" "}→ {ride.destination_address}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -629,6 +633,11 @@ function MotoristaPage() {
               Embarque: {newRide.origin_address}
               {newRide.origin_neighborhood ? ` · ${newRide.origin_neighborhood}` : ""}
             </p>
+            {(newRide.stops ?? []).map((stop, i) => (
+              <p key={`${stop.address}-${i}`} className="mt-1 text-sm font-medium">
+                Parada {i + 1}: {stop.address}
+              </p>
+            ))}
             <p className="mt-1 text-sm font-medium">
               Destino: {newRide.destination_address}
               {newRide.destination_neighborhood ? ` · ${newRide.destination_neighborhood}` : ""}
