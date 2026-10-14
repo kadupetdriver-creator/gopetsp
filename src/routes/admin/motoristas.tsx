@@ -249,7 +249,7 @@ function AdminMotoristasPage() {
                 d.vehicles?.year ?? "",
                 d.vehicles?.color ?? "",
                 d.vehicles?.vehicle_type ?? "",
-                d.allVehicles.map((veh) => `${veh.plate} (${veh.brand} ${veh.model}${veh.is_active ? ", ativo" : ""})`).join(" | "),
+                d.allVehicles.map((veh) => `${veh.plate} (${veh.brand} ${veh.model}${veh.is_active || d.allVehicles.length === 1 ? ", ativo" : ""})`).join(" | "),
                 csvDate(d.created_at),
               ]),
             ])
@@ -312,6 +312,8 @@ function ApplicationCard({
   const [mode, setMode] = useState<null | "rejeitado" | "suspenso">(null);
   const age = Math.floor((Date.now() - new Date(app.birth_date).getTime()) / (365.25 * 24 * 3600e3));
   const highlight = app.status === "pendente" || app.status === "em_analise";
+  const activeVehicle =
+    app.allVehicles.find((v) => v.is_active) ?? (app.allVehicles.length === 1 ? app.allVehicles[0] : null);
 
   const openFile = async (path: string) => {
     const { data, error } = await supabase.storage.from("driver-documents").createSignedUrl(path, 60 * 5);
@@ -367,6 +369,11 @@ function ApplicationCard({
           <p className="flex items-center gap-2 font-medium">
             <Car className="size-4" /> Veículos ({app.allVehicles.length})
           </p>
+          {activeVehicle && (
+            <p className="mt-1 text-secondary-foreground">
+              Placa ativa: <span className="font-semibold tracking-wide">{activeVehicle.plate}</span>
+            </p>
+          )}
           {app.allVehicles.length > 0 ? (
             <ul className="mt-2 space-y-1.5">
               {app.allVehicles.map((veh) => (
@@ -375,7 +382,7 @@ function ApplicationCard({
                     {veh.brand} {veh.model} {veh.year} · {veh.color} · placa {veh.plate} ·{" "}
                     {vehicleTypes.find((t) => t.value === veh.vehicle_type)?.label ?? veh.vehicle_type}
                   </span>
-                  {veh.is_active && (
+                  {(veh.is_active || (app.allVehicles.length === 1 && !veh.is_active)) && (
                     <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
                       Ativo hoje
                     </span>
