@@ -333,6 +333,8 @@ export const createRide = createServerFn({ method: "POST" })
 
       let returnRideId: string | null = null;
       if (splitReturn) {
+        // A volta custa R$ 0,01 a mais que a ida, para os valores nunca serem iguais.
+        const returnPriceCents = price.priceCents + 1;
         returnRideId = await insertRide({
           ...baseRow,
           origin_address: data.destination.address,
