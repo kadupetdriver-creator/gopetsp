@@ -362,7 +362,7 @@ export const createRide = createServerFn({ method: "POST" })
         rideId,
         priceCents: price.priceCents,
         returnRideId,
-        returnPriceCents: returnRideId ? price.priceCents : 0,
+        returnPriceCents: returnRideId ? price.priceCents + 1 : 0,
       };
     },
   );
