@@ -347,7 +347,7 @@ export const createRide = createServerFn({ method: "POST" })
           destination_lng: data.origin.lng,
           stops: [...data.stops].reverse(),
           scheduled_at: data.extras.returnScheduledAt ?? data.scheduledAt,
-          price_cents: price.priceCents,
+          price_cents: returnPriceCents,
           has_return: false,
           return_scheduled_at: null,
           return_fee_cents: 0,
