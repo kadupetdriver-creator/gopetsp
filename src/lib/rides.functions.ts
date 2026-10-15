@@ -333,6 +333,8 @@ export const createRide = createServerFn({ method: "POST" })
 
       let returnRideId: string | null = null;
       if (splitReturn) {
+        // A volta custa R$ 0,01 a mais que a ida, para os valores nunca serem iguais.
+        const returnPriceCents = price.priceCents + 1;
         returnRideId = await insertRide({
           ...baseRow,
           origin_address: data.destination.address,
@@ -345,7 +347,7 @@ export const createRide = createServerFn({ method: "POST" })
           destination_lng: data.origin.lng,
           stops: [...data.stops].reverse(),
           scheduled_at: data.extras.returnScheduledAt ?? data.scheduledAt,
-          price_cents: price.priceCents,
+          price_cents: returnPriceCents,
           has_return: false,
           return_scheduled_at: null,
           return_fee_cents: 0,
@@ -360,7 +362,7 @@ export const createRide = createServerFn({ method: "POST" })
         rideId,
         priceCents: price.priceCents,
         returnRideId,
-        returnPriceCents: returnRideId ? price.priceCents : 0,
+        returnPriceCents: returnRideId ? price.priceCents + 1 : 0,
       };
     },
   );
