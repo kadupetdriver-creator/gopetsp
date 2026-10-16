@@ -25,6 +25,7 @@ import { Route as AdminAdministradoresRouteImport } from './routes/admin/adminis
 import { Route as AdminCorridasRouteImport } from './routes/admin/corridas'
 import { Route as AdminFotosRouteImport } from './routes/admin/fotos'
 import { Route as AdminIndicacoesRouteImport } from './routes/admin/indicacoes'
+import { Route as AdminMapaRouteImport } from './routes/admin/mapa'
 import { Route as AdminMotoristasRouteImport } from './routes/admin/motoristas'
 import { Route as AdminRelatoriosRouteImport } from './routes/admin/relatorios'
 import { Route as AdminTutoresRouteImport } from './routes/admin/tutores'
@@ -113,6 +114,11 @@ const AdminIndicacoesRoute = AdminIndicacoesRouteImport.update({
   path: '/indicacoes',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminMapaRoute = AdminMapaRouteImport.update({
+  id: '/mapa',
+  path: '/mapa',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminMotoristasRoute = AdminMotoristasRouteImport.update({
   id: '/motoristas',
   path: '/motoristas',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/fotos': typeof AdminFotosRoute
   '/admin/indicacoes': typeof AdminIndicacoesRoute
+  '/admin/mapa': typeof AdminMapaRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/tutores': typeof AdminTutoresRoute
@@ -188,6 +195,7 @@ export interface FileRoutesByTo {
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/fotos': typeof AdminFotosRoute
   '/admin/indicacoes': typeof AdminIndicacoesRoute
+  '/admin/mapa': typeof AdminMapaRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/tutores': typeof AdminTutoresRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/fotos': typeof AdminFotosRoute
   '/admin/indicacoes': typeof AdminIndicacoesRoute
+  '/admin/mapa': typeof AdminMapaRoute
   '/admin/motoristas': typeof AdminMotoristasRoute
   '/admin/relatorios': typeof AdminRelatoriosRoute
   '/admin/tutores': typeof AdminTutoresRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
     | '/admin/corridas'
     | '/admin/fotos'
     | '/admin/indicacoes'
+    | '/admin/mapa'
     | '/admin/motoristas'
     | '/admin/relatorios'
     | '/admin/tutores'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/admin/corridas'
     | '/admin/fotos'
     | '/admin/indicacoes'
+    | '/admin/mapa'
     | '/admin/motoristas'
     | '/admin/relatorios'
     | '/admin/tutores'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '/admin/corridas'
     | '/admin/fotos'
     | '/admin/indicacoes'
+    | '/admin/mapa'
     | '/admin/motoristas'
     | '/admin/relatorios'
     | '/admin/tutores'
@@ -429,6 +441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndicacoesRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/mapa': {
+      id: '/admin/mapa'
+      path: '/mapa'
+      fullPath: '/admin/mapa'
+      preLoaderRoute: typeof AdminMapaRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/motoristas': {
       id: '/admin/motoristas'
       path: '/motoristas'
@@ -486,6 +505,7 @@ interface AdminRouteRouteChildren {
   AdminCorridasRoute: typeof AdminCorridasRoute
   AdminFotosRoute: typeof AdminFotosRoute
   AdminIndicacoesRoute: typeof AdminIndicacoesRoute
+  AdminMapaRoute: typeof AdminMapaRoute
   AdminMotoristasRoute: typeof AdminMotoristasRoute
   AdminRelatoriosRoute: typeof AdminRelatoriosRoute
   AdminTutoresRoute: typeof AdminTutoresRoute
@@ -497,6 +517,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminCorridasRoute: AdminCorridasRoute,
   AdminFotosRoute: AdminFotosRoute,
   AdminIndicacoesRoute: AdminIndicacoesRoute,
+  AdminMapaRoute: AdminMapaRoute,
   AdminMotoristasRoute: AdminMotoristasRoute,
   AdminRelatoriosRoute: AdminRelatoriosRoute,
   AdminTutoresRoute: AdminTutoresRoute,
