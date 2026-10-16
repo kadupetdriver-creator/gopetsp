@@ -26,3 +26,4 @@
 - [x] Veículos do motorista (cadastro múltiplo e carro do dia) movidos para a aba Meu perfil
 - [x] Administração vê todos os dados de tutores e motoristas (CPF, nascimento, pets, veículos)
 - [x] Mapa ao vivo da administração com a posição de cada motorista em corrida
+- [x] Filtros "Corridas disponíveis" e "Corridas aceitas" na tela de corridas da administração

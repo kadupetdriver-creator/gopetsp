@@ -7,7 +7,15 @@ import { toast } from "sonner";
 import { refundRidePayment } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { driverShareCents } from "@/lib/pricing";
-import { formatBRL, formatDateTime, serviceTypes, statusLabels, statusStyles, type RideStatus } from "@/lib/rides";
+import {
+  formatBRL,
+  formatDateTime,
+  formatTime,
+  serviceTypes,
+  statusLabels,
+  statusStyles,
+  type RideStatus,
+} from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,6 +50,8 @@ type Ride = {
   id: string;
   tutor_id: string;
   driver_id: string | null;
+  preferred_driver_id: string | null;
+  preferred_until: string | null;
   pet_name: string;
   service_type: string;
   origin_address: string;
@@ -59,12 +69,60 @@ type Person = { id: string; full_name: string; role: "tutor" | "driver" };
 
 const allStatuses: RideStatus[] = ["pending", "accepted", "en_route", "in_progress", "completed", "cancelled"];
 const activeGroup: RideStatus[] = ["pending", "accepted", "en_route", "in_progress"];
+const acceptedGroup: RideStatus[] = ["accepted", "en_route", "in_progress"];
+
+type RideFilter = "todas" | "disponiveis" | "aceitas" | "andamento" | "completed" | "cancelled";
+
+const filterOptions: { value: RideFilter; label: string }[] = [
+  { value: "todas", label: "Todas" },
+  { value: "disponiveis", label: "Disponíveis" },
+  { value: "aceitas", label: "Aceitas" },
+  { value: "andamento", label: "Em andamento" },
+  { value: "completed", label: "Concluídas" },
+  { value: "cancelled", label: "Canceladas" },
+];
+
+/** Pagas, sem motorista e ainda aguardando: é o que aparece no bolsão dos motoristas. */
+function isAvailableRide(r: Ride) {
+  return r.status === "pending" && !r.driver_id && Boolean(r.paid_at);
+}
+
+/** Já têm motorista e ainda estão em curso. */
+function isAcceptedRide(r: Ride) {
+  return Boolean(r.driver_id) && acceptedGroup.includes(r.status);
+}
+
+function matchesFilter(r: Ride, filter: RideFilter) {
+  switch (filter) {
+    case "disponiveis":
+      return isAvailableRide(r);
+    case "aceitas":
+      return isAcceptedRide(r);
+    case "andamento":
+      return activeGroup.includes(r.status);
+    case "completed":
+      return r.status === "completed";
+    case "cancelled":
+      return r.status === "cancelled";
+    default:
+      return true;
+  }
+}
+
+const emptyMessages: Record<RideFilter, string> = {
+  todas: "Nenhuma corrida encontrada.",
+  disponiveis: "Nenhuma corrida disponível no bolsão geral agora.",
+  aceitas: "Nenhuma corrida aceita por motorista agora.",
+  andamento: "Nenhuma corrida em andamento.",
+  completed: "Nenhuma corrida concluída.",
+  cancelled: "Nenhuma corrida cancelada.",
+};
 
 function AdminCorridasPage() {
   const qc = useQueryClient();
   const refundPayment = useServerFn(refundRidePayment);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"todas" | "andamento" | "completed" | "cancelled">("todas");
+  const [filter, setFilter] = useState<RideFilter>("todas");
   const [editing, setEditing] = useState<Ride | null>(null);
   const [forwarding, setForwarding] = useState<Ride | null>(null);
 
@@ -74,7 +132,7 @@ function AdminCorridasPage() {
       const { data: rides, error } = await supabase
         .from("rides")
         .select(
-          "id, tutor_id, driver_id, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, distance_km, status, created_at, paid_at",
+          "id, tutor_id, driver_id, preferred_driver_id, preferred_until, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, distance_km, status, created_at, paid_at",
         )
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
@@ -85,12 +143,17 @@ function AdminCorridasPage() {
 
   const names = useMemo(() => new Map((data?.people ?? []).map((p) => [p.id, p.full_name])), [data]);
 
+  const counts = useMemo(() => {
+    const rides = data?.rides ?? [];
+    return Object.fromEntries(
+      filterOptions.map((o) => [o.value, rides.filter((r) => matchesFilter(r, o.value)).length]),
+    ) as Record<RideFilter, number>;
+  }, [data]);
+
   const list = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (data?.rides ?? []).filter((r) => {
-      if (filter === "andamento" && !activeGroup.includes(r.status)) return false;
-      if (filter === "completed" && r.status !== "completed") return false;
-      if (filter === "cancelled" && r.status !== "cancelled") return false;
+      if (!matchesFilter(r, filter)) return false;
       if (!q) return true;
       return [
         r.pet_name,
@@ -119,34 +182,45 @@ function AdminCorridasPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="pl-9"
-            placeholder="Buscar por pet, tutor, motorista ou endereço"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-          <SelectTrigger className="sm:w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todas">Todas</SelectItem>
-            <SelectItem value="andamento">Em andamento</SelectItem>
-            <SelectItem value="completed">Concluídas</SelectItem>
-            <SelectItem value="cancelled">Canceladas</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="pl-9"
+          placeholder="Buscar por pet, tutor, motorista ou endereço"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      <div className="flex gap-1 overflow-x-auto rounded-full bg-secondary p-1">
+        {filterOptions.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => setFilter(o.value)}
+            className={cn(
+              "flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+              filter === o.value && "bg-background text-foreground shadow-soft",
+            )}
+          >
+            {o.label}
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-xs font-semibold",
+                filter === o.value ? "bg-primary/15 text-primary-ink" : "bg-background/70 text-muted-foreground",
+              )}
+            >
+              {counts[o.value] ?? 0}
+            </span>
+          </button>
+        ))}
       </div>
 
       {isLoading && <Skeleton className="h-40 w-full rounded-2xl" />}
       {!isLoading && list.length === 0 && (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center text-sm text-muted-foreground">
-            Nenhuma corrida encontrada.
+            {emptyMessages[filter]}
           </CardContent>
         </Card>
       )}
@@ -171,6 +245,11 @@ function AdminCorridasPage() {
                     {statusLabels[r.status]}
                   </span>
                 </div>
+                {isAvailableRide(r) && r.preferred_until && new Date(r.preferred_until) > new Date() && (
+                  <p className="text-xs font-semibold text-primary-ink">
+                    Reservada ao motorista preferencial do tutor até {formatTime(r.preferred_until)}
+                  </p>
+                )}
                 <p className="text-sm text-muted-foreground">
                   {r.origin_address} → {r.destination_address}
                 </p>
