@@ -7,7 +7,15 @@ import { toast } from "sonner";
 import { refundRidePayment } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { driverShareCents } from "@/lib/pricing";
-import { formatBRL, formatDateTime, serviceTypes, statusLabels, statusStyles, type RideStatus } from "@/lib/rides";
+import {
+  formatBRL,
+  formatDateTime,
+  formatTime,
+  serviceTypes,
+  statusLabels,
+  statusStyles,
+  type RideStatus,
+} from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -104,7 +112,6 @@ function matchesFilter(r: Ride, filter: RideFilter) {
 const emptyMessages: Record<RideFilter, string> = {
   todas: "Nenhuma corrida encontrada.",
   disponiveis: "Nenhuma corrida disponível no bolsão geral agora.",
-  aceita: "",
   aceitas: "Nenhuma corrida aceita por motorista agora.",
   andamento: "Nenhuma corrida em andamento.",
   completed: "Nenhuma corrida concluída.",
@@ -238,6 +245,11 @@ function AdminCorridasPage() {
                     {statusLabels[r.status]}
                   </span>
                 </div>
+                {isAvailableRide(r) && r.preferred_until && new Date(r.preferred_until) > new Date() && (
+                  <p className="text-xs font-semibold text-primary-ink">
+                    Reservada ao motorista preferencial do tutor até {formatTime(r.preferred_until)}
+                  </p>
+                )}
                 <p className="text-sm text-muted-foreground">
                   {r.origin_address} → {r.destination_address}
                 </p>
