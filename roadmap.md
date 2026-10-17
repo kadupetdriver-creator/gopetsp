@@ -1,5 +1,8 @@
 # Roadmap — GoPet
 
+## Em execução
+- [ ] Classificar pets nas cinco faixas da imagem e abrir o guia pelo símbolo de ajuda
+
 ## Concluído
 - [x] Marketplace com cadastro, pets, corridas e perfis de tutor/motorista
 - [x] Chat, avaliações, mapas, rastreamento e compartilhamento seguro
