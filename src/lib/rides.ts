@@ -38,6 +38,11 @@ export function isActiveStatus(status: RideStatus) {
   return activeStatuses.includes(status);
 }
 
+/** Filtro administrativo: começa quando o motorista comanda A caminho. */
+export function isUnderwayStatus(status: RideStatus) {
+  return status === "en_route" || status === "in_progress";
+}
+
 export const serviceTypes = [
   { value: "veterinario", label: "Consulta veterinária" },
   { value: "banho_tosa", label: "Banho e tosa" },

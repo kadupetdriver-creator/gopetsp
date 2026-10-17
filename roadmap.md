@@ -27,3 +27,4 @@
 - [x] Administração vê todos os dados de tutores e motoristas (CPF, nascimento, pets, veículos)
 - [x] Mapa ao vivo da administração com a posição de cada motorista em corrida
 - [x] Filtros "Corridas disponíveis" e "Corridas aceitas" na tela de corridas da administração
+- [x] Separar Em andamento de disponíveis e apenas aceitas; iniciar após A caminho

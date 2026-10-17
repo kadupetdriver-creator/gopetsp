@@ -11,6 +11,7 @@ import {
   formatBRL,
   formatDateTime,
   formatTime,
+  isUnderwayStatus,
   serviceTypes,
   statusLabels,
   statusStyles,
@@ -99,7 +100,7 @@ function matchesFilter(r: Ride, filter: RideFilter) {
     case "aceitas":
       return isAcceptedRide(r);
     case "andamento":
-      return activeGroup.includes(r.status);
+      return isUnderwayStatus(r.status);
     case "completed":
       return r.status === "completed";
     case "cancelled":
