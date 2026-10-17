@@ -1,11 +1,12 @@
-import { expect, test } from "bun:test";
+import { strict as assert } from "node:assert";
+import { test } from "node:test";
 import { isUnderwayStatus } from "./rides";
 
 test("Em andamento começa em A caminho e não inclui disponíveis ou apenas aceitas", () => {
-  expect(isUnderwayStatus("pending")).toBe(false);
-  expect(isUnderwayStatus("accepted")).toBe(false);
-  expect(isUnderwayStatus("en_route")).toBe(true);
-  expect(isUnderwayStatus("in_progress")).toBe(true);
-  expect(isUnderwayStatus("completed")).toBe(false);
-  expect(isUnderwayStatus("cancelled")).toBe(false);
+  assert.equal(isUnderwayStatus("pending"), false);
+  assert.equal(isUnderwayStatus("accepted"), false);
+  assert.equal(isUnderwayStatus("en_route"), true);
+  assert.equal(isUnderwayStatus("in_progress"), true);
+  assert.equal(isUnderwayStatus("completed"), false);
+  assert.equal(isUnderwayStatus("cancelled"), false);
 });
