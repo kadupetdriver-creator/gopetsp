@@ -336,6 +336,35 @@ function SolicitarPage() {
   const mapReady = !!originPoint && !!destinationPoint;
   const routeReady = !!quoteQuery.data;
 
+  // Lista do que ainda falta preencher para poder chamar o motorista.
+  const missingItems: string[] = [];
+  if (selectedPets.length === 0) missingItems.push("Selecionar ao menos um pet cadastrado");
+  if (!origin) {
+    missingItems.push("Escolher o endereço de origem nas sugestões");
+  } else if (!addressHasNumber(origin.address)) {
+    missingItems.push("Informar o número do endereço de origem (ou S/N)");
+  }
+  if (!destination) {
+    missingItems.push("Escolher o endereço de destino nas sugestões");
+  } else if (!addressHasNumber(destination.address)) {
+    missingItems.push("Informar o número do endereço de destino (ou S/N)");
+  }
+  if (stops.length > 0 && !stopsReady) {
+    missingItems.push("Escolher o endereço de todas as paradas");
+  }
+  if (resolvedStops.some((s) => !addressHasNumber(s.address))) {
+    missingItems.push("Informar o número em todas as paradas (ou S/N)");
+  }
+  if (needsTrunk === null) missingItems.push("Informar se precisa do porta-malas");
+  if (hasReturn === null) {
+    missingItems.push("Informar se haverá corrida de retorno");
+  } else if (hasReturn) {
+    if (!returnAt) missingItems.push("Informar o horário do retorno");
+    else if (!returnIsAfterDeparture)
+      missingItems.push("Ajustar o horário do retorno para depois da ida");
+    if (driverWaits === null) missingItems.push("Informar se o motorista deve aguardar no local");
+  }
+
   const create = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Sessão expirada");
@@ -885,6 +914,27 @@ function SolicitarPage() {
                 {create.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Chamar motorista
               </Button>
+              {!create.isPending && missingItems.length > 0 && (
+                <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-sm">
+                  <p className="font-medium text-destructive">
+                    Falta preencher para chamar o motorista:
+                  </p>
+                  <ul className="mt-1 list-disc space-y-0.5 pl-5 text-muted-foreground">
+                    {missingItems.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {!create.isPending && missingItems.length === 0 && !routeReady && (
+                <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                  {quoteQuery.isError
+                    ? quoteQuery.error instanceof Error && quoteQuery.error.message
+                      ? quoteQuery.error.message
+                      : "Não conseguimos calcular o trajeto. Confira os endereços e tente novamente."
+                    : "Calculando o valor da corrida…"}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
