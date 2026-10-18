@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   activeStatuses,
+  canTrackRide,
   coordsFor,
   estimateMinutes,
   formatDateTime,
@@ -130,20 +131,19 @@ function RastreioPage() {
       {!isLoading && list.length === 0 && (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center text-sm text-muted-foreground">
-            Nenhuma corrida em andamento agora. O mapa ao vivo aparece assim que uma corrida for
-            aceita.
+            Nenhuma corrida em andamento agora.
           </CardContent>
         </Card>
       )}
 
       {list.map((ride) => (
-        <LiveRideCard key={ride.id} ride={ride} />
+        <LiveRideCard key={ride.id} ride={ride} showTracking={isDriver || canTrackRide(ride.status)} />
       ))}
     </div>
   );
 }
 
-function LiveRideCard({ ride }: { ride: LiveRide }) {
+function LiveRideCard({ ride, showTracking }: { ride: LiveRide; showTracking: boolean }) {
   const origin = coordsFor(ride.origin_neighborhood, ride.origin_lat, ride.origin_lng);
   const destination = coordsFor(
     ride.destination_neighborhood,
@@ -175,7 +175,7 @@ function LiveRideCard({ ride }: { ride: LiveRide }) {
           </span>
         </div>
 
-        <RideMap origin={origin} destination={destination} driver={driver} />
+        {showTracking && <RideMap origin={origin} destination={destination} driver={driver} />}
 
         <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
           <p className="flex items-start gap-2">
@@ -184,14 +184,14 @@ function LiveRideCard({ ride }: { ride: LiveRide }) {
           <p className="flex items-start gap-2">
             <MapPin className="mt-0.5 size-4 shrink-0 text-accent" /> {ride.destination_address}
           </p>
-          <p>Tempo estimado: {estimateMinutes(Number(ride.distance_km))} min</p>
-          <p>
+          {showTracking && <p>Tempo estimado: {estimateMinutes(Number(ride.distance_km))} min</p>}
+          {showTracking && <p>
             Posição atualizada:{" "}
             {ride.location_updated_at ? formatDateTime(ride.location_updated_at) : "aguardando GPS"}
-          </p>
+          </p>}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {showTracking && <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" className="gap-2" onClick={shareLink}>
             <Share2 className="size-4" /> Copiar link de acompanhamento
           </Button>
@@ -200,7 +200,7 @@ function LiveRideCard({ ride }: { ride: LiveRide }) {
               Abrir página pública
             </Link>
           </Button>
-        </div>
+        </div>}
       </CardContent>
     </Card>
   );

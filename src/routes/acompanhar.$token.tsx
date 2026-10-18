@@ -4,6 +4,7 @@ import { RideMap } from "@/components/RideMap";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSharedRide } from "@/lib/tracking.functions";
 import {
+  canTrackRide,
   coordsFor,
   estimateMinutes,
   formatDateTime,
@@ -26,6 +27,8 @@ export const Route = createFileRoute("/acompanhar/$token")({
         property: "og:description",
         content: "Status e posição do motorista durante o transporte do pet.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AcompanharPage,
@@ -89,7 +92,7 @@ function AcompanharPage() {
         {statusLabels[status]}
       </span>
 
-      <RideMap origin={origin} destination={destination} driver={driver} />
+      {canTrackRide(status) && <RideMap origin={origin} destination={destination} driver={driver} />}
 
       <Card className="shadow-soft">
         <CardHeader>
@@ -97,12 +100,12 @@ function AcompanharPage() {
         </CardHeader>
         <CardContent className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
           <p>Distância estimada: {ride.distance_km} km</p>
-          <p>Tempo estimado: {estimateMinutes(Number(ride.distance_km))} min</p>
+          {canTrackRide(status) && <p>Tempo estimado: {estimateMinutes(Number(ride.distance_km))} min</p>}
           <p>Horário combinado: {formatDateTime(ride.scheduled_at)}</p>
-          <p>
+          {canTrackRide(status) && <p>
             Última atualização:{" "}
             {ride.location_updated_at ? formatDateTime(ride.location_updated_at) : "—"}
-          </p>
+          </p>}
           {ride.needs_trunk && (
             <p className="col-span-full font-medium text-warning-foreground">
               Porta-malas solicitado

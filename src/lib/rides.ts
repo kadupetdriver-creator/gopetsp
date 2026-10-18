@@ -43,6 +43,11 @@ export function isUnderwayStatus(status: RideStatus) {
   return status === "en_route" || status === "in_progress";
 }
 
+/** Acompanhamento do tutor só é liberado após o comando A caminho. */
+export function canTrackRide(status: RideStatus) {
+  return status === "en_route" || status === "in_progress";
+}
+
 export const serviceTypes = [
   { value: "veterinario", label: "Consulta veterinária" },
   { value: "banho_tosa", label: "Banho e tosa" },

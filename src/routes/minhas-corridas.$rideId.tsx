@@ -23,6 +23,7 @@ import { RideMap } from "@/components/RideMap";
 import { RideChat } from "@/components/RideChat";
 import { RideReview } from "@/components/RideReview";
 import {
+  canTrackRide,
   coordsFor,
   estimateMinutes,
   formatBRL,
@@ -102,11 +103,12 @@ function RideDetails() {
     enabled: !!user,
     refetchInterval: 15000,
     queryFn: async () => {
+      if (!user) throw new Error("Entre para ver sua corrida.");
       const { data, error } = await supabase
         .from("rides")
         .select(RIDE_SELECT)
         .eq("id", rideId)
-        .eq("tutor_id", user!.id)
+        .eq("tutor_id", user.id)
         .single();
       if (error) throw error;
       return data as Ride;
@@ -232,7 +234,7 @@ function RideDetails() {
         </div>
       </div>
 
-      {ride.arrived_at && ride.status !== "completed" && ride.status !== "cancelled" && (
+      {ride.arrived_at && canTrackRide(ride.status) && (
         <Alert className="mt-6 rounded-2xl border-success bg-success/15">
           <BellRing className="size-5 shrink-0 text-success" />
           <AlertTitle className="text-success">Seu motorista chegou!</AlertTitle>
@@ -258,13 +260,13 @@ function RideDetails() {
         </Alert>
       )}
 
-      <Card className="mt-6 shadow-soft">
+      {canTrackRide(ride.status) && <Card className="mt-6 shadow-soft">
         <CardContent className="space-y-4 py-6">
           <div className="flex items-center justify-between gap-2">
             <p className="flex items-center gap-2 text-sm font-medium">
               <Navigation className="size-4 text-primary-ink" />
               Localização
-              {isActiveStatus(ride.status) && (
+              {ride.status === "en_route" && (
                 <span className="font-normal text-muted-foreground">
                   · chegada estimada em {estimateMinutes(Number(ride.distance_km))} min
                 </span>
@@ -290,7 +292,7 @@ function RideDetails() {
             }
           />
         </CardContent>
-      </Card>
+      </Card>}
 
       <Card className="mt-4 shadow-soft">
         <CardContent className="space-y-3 py-6 text-sm text-muted-foreground">

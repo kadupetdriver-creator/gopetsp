@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
+  canTrackRide,
   coordsFor,
   estimateMinutes,
   formatBRL,
@@ -23,6 +24,7 @@ import {
   type RideStatus,
 } from "@/lib/rides";
 import { RideMap } from "@/components/RideMap";
+import { RideDriverIdentity } from "@/components/RideDriverIdentity";
 import { cn } from "@/lib/utils";
 import { paymentStatusLabels, paymentStatusStyles, ridePaymentState } from "@/lib/payments";
 import { refundRidePayment } from "@/lib/payments.functions";
@@ -41,6 +43,8 @@ export const Route = createFileRoute("/minhas-corridas/")({
         property: "og:description",
         content: "Status ao vivo das viagens do seu pet com a GoPet.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: MinhasCorridas,
@@ -81,12 +85,13 @@ function MinhasCorridas() {
     enabled: !!user,
     refetchInterval: 20000,
     queryFn: async () => {
+      if (!user) return [];
       const { data, error } = await supabase
         .from("rides")
         .select(
           "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, paid_at",
         )
-        .eq("tutor_id", user!.id)
+        .eq("tutor_id", user.id)
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
       return data as Ride[];
@@ -221,13 +226,15 @@ function MinhasCorridas() {
                   )}
               </div>
 
-              {isActiveStatus(ride.status) && (
+              {ride.driver_id && <RideDriverIdentity rideId={ride.id} />}
+
+              {canTrackRide(ride.status) && (
                 <div className="space-y-3">
                   <p className="text-sm font-medium">
-                    Motorista a caminho · rastreio ao vivo
-                    <span className="ml-2 font-normal text-muted-foreground">
+                    {ride.status === "en_route" ? "Motorista a caminho · rastreio ao vivo" : "Pet a bordo · rastreio ao vivo"}
+                    {ride.status === "en_route" && <span className="ml-2 font-normal text-muted-foreground">
                       chegada estimada em {estimateMinutes(Number(ride.distance_km))} min
-                    </span>
+                    </span>}
                   </p>
 
                   <Alert variant="warning" className="rounded-2xl">
