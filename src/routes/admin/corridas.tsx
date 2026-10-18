@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
+import { CheckCircle2, Download, Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
+import { downloadCsvFile } from "@/lib/csv";
 import { toast } from "sonner";
 import { refundRidePayment } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -166,16 +167,47 @@ function AdminCorridasPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível finalizar."),
   });
 
+  const exportCsv = () => {
+    const fmt = (c: number) => (c / 100).toFixed(2).replace(".", ",");
+    downloadCsvFile(`gopet-corridas-${new Date().toISOString().slice(0, 10)}.csv`, [
+      ["ID", "Data agendada", "Pet", "Serviço", "Tutor", "Motorista", "Origem", "Destino", "Distância (km)", "Status", "Pagamento", "Data pagamento", "Valor total (R$)", "Valor motorista 75% (R$)"],
+      ...list.map((r) => {
+        const a = adminRideAmounts(r.price_cents);
+        return [
+          r.id,
+          formatDateTime(r.scheduled_at),
+          r.pet_name,
+          serviceTypes.find((s) => s.value === r.service_type)?.label ?? r.service_type,
+          names.get(r.tutor_id) ?? "",
+          r.driver_id ? (names.get(r.driver_id) ?? "") : "Não atribuído",
+          r.origin_address,
+          r.destination_address,
+          String(r.distance_km).replace(".", ","),
+          statusLabels[r.status],
+          r.paid_at ? "Aprovado" : "Pendente",
+          r.paid_at ? formatDateTime(r.paid_at) : "",
+          fmt(a.totalCents),
+          fmt(a.driverCents),
+        ];
+      }),
+    ]);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Buscar por pet, tutor, motorista ou endereço"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Buscar por pet, tutor, motorista ou endereço"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Button variant="outline" disabled={list.length === 0} onClick={exportCsv}>
+          <Download className="mr-2 size-4" /> Baixar planilha
+        </Button>
       </div>
 
       <div className="flex gap-1 overflow-x-auto rounded-full bg-secondary p-1">
