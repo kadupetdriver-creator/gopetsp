@@ -1,8 +1,8 @@
 # Roadmap — GoPet
 
-## Em execução — saldo GoPet
-- [ ] Oferecer saldo GoPet junto ao Mercado Pago no pagamento da corrida
-- [ ] Garantir débito seguro, sem saldo negativo nem cobrança duplicada, e validar o pagamento
+## Concluído — saldo GoPet
+- [x] Oferecer saldo GoPet junto ao Mercado Pago no pagamento da corrida
+- [x] Garantir débito atômico, bloquear saldo insuficiente e pagamentos concorrentes; pagamento, extrato e devolução verificados com corrida temporária
 
 ## Concluído — corridas administrativas
 - [x] Permitir finalizar corridas esquecidas pelos motoristas
