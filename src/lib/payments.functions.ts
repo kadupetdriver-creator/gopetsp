@@ -31,6 +31,12 @@ export const refundRidePayment = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    const { data: balanceRefund, error: balanceError } = await supabaseAdmin.rpc("refund_ride_gopet_balance", { _ride_id: ride.id });
+    if (balanceError) return { error: "Não foi possível devolver o saldo. Tente novamente." };
+    if (balanceRefund && typeof balanceRefund === "object" && !Array.isArray(balanceRefund) && balanceRefund["status"] === "refunded") {
+      return { status: "refunded" };
+    }
+
     const { data: payment } = await supabaseAdmin
       .from("mercadopago_payments")
       .select("id, mp_order_id, status, refund_idempotency_key")
