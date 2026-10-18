@@ -11,6 +11,8 @@
 
 ## Rules
 
+- GoPet balance ride payments debit the ledger, consume coupons and set paid_at in one service-role-only database RPC; profile/ride locks and the Mercado Pago insert guard prevent overdrafts and competing payment methods. Refunds return the actual debit through an idempotent RPC.
+
 - Pet size definitions and rank live in `src/lib/pet-sizes.ts`; pricing derives its factors and every grouping uses the shared rank so new categories stay consistent across quotes and displays.
 
 - Administrative underway filtering uses `isUnderwayStatus` from `src/lib/rides.ts`, independently of active statuses used for cancellation and assignment, so filtering cannot alter ride actions.
