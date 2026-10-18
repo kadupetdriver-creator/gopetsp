@@ -29,6 +29,13 @@
       "when": 1792324215754,
       "tag": "0003_atomic_gopet_balance_payments",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792324800076,
+      "tag": "0004_credit_topups",
+      "breakpoints": true
     }
   ]
 }

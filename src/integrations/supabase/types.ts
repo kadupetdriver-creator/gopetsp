@@ -300,6 +300,65 @@ export type Database = {
           },
         ]
       }
+      mercadopago_topups: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          credit_tx_id: string | null
+          expires_at: string | null
+          id: string
+          idempotency_key: string
+          mp_order_id: string | null
+          payment_method: string
+          qr_code: string | null
+          qr_code_base64: string | null
+          status: string
+          status_detail: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          credit_tx_id?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string
+          mp_order_id?: string | null
+          payment_method: string
+          qr_code?: string | null
+          qr_code_base64?: string | null
+          status?: string
+          status_detail?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          credit_tx_id?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string
+          mp_order_id?: string | null
+          payment_method?: string
+          qr_code?: string | null
+          qr_code_base64?: string | null
+          status?: string
+          status_detail?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mercadopago_topups_credit_tx_id_fkey"
+            columns: ["credit_tx_id"]
+            isOneToOne: false
+            referencedRelation: "credit_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pets: {
         Row: {
           breed: string | null
@@ -964,6 +1023,10 @@ export type Database = {
           last_sign_in_at: string
           user_id: string
         }[]
+      }
+      apply_mercadopago_topup: {
+        Args: { _status: string; _status_detail: string; _topup_id: string }
+        Returns: Json
       }
       apply_referral_code: { Args: { _code: string }; Returns: undefined }
       cpf_disponivel: { Args: { _cpf: string }; Returns: boolean }
