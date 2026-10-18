@@ -16,7 +16,7 @@ export const adminCompleteRide = createServerFn({ method: "POST" })
       .select("id, status, driver_id, paid_at").eq("id", data.rideId).maybeSingle();
     if (error || !ride) throw new Error("Corrida não encontrada.");
     if (ride.status === "completed") return { ok: true };
-    if (!canAdminCompleteRide(ride)) throw new Error("Só é possível finalizar corridas pagas, abertas e com motorista atribuído.");
+    if (!canAdminCompleteRide(ride) || !ride.driver_id || !ride.paid_at) throw new Error("Só é possível finalizar corridas pagas, abertas e com motorista atribuído.");
     const { data: updated, error: updateError } = await supabaseAdmin.from("rides")
       .update({ status: "completed" })
       .eq("id", ride.id).eq("status", ride.status).eq("driver_id", ride.driver_id)
