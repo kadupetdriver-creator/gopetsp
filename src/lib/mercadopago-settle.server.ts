@@ -11,6 +11,21 @@ export async function settleMercadoPagoOrder(orderId: string): Promise<{ status:
   if (!rideId || amountCents <= 0) return null;
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  if (rideId.startsWith("topup:")) {
+    const topupId = rideId.slice(6);
+    const { data: topup } = await supabaseAdmin.from("mercadopago_topups")
+      .select("id, amount_cents, mp_order_id").eq("id", topupId).maybeSingle();
+    if (!topup || topup.mp_order_id !== order.id || topup.amount_cents !== amountCents) return null;
+    const payment = orderPayment(order);
+    const status = normalizeOrderStatus(order.status, order.status_detail ?? payment?.status_detail, payment?.expiration_time);
+    const { error } = await supabaseAdmin.rpc("apply_mercadopago_topup", {
+      _topup_id: topup.id, _status: status, _status_detail: order.status_detail ?? payment?.status_detail ?? "",
+    });
+    if (error) throw new Error("Não foi possível atualizar a recarga.");
+    return { status, paid: status === "approved" };
+  }
+
   const { data: row } = await supabaseAdmin
     .from("mercadopago_payments")
     .select("id, ride_id, amount_cents, status, coupon_id")
