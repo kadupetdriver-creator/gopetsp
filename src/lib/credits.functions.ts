@@ -24,12 +24,12 @@ export const payRideWithCredits = createServerFn({ method: "POST" })
     async ({
       data,
       context,
-    }): Promise<{ status: string } | { error: string; balanceCents?: number }> => {
+    }): Promise<{ status: string; balanceCents?: number | undefined } | { error: string; balanceCents?: number | undefined }> => {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: result, error } = await supabaseAdmin.rpc("pay_ride_with_gopet_balance", {
         _ride_id: data.rideId,
         _user_id: context.userId,
-        _coupon_id: data.couponId ?? undefined,
+        ...(data.couponId ? { _coupon_id: data.couponId } : {}),
       });
       if (error) {
         console.error("[gopet-balance-payment]", { rideId: data.rideId, code: error.code });
