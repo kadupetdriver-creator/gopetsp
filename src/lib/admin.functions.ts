@@ -302,6 +302,7 @@ export type AdminReportRide = {
 export type AdminReportEntry = {
   id: string;
   createdAt: string;
+  personId: string;
   personName: string;
   personRole: string;
   kind: "bonus" | "credito" | "desconto";
@@ -400,6 +401,7 @@ export const adminGetReport = createServerFn({ method: "POST" })
       entries: (txs ?? []).map((t: any) => ({
         id: t.id,
         createdAt: t.created_at,
+        personId: t.user_id,
         personName: nameOf(t.user_id) ?? "Sem nome",
         personRole: byId.get(t.user_id)?.role === "driver" ? "Motorista" : "Tutor",
         kind: t.payment_method === "bonus" ? "bonus" : t.kind === "spend" ? "desconto" : "credito",
