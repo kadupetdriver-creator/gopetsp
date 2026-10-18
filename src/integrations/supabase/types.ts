@@ -1052,9 +1052,14 @@ export type Database = {
         }
       }
       my_credit_balance_cents: { Args: never; Returns: number }
+      pay_ride_with_gopet_balance: {
+        Args: { _coupon_id?: string; _ride_id: string; _user_id: string }
+        Returns: Json
+      }
       pet_photo_readable: { Args: { _name: string }; Returns: boolean }
       referral_code_valid: { Args: { _code: string }; Returns: boolean }
       refresh_eta_calibration: { Args: { _days?: number }; Returns: number }
+      refund_ride_gopet_balance: { Args: { _ride_id: string }; Returns: Json }
       review_driver_application: {
         Args: {
           _driver_id: string
