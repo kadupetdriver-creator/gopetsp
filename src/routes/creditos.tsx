@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { getCreditBalance } from "@/lib/credits.functions";
 import { useQuery } from "@tanstack/react-query";
 import { MessageCircle, QrCode, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,16 +60,18 @@ function CreditosPage() {
     },
   });
 
-  const balance = (transactions ?? [])
-    .filter((t) => t.status === "completed")
-    .reduce((acc, t) => acc + (t.kind === "spend" ? -t.amount_cents : t.amount_cents), 0);
+  const fetchBalance = useServerFn(getCreditBalance);
+  const { data: creditBalance } = useQuery({
+    queryKey: ["credit-balance", user?.id], enabled: !!user,
+    queryFn: () => fetchBalance(),
+  });
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5 px-4 py-8">
       <div>
         <h1 className="text-3xl font-semibold">Meus créditos</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Consulte créditos anteriores da sua conta. Novas corridas são pagas diretamente no checkout.
+          Saldo GoPet e movimentações da sua conta.
         </p>
       </div>
 
@@ -76,7 +80,7 @@ function CreditosPage() {
           <CardDescription className="flex items-center gap-2">
             <Wallet className="size-4 text-primary-ink" /> Saldo disponível
           </CardDescription>
-          <CardTitle className="text-3xl">{formatBRL(balance)}</CardTitle>
+          <CardTitle className="text-3xl">{creditBalance ? formatBRL(creditBalance.balanceCents) : "—"}</CardTitle>
         </CardHeader>
       </Card>
 
@@ -84,7 +88,7 @@ function CreditosPage() {
         <CardHeader>
           <CardTitle className="text-lg">Atendimento da central</CardTitle>
           <CardDescription>
-            Para dúvidas sobre créditos anteriores, chame a nossa central pelo WhatsApp.
+            Para adicionar saldo ou tirar dúvidas, chame nossa central pelo WhatsApp.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
@@ -103,7 +107,7 @@ function CreditosPage() {
             </li>
           </ul>
           <p className="text-xs text-muted-foreground">
-            O pagamento de novas corridas é feito diretamente na tela de pagamento.
+            Saldo GoPet, cartão e Pix estão disponíveis no pagamento da corrida.
           </p>
           <Button asChild className="w-full rounded-full">
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
