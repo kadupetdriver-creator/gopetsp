@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatBRL } from "@/lib/rides";
 import { getCreditBalance, payRideWithCredits } from "@/lib/credits.functions";
+import { canPayWithGoPetBalance } from "@/lib/credit-payment";
 import { isValidCPF, maskCPF } from "@/lib/drivers";
 import { createMercadoPagoPayment, getMercadoPagoPublicKey, syncMercadoPagoPayment, type PaymentBrickData } from "@/lib/mercadopago.functions";
 
@@ -227,7 +228,7 @@ function PagamentoCorrida() {
         <p className="font-semibold">{ride.pet_name}</p>
         <p className="text-muted-foreground">{ride.origin_address} → {ride.destination_address}</p>
         <div className="flex justify-between border-t pt-3 text-lg font-semibold"><span>Total</span><span>{formatBRL(payAmount)}</span></div>{coupons.length > 0 && <div className="space-y-2 border-t pt-3"><Label htmlFor="cupom">Cupom de indicação</Label><select id="cupom" className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={couponId ?? ""} disabled={approved || submitted || payingBalance || !canTryAgain} onChange={(e) => setCouponId(e.target.value || null)}><option value="">Não usar cupom</option>{coupons.map((c) => <option key={c.id} value={c.id}>{c.code} — {c.discount_percent}% de desconto</option>)}</select>{couponId && <p className="text-xs text-primary">Desconto de {formatBRL(ride.price_cents - payAmount)} aplicado.</p>}</div>}
-        <p className="flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="size-4 text-primary" /> Processamento seguro pelo Mercado Pago. A GoPet não armazena dados do cartão.</p>
+        <p className="flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="size-4 text-primary" /> Pagamento seguro. A GoPet não armazena dados do cartão.</p>
       </CardContent></Card>}
 
       {ride && !approved && ride.status !== "cancelled" && ride.status !== "completed" && <Card className="border-primary/40">
@@ -237,7 +238,7 @@ function PagamentoCorrida() {
           {balanceError && <p className="text-sm text-destructive">Não foi possível consultar seu saldo.</p>}
           {!loadingBalance && balance && balance.balanceCents < payAmount && <p className="text-sm text-muted-foreground">Saldo insuficiente. Faltam {formatBRL(payAmount - balance.balanceCents)}.</p>}
           {!canTryAgain && <p className="text-sm text-muted-foreground">Aguarde a confirmação do pagamento pelo Mercado Pago antes de usar o saldo.</p>}
-          <Button className="w-full" disabled={!balance || balance.balanceCents < payAmount || payAmount <= 0 || !canTryAgain || submitted || payingBalance} onClick={() => void submitBalancePayment()}>
+          <Button className="w-full" disabled={!canPayWithGoPetBalance(balance?.balanceCents, payAmount, !canTryAgain) || submitted || payingBalance} onClick={() => void submitBalancePayment()}>
             {payingBalance ? <Loader2 className="size-4 animate-spin"/> : <Wallet className="size-4"/>}{payingBalance ? "Pagando com saldo…" : `Pagar ${formatBRL(payAmount)} com saldo`}
           </Button>
           {formError && <p className="text-sm text-destructive" role="alert">{formError}</p>}
