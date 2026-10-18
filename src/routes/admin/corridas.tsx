@@ -183,6 +183,8 @@ function AdminCorridasPage() {
           <Button
             key={o.value}
             type="button"
+            variant="ghost"
+            aria-pressed={filter === o.value}
             onClick={() => setFilter(o.value)}
             className={cn(
               "flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
