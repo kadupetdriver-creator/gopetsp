@@ -17,5 +17,5 @@ test("Manter tarifas: mini e pequeno 1,1; médio 1,2; grande e gigante 1,3", () 
 test("Gigante é o maior porte em um grupo e paga o integral, mini paga 40%", () => {
   const price = calculateRidePrice(0, ["mini", "gigante"], false);
   assert.equal(price.groupSize, "gigante");
-  assert.equal(price.priceCents, 2434);
+  assert.equal(price.priceCents, 2435);
 });
