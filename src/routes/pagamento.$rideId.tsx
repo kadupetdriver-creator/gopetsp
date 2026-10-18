@@ -68,9 +68,10 @@ function PagamentoCorrida() {
   });
   const [couponId, setCouponId] = useState<string | null>(null);
   const { data: coupons = [] } = useQuery({
-    queryKey: ["my-coupons-available"],
+    queryKey: ["my-coupons-available", user?.id],
+    enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("referral_coupons").select("id, code, discount_percent").eq("status", "available").order("created_at");
+      const { data } = await supabase.from("referral_coupons").select("id, code, discount_percent").eq("owner_id", user?.id ?? "").eq("status", "available").order("created_at");
       return data ?? [];
     },
   });
