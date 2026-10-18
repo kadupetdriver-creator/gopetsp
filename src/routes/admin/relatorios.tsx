@@ -176,6 +176,7 @@ function AdminRelatoriosPage() {
   const totalRides = rides.reduce((acc, r) => acc + r.priceCents, 0);
   const totalDriverShare = rides.reduce((acc, r) => acc + driverShareCents(r.priceCents), 0);
   const totalBonus = entries.filter((e) => e.kind !== "desconto").reduce((acc, e) => acc + e.amountCents, 0);
+  const driverBonusTotal = entries.filter((e) => e.kind === "bonus").reduce((acc, e) => acc + e.amountCents, 0);
   const totalDesconto = entries.filter((e) => e.kind === "desconto").reduce((acc, e) => acc + e.amountCents, 0);
   const earningsPeriods = useMemo(() => latestCompletedEarningsPeriods(), []);
   const weeklyRides = useMemo(
@@ -186,6 +187,13 @@ function AdminRelatoriosPage() {
           (driverId === "all" || r.driverId === driverId),
       ),
     [weeklyData, tutorId, driverId],
+  );
+  const weeklyBonuses = useMemo(
+    () =>
+      (weeklyData?.entries ?? []).filter(
+        (e) => e.kind === "bonus" && (driverId === "all" || e.personId === driverId) && tutorId === "all",
+      ),
+    [weeklyData, driverId, tutorId],
   );
   const fridayEarnings = useMemo(
     () => paidWithin(weeklyRides, earningsPeriods.friday.start, earningsPeriods.friday.end),
@@ -254,14 +262,14 @@ function AdminRelatoriosPage() {
       {!isLoading && !isWeeklyLoading && (
         <>
           <div className="grid gap-3 lg:grid-cols-2">
-            <EarningsReport period={earningsPeriods.friday} rides={fridayEarnings} />
-            <EarningsReport period={earningsPeriods.monday} rides={mondayEarnings} />
+            <EarningsReport period={earningsPeriods.friday} rides={fridayEarnings} bonuses={weeklyBonuses} />
+            <EarningsReport period={earningsPeriods.monday} rides={mondayEarnings} bonuses={weeklyBonuses} />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <SummaryCard label="Corridas" value={`${rides.length}`} hint="no período selecionado" />
             <SummaryCard label="Valor total" value={formatBRL(totalRides)} hint="soma das corridas" />
-            <SummaryCard label="Repasse motoristas" value={formatBRL(totalDriverShare)} hint="75% do valor total" />
+            <SummaryCard label="Repasse motoristas" value={formatBRL(totalDriverShare + driverBonusTotal)} hint={`75% das corridas + ${formatBRL(driverBonusTotal)} em bônus`} />
             <SummaryCard label="Bônus e créditos" value={formatBRL(totalBonus)} hint={`${entries.filter((e) => e.kind !== "desconto").length} lançamentos`} />
             <SummaryCard label="Descontos" value={formatBRL(totalDesconto)} hint={`${entries.filter((e) => e.kind === "desconto").length} lançamentos`} />
           </div>
@@ -330,12 +338,19 @@ function AdminRelatoriosPage() {
 function EarningsReport({
   period,
   rides,
+  bonuses: allBonuses,
 }: {
   period: { title: string; subtitle: string; start: Date; end: Date };
   rides: ReportRide[];
+  bonuses: AdminReportEntry[];
 }) {
+  const bonuses = allBonuses.filter((b) => {
+    const t = new Date(b.createdAt).getTime();
+    return t >= period.start.getTime() && t <= period.end.getTime();
+  });
+  const bonusTotal = bonuses.reduce((sum, b) => sum + b.amountCents, 0);
   const total = rides.reduce((sum, ride) => sum + ride.priceCents, 0);
-  const driverShare = rides.reduce((sum, ride) => sum + driverShareCents(ride.priceCents), 0);
+  const driverShare = rides.reduce((sum, ride) => sum + driverShareCents(ride.priceCents), 0) + bonusTotal;
   const periodLabel = `${formatSaoPauloDate(period.start)} a ${formatSaoPauloDate(period.end)}`;
 
   return (
@@ -359,7 +374,7 @@ function EarningsReport({
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Repasse motoristas</p>
             <p className="mt-1 text-2xl font-semibold">{formatBRL(driverShare)}</p>
-            <p className="text-xs text-muted-foreground">75% do valor total</p>
+            <p className="text-xs text-muted-foreground">75% das corridas + {formatBRL(bonusTotal)} em bônus</p>
           </div>
         </div>
 
@@ -372,6 +387,15 @@ function EarningsReport({
           {rides.length === 0 && (
             <p className="py-4 text-sm text-muted-foreground">Nenhum pagamento confirmado neste período.</p>
           )}
+          {bonuses.map((b) => (
+            <div key={b.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+              <div className="min-w-0">
+                <p className="truncate font-medium">Bônus · {b.personName}</p>
+                <p className="truncate text-xs text-muted-foreground">{b.description ?? "Bônus"} · {formatDateTime(b.createdAt)}</p>
+              </div>
+              <p className="shrink-0 font-semibold">{formatBRL(b.amountCents)}</p>
+            </div>
+          ))}
           {rides.map((ride) => (
             <div key={ride.id} className="flex items-center justify-between gap-3 py-3 text-sm">
               <div className="min-w-0">

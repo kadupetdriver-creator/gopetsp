@@ -212,6 +212,23 @@ function MotoristaPage() {
     }
   }, [loading, user, profile, appLoading, application, navigate]);
 
+  // Bônus do próprio motorista (as regras de acesso só devolvem os lançamentos dele).
+  const { data: bonuses } = useQuery({
+    queryKey: ["driver-bonuses", user?.id],
+    enabled: !!user && approved,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("credit_transactions")
+        .select("id, amount_cents, description, completed_at, created_at")
+        .eq("user_id", user!.id)
+        .eq("payment_method", "bonus")
+        .eq("status", "completed")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as DriverBonus[];
+    },
+  });
+
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "driver", user?.id],
     enabled: !!user && approved,
@@ -341,6 +358,13 @@ function MotoristaPage() {
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
   const monthEarnings = thisMonth.reduce((sum, r) => sum + driverValueOf(r), 0);
+  const bonusTotal = (bonuses ?? []).reduce((sum, b) => sum + b.amount_cents, 0);
+  const monthBonus = (bonuses ?? [])
+    .filter((b) => {
+      const d = new Date(b.completed_at ?? b.created_at);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    })
+    .reduce((sum, b) => sum + b.amount_cents, 0);
   const kmTotal = completed.reduce((sum, r) => sum + Number(r.distance_km ?? 0), 0);
 
   // Relatórios semanais: só corridas do próprio motorista (a consulta já vem filtrada pelas regras de acesso).
@@ -452,7 +476,7 @@ function MotoristaPage() {
       )}
 
       <div className="mt-6">
-        <StatCard icon={Wallet} label="Ganhos concluídos" value={formatBRL(earnings)} />
+        <StatCard icon={Wallet} label="Ganhos concluídos (com bônus)" value={formatBRL(earnings + bonusTotal)} />
       </div>
 
       <Tabs defaultValue="abertas" className="mt-8">
@@ -554,13 +578,13 @@ function MotoristaPage() {
         <TabsContent value="relatorios" className="mt-5 space-y-5">
           <div className="grid gap-4 sm:grid-cols-3">
             <StatCard icon={CheckCircle2} label="Corridas realizadas" value={String(completed.length)} />
-            <StatCard icon={Wallet} label="Ganhos neste mês" value={formatBRL(monthEarnings)} />
+            <StatCard icon={Wallet} label="Ganhos neste mês (com bônus)" value={formatBRL(monthEarnings + monthBonus)} />
             <StatCard icon={RouteIcon} label="Km percorridos" value={`${kmTotal.toFixed(1)} km`} />
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <DriverEarningsReport period={earningsPeriods.friday} rides={fridayEarnings} />
-            <DriverEarningsReport period={earningsPeriods.monday} rides={mondayEarnings} />
+            <DriverEarningsReport period={earningsPeriods.friday} rides={fridayEarnings} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.friday.start, earningsPeriods.friday.end)} />
+            <DriverEarningsReport period={earningsPeriods.monday} rides={mondayEarnings} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.monday.start, earningsPeriods.monday.end)} />
           </div>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Histórico</h2>
@@ -842,14 +866,27 @@ function RideCard({
   );
 }
 
+type DriverBonus = { id: string; amount_cents: number; description: string | null; completed_at: string | null; created_at: string };
+
+function bonusesWithin(bonuses: DriverBonus[], start: Date, end: Date) {
+  return bonuses.filter((b) => {
+    const t = new Date(b.completed_at ?? b.created_at).getTime();
+    return t >= start.getTime() && t <= end.getTime();
+  });
+}
+
 function DriverEarningsReport({
   period,
   rides,
+  bonuses = [],
 }: {
   period: { title: string; subtitle: string; start: Date; end: Date };
   rides: Ride[];
+  bonuses?: DriverBonus[];
 }) {
-  const total = rides.reduce((sum, ride) => sum + driverValueOf(ride), 0);
+  const ridesTotal = rides.reduce((sum, ride) => sum + driverValueOf(ride), 0);
+  const bonusTotal = bonuses.reduce((sum, b) => sum + b.amount_cents, 0);
+  const total = ridesTotal + bonusTotal;
   const periodLabel = `${formatSaoPauloDate(period.start)} a ${formatSaoPauloDate(period.end)}`;
 
   return (
@@ -867,6 +904,9 @@ function DriverEarningsReport({
 
         <div>
           <p className="text-3xl font-semibold">{formatBRL(total)}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Corridas {formatBRL(ridesTotal)} · Bônus {formatBRL(bonusTotal)}
+          </p>
           <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
             <CalendarRange className="size-3.5" aria-hidden="true" />
             {periodLabel} · {rides.length} {rides.length === 1 ? "corrida paga" : "corridas pagas"}
@@ -874,9 +914,20 @@ function DriverEarningsReport({
         </div>
 
         <div className="divide-y border-t">
-          {rides.length === 0 && (
+          {rides.length === 0 && bonuses.length === 0 && (
             <p className="py-4 text-sm text-muted-foreground">Nenhuma corrida paga neste período.</p>
           )}
+          {bonuses.map((b) => (
+            <div key={b.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+              <div className="min-w-0">
+                <p className="truncate font-medium">{b.description ?? "Bônus"}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  em {formatDateTime(b.completed_at ?? b.created_at)}
+                </p>
+              </div>
+              <p className="shrink-0 font-semibold">{formatBRL(b.amount_cents)}</p>
+            </div>
+          ))}
           {rides.map((ride) => (
             <div key={ride.id} className="flex items-center justify-between gap-3 py-3 text-sm">
               <div className="min-w-0">
