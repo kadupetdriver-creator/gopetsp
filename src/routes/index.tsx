@@ -9,6 +9,8 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "GoPet — Transporte de pets em São Paulo" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         name: "description",
         content:

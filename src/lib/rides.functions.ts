@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { calculateRidePrice } from "./pricing";
+import { calculateRidePrice, SIZE_RANK } from "./pricing";
 import { addressHasNumber } from "./address";
 
 
@@ -275,8 +275,7 @@ export const createRide = createServerFn({ method: "POST" })
       // ordena os nomes seguindo a mesma ordem de precificação (maior porte primeiro)
       const orderedPets = [...pets].sort(
         (a, b) =>
-          ["pequeno", "medio", "grande"].indexOf(b.size) -
-          ["pequeno", "medio", "grande"].indexOf(a.size),
+          SIZE_RANK.indexOf(b.size) - SIZE_RANK.indexOf(a.size),
       );
 
       const baseRow = {

@@ -51,11 +51,8 @@ export const serviceTypes = [
   { value: "outro", label: "Outro destino" },
 ] as const;
 
-export const petSizes = [
-  { value: "pequeno", label: "Pequeno (até 5kg)", factor: 1.1 },
-  { value: "medio", label: "Médio (até 10kg)", factor: 1.2 },
-  { value: "grande", label: "Grande (acima de 10kg)", factor: 1.3 },
-] as const;
+import { petSizes } from "./pet-sizes";
+export { petSizes } from "./pet-sizes";
 
 export const petSpecies = [
   { value: "cachorro", label: "Cachorro" },

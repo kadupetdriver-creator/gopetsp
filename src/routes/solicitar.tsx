@@ -34,6 +34,8 @@ import { AddressAutocomplete, type SelectedPlace } from "@/components/AddressAut
 import { RideMap } from "@/components/RideMap";
 import { ActiveRideTracker } from "@/components/ActiveRideTracker";
 import { PetPhoto } from "@/components/PetPhoto";
+import { PetSizeHelp } from "@/components/PetSizeHelp";
+import { SIZE_RANK } from "@/lib/pet-sizes";
 
 type PetItem = {
   id: string;
@@ -56,9 +58,9 @@ function PetSelector({ pets, selectedIds, toggle, maxPets }: PetSelectorProps) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Label>
+        <div className="flex items-center gap-1"><Label>
           SELECIONAR PET CADASTRADO <span className="text-destructive">*</span>
-        </Label>
+        </Label><PetSizeHelp /></div>
         <span
           className={`text-xs font-medium ${
             selectedIds.length >= maxPets ? "text-primary-ink" : "text-muted-foreground"
@@ -158,6 +160,8 @@ export const Route = createFileRoute("/solicitar")({
   head: () => ({
     meta: [
       { title: "Solicitar transporte do pet em São Paulo | GoPet" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         name: "description",
         content:
@@ -242,14 +246,14 @@ function SolicitarPage() {
   }, [pets, selectedPets.length]);
 
   const maxPets = 3;
-  const sizeRank = ["pequeno", "medio", "grande"];
+  const sizeRank = SIZE_RANK;
 
-  // Precificação: maior porte primeiro (grande > médio > pequeno).
+  // Maior porte primeiro, usando a classificação compartilhada.
   const groupSize =
     selectedPets.length > 0
       ? selectedPets.reduce(
           (acc, p) => (sizeRank.indexOf(p.size) > sizeRank.indexOf(acc) ? p.size : acc),
-          "pequeno",
+          "mini",
         )
       : "medio";
   const petCount = Math.max(1, selectedPets.length);
