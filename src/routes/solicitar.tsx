@@ -160,6 +160,8 @@ export const Route = createFileRoute("/solicitar")({
   head: () => ({
     meta: [
       { title: "Solicitar transporte do pet em São Paulo | GoPet" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         name: "description",
         content:

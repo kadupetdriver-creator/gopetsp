@@ -31,6 +31,8 @@ export const Route = createFileRoute("/perfil")({
   head: () => ({
     meta: [
       { title: "Meu perfil e meus pets | GoPet" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         name: "description",
         content:
