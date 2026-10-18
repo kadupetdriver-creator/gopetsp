@@ -1,5 +1,8 @@
 # Roadmap — GoPet
 
+## Em execução — acompanhamento do tutor
+- [ ] Mostrar dados do motorista e carro antes de A caminho; liberar mensagem e mapa ao vivo somente após o comando
+
 ## Concluído — classificação dos pets
 - [x] Classificar pets nas cinco faixas da imagem e abrir o guia pelo símbolo de ajuda
 

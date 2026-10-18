@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { RideMap } from "@/components/RideMap";
+import { RideDriverIdentity } from "@/components/RideDriverIdentity";
 import {
   activeStatuses,
+  canTrackRide,
   coordsFor,
   estimateMinutes,
   formatDateTime,
@@ -39,7 +41,7 @@ type ActiveRide = {
 const cols =
   "id, pet_name, status, distance_km, origin_neighborhood, destination_neighborhood, origin_lat, origin_lng, destination_lat, destination_lng, driver_lat, driver_lng, location_updated_at, arrived_at";
 
-/** Corrida aceita do tutor: fundo destacado e rastreio ao vivo do motorista. */
+/** Dados do parceiro no aceite; rastreio somente após A caminho. */
 export function ActiveRideTracker() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -49,10 +51,11 @@ export function ActiveRideTracker() {
     enabled: !!user,
     refetchInterval: 15000,
     queryFn: async () => {
+      if (!user) return [];
       const { data, error } = await supabase
         .from("rides")
         .select(cols)
-        .eq("tutor_id", user!.id)
+        .eq("tutor_id", user.id)
         .in("status", activeStatuses)
         .order("scheduled_at", { ascending: true });
       if (error) throw error;
@@ -83,10 +86,14 @@ export function ActiveRideTracker() {
           <CardContent className="space-y-3 py-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="font-semibold">
-                Motorista a caminho de {ride.pet_name}
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                {ride.status === "en_route"
+                  ? `Motorista a caminho de ${ride.pet_name}`
+                  : ride.status === "in_progress"
+                    ? `${ride.pet_name} a bordo`
+                    : `Motorista de ${ride.pet_name}`}
+                {ride.status === "en_route" && <span className="ml-2 text-sm font-normal text-muted-foreground">
                   chegada em ~{estimateMinutes(Number(ride.distance_km))} min
-                </span>
+                </span>}
               </p>
               <span
                 className={cn(
@@ -98,6 +105,9 @@ export function ActiveRideTracker() {
               </span>
             </div>
 
+            <RideDriverIdentity rideId={ride.id} />
+
+            {canTrackRide(ride.status) && <>
             {ride.arrived_at && (
               <Alert className="rounded-2xl border-success bg-success/15">
                 <BellRing className="size-5 shrink-0 text-success" />
@@ -125,14 +135,15 @@ export function ActiveRideTracker() {
               }
               className="h-60 w-full rounded-2xl border border-border sm:h-72"
             />
+            </>}
 
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs text-muted-foreground">
+              {canTrackRide(ride.status) && <p className="text-xs text-muted-foreground">
                 Posição atualizada:{" "}
                 {ride.location_updated_at
                   ? formatDateTime(ride.location_updated_at)
                   : "aguardando sinal do motorista"}
-              </p>
+              </p>}
               <Button asChild variant="outline" size="sm" className="rounded-full">
                 <Link to="/minhas-corridas">Ver corrida</Link>
               </Button>
