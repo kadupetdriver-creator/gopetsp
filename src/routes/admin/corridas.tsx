@@ -2,16 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
+import { CheckCircle2, Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { refundRidePayment } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { driverShareCents } from "@/lib/pricing";
+import { adminRideAmounts, canAdminCompleteRide, isAvailableRide, matchesAdminRideFilter as matchesFilter, type RideFilter } from "@/lib/admin-rides";
+import { adminCompleteRide } from "@/lib/admin-rides.functions";
 import {
   formatBRL,
   formatDateTime,
   formatTime,
-  isUnderwayStatus,
   serviceTypes,
   statusLabels,
   statusStyles,
@@ -42,6 +42,8 @@ export const Route = createFileRoute("/admin/corridas")({
       { name: "description", content: "Acompanhe e edite todas as corridas da GoPet." },
       { property: "og:title", content: "Corridas | GoPet Admin" },
       { property: "og:description", content: "Acompanhe e edite todas as corridas da GoPet." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AdminCorridasPage,
@@ -70,9 +72,6 @@ type Person = { id: string; full_name: string; role: "tutor" | "driver" };
 
 const allStatuses: RideStatus[] = ["pending", "accepted", "en_route", "in_progress", "completed", "cancelled"];
 const activeGroup: RideStatus[] = ["pending", "accepted", "en_route", "in_progress"];
-const acceptedGroup: RideStatus[] = ["accepted", "en_route", "in_progress"];
-
-type RideFilter = "todas" | "disponiveis" | "aceitas" | "andamento" | "completed" | "cancelled";
 
 const filterOptions: { value: RideFilter; label: string }[] = [
   { value: "todas", label: "Todas" },
@@ -82,33 +81,6 @@ const filterOptions: { value: RideFilter; label: string }[] = [
   { value: "completed", label: "Concluídas" },
   { value: "cancelled", label: "Canceladas" },
 ];
-
-/** Pagas, sem motorista e ainda aguardando: é o que aparece no bolsão dos motoristas. */
-function isAvailableRide(r: Ride) {
-  return r.status === "pending" && !r.driver_id && Boolean(r.paid_at);
-}
-
-/** Já têm motorista e ainda estão em curso. */
-function isAcceptedRide(r: Ride) {
-  return Boolean(r.driver_id) && acceptedGroup.includes(r.status);
-}
-
-function matchesFilter(r: Ride, filter: RideFilter) {
-  switch (filter) {
-    case "disponiveis":
-      return isAvailableRide(r);
-    case "aceitas":
-      return isAcceptedRide(r);
-    case "andamento":
-      return isUnderwayStatus(r.status);
-    case "completed":
-      return r.status === "completed";
-    case "cancelled":
-      return r.status === "cancelled";
-    default:
-      return true;
-  }
-}
 
 const emptyMessages: Record<RideFilter, string> = {
   todas: "Nenhuma corrida encontrada.",
@@ -122,6 +94,8 @@ const emptyMessages: Record<RideFilter, string> = {
 function AdminCorridasPage() {
   const qc = useQueryClient();
   const refundPayment = useServerFn(refundRidePayment);
+  const completeRide = useServerFn(adminCompleteRide);
+  const [finishing, setFinishing] = useState<Ride | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<RideFilter>("todas");
   const [editing, setEditing] = useState<Ride | null>(null);
@@ -181,6 +155,17 @@ function AdminCorridasPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível cancelar."),
   });
 
+  const finish = useMutation({
+    mutationFn: (rideId: string) => completeRide({ data: { rideId } }),
+    onSuccess: () => {
+      toast.success("Corrida finalizada pela administração.");
+      setFinishing(null);
+      void qc.invalidateQueries({ queryKey: ["admin-rides"] });
+      void qc.invalidateQueries({ queryKey: ["admin-report"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível finalizar."),
+  });
+
   return (
     <div className="space-y-4">
       <div className="relative">
@@ -195,9 +180,11 @@ function AdminCorridasPage() {
 
       <div className="flex gap-1 overflow-x-auto rounded-full bg-secondary p-1">
         {filterOptions.map((o) => (
-          <button
+          <Button
             key={o.value}
             type="button"
+            variant="ghost"
+            aria-pressed={filter === o.value}
             onClick={() => setFilter(o.value)}
             className={cn(
               "flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
@@ -213,7 +200,7 @@ function AdminCorridasPage() {
             >
               {counts[o.value] ?? 0}
             </span>
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -255,15 +242,20 @@ function AdminCorridasPage() {
                   {r.origin_address} → {r.destination_address}
                 </p>
                 <p className="text-sm">
-                  {formatDateTime(r.scheduled_at)} · <strong>{formatBRL(r.price_cents)}</strong> · {r.distance_km} km
+                  {formatDateTime(r.scheduled_at)} · Valor total: <strong>{formatBRL(adminRideAmounts(r.price_cents).totalCents)}</strong> · {r.distance_km} km
                   <span className="ml-2 text-xs text-muted-foreground">{pay}</span>
                 </p>
-                {r.driver_id && (
+                {(r.driver_id || isAvailableRide(r)) && (
                   <p className="text-sm text-muted-foreground">
-                    Motorista recebe: <strong className="text-foreground">{formatBRL(driverShareCents(r.price_cents))}</strong>
+                    Valor ao motorista (75%): <strong className="text-foreground">{formatBRL(adminRideAmounts(r.price_cents).driverCents)}</strong>
                   </p>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">
+                  {canAdminCompleteRide(r) && (
+                    <Button size="sm" variant="outline" onClick={() => setFinishing(r)}>
+                      <CheckCircle2 className="mr-2 size-4" /> Finalizar corrida
+                    </Button>
+                  )}
                   <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
                     <Pencil className="mr-2 size-4" /> Editar
                   </Button>
@@ -291,6 +283,25 @@ function AdminCorridasPage() {
           );
         })}
       </div>
+
+      {finishing && (
+        <Dialog open onOpenChange={(open) => { if (!open && !finish.isPending) setFinishing(null); }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Finalizar corrida</DialogTitle>
+              <DialogDescription>
+                Confirma que o transporte de {finishing.pet_name} já terminou? A corrida será marcada como concluída, sem alterar o valor ou o pagamento.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="ghost" disabled={finish.isPending} onClick={() => setFinishing(null)}>Voltar</Button>
+              <Button disabled={finish.isPending} onClick={() => finish.mutate(finishing.id)}>
+                {finish.isPending && <Loader2 className="mr-2 size-4 animate-spin" />} Confirmar finalização
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {editing && (
         <EditRideDialog

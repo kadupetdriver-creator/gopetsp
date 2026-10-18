@@ -1,5 +1,10 @@
 # Roadmap — GoPet
 
+## Concluído — corridas administrativas
+- [x] Permitir finalizar corridas esquecidas pelos motoristas
+- [x] Mostrar total e valor destinado ao motorista nas disponíveis
+- [x] Separar Aceitas de Em andamento sem duplicidade
+
 ## Concluído — acompanhamento do tutor
 - [x] Mostrar dados do motorista e carro antes de A caminho; liberar mensagem e mapa ao vivo somente após o comando
 
