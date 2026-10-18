@@ -3,6 +3,9 @@
  * Este módulo é a única fonte de verdade do cálculo e é executado no backend.
  */
 
+import { petSizes, SIZE_RANK } from "./pet-sizes";
+export { SIZE_RANK } from "./pet-sizes";
+
 export const PRICE_BASE_CENTS = 1399;
 export const PRICE_PER_KM_CENTS = 399;
 /** Tempo estimado de viagem: R$ 0,10 por minuto (estilo apps de corrida). */
@@ -11,13 +14,9 @@ export const TRUNK_FEE_CENTS = 500;
 /** Pets adicionais pagam 40% do valor integral do próprio porte. */
 export const EXTRA_PET_FACTOR = 0.4;
 
-export const SIZE_FACTORS: Record<string, number> = {
-  pequeno: 1.1,
-  medio: 1.2,
-  grande: 1.3,
-};
-
-export const SIZE_RANK = ["pequeno", "medio", "grande"];
+export const SIZE_FACTORS: Record<string, number> = Object.fromEntries(
+  petSizes.map((size) => [size.value, size.factor]),
+);
 
 export function sizeFactor(size: string): number {
   return SIZE_FACTORS[size] ?? 1;

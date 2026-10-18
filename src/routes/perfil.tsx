@@ -22,6 +22,7 @@ import { PetPhoto, uploadPetPhoto } from "@/components/PetPhoto";
 import { ReferralCard } from "@/components/ReferralCard";
 import { PhotoChangeCard } from "@/components/PhotoChangeCard";
 import { DriverVehicles } from "@/components/DriverVehicles";
+import { PetSizeHelp } from "@/components/PetSizeHelp";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 const phonePattern = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
@@ -355,12 +356,15 @@ function PerfilPage() {
       {!isDriver && (
         <Card className="shadow-soft">
           <CardHeader>
-            <CardTitle className="text-lg">Meus pets</CardTitle>
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-lg">Meus pets</CardTitle>
+              <PetSizeHelp />
+            </div>
             <CardDescription>Cadastre para agilizar novas solicitações.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <form
-              className="flex flex-col gap-3 sm:flex-row"
+              className="grid gap-3 sm:grid-cols-2"
               onSubmit={(e) => {
                 e.preventDefault();
                 addPet.mutate();
@@ -373,7 +377,7 @@ function PerfilPage() {
                 required
               />
               <Select value={petSpeciesValue} onValueChange={setPetSpeciesValue} required>
-                <SelectTrigger className="sm:w-48" aria-label="Espécie do pet">
+                <SelectTrigger className="w-full" aria-label="Espécie do pet">
                   <SelectValue placeholder="Espécie (obrigatório)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -385,7 +389,7 @@ function PerfilPage() {
                 </SelectContent>
               </Select>
               <Select value={petSize} onValueChange={setPetSize}>
-                <SelectTrigger className="sm:w-56">
+                <SelectTrigger className="w-full" aria-label="Porte do pet">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
