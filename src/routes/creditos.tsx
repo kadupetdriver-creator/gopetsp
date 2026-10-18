@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { getCreditBalance } from "@/lib/credits.functions";
 import { useQuery } from "@tanstack/react-query";
-import { MessageCircle, QrCode, Wallet } from "lucide-react";
+import { MessageCircle, Wallet } from "lucide-react";
+import { TopupPanel } from "@/components/TopupPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleGuard } from "@/hooks/useRoleGuard";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatBRL, CENTRAL_WHATSAPP } from "@/lib/rides";
@@ -85,39 +85,14 @@ function CreditosPage() {
         </CardHeader>
       </Card>
 
-      <Card className="shadow-soft border-primary/40 bg-primary/5">
-        <CardHeader>
-          <CardTitle className="text-lg">Atendimento da central</CardTitle>
-          <CardDescription>
-            Para adicionar saldo ou tirar dúvidas, chame nossa central pelo WhatsApp.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm">
-          <ul className="space-y-2">
-            <li className="flex items-start gap-2">
-              <MessageCircle className="mt-0.5 size-4 text-primary-ink" />
-              <span>
-                <strong>Cartão de crédito:</strong> a central envia um link de pagamento seguro.
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <QrCode className="mt-0.5 size-4 text-primary-ink" />
-              <span>
-                <strong>Pix:</strong> a central envia o QR Code para pagamento imediato.
-              </span>
-            </li>
-          </ul>
-          <p className="text-xs text-muted-foreground">
-            Saldo GoPet, cartão e Pix estão disponíveis no pagamento da corrida.
-          </p>
-          <Button asChild className="w-full rounded-full">
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-              <MessageCircle className="mr-2 size-4" />
-              Chamar a central no WhatsApp
-            </a>
-          </Button>
-        </CardContent>
-      </Card>
+      {user && <TopupPanel userId={user.id} email={user.email} />}
+
+      <p className="text-center text-xs text-muted-foreground">
+        Dúvidas?{" "}
+        <a className="underline" href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+          <MessageCircle className="inline size-3" /> Fale com a central
+        </a>
+      </p>
 
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Extrato</h2>

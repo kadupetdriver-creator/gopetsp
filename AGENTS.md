@@ -21,3 +21,4 @@
 
 - The driver's share of a ride (75%) lives only in `src/lib/pricing.ts` (`DRIVER_SHARE_RATE` / `driverShareCents`). Compute or display payouts through that helper instead of multiplying by 0.75 inline, so the rate changes in one place.
 - Admins may read every table that holds tutor or driver data, but only through read-only policies (`using (public.has_role(auth.uid(), 'admin'))` on SELECT). Never grant admins INSERT/UPDATE/DELETE through RLS on that data — changes must keep going through the guarded RPCs and admin server functions, so every write stays auditable.
+- Topup payments use their own table (mercadopago_topups) with external_reference `topup:<id>`; settlement credits the ledger only through the service-role RPC apply_mercadopago_topup, so webhook and polling stay idempotent.
