@@ -44,13 +44,22 @@ export const createMercadoPagoPayment = createServerFn({ method: "POST" })
     if (data.couponId) {
       const { data: coupon } = await context.supabase
         .from("referral_coupons")
-        .select("id, owner_id, status, discount_percent")
+        .select("id, owner_id, status, discount_percent, discount_cents, coupon_kind")
         .eq("id", data.couponId)
         .maybeSingle();
       if (!coupon || coupon.owner_id !== context.userId || coupon.status !== "available") {
         return { error: "Este cupom não está mais disponível." };
       }
-      amountCents = Math.max(1, Math.round(ride.price_cents * (100 - coupon.discount_percent) / 100));
+      if (coupon.coupon_kind === "welcome") {
+        const { count } = await context.supabase
+          .from("rides")
+          .select("id", { count: "exact", head: true })
+          .eq("tutor_id", context.userId)
+          .not("paid_at", "is", null);
+        if ((count ?? 0) > 0) return { error: "O cupom de boas-vindas vale apenas para a primeira corrida." };
+      }
+      const { couponAmountCents } = await import("./coupons");
+      amountCents = couponAmountCents(ride.price_cents, coupon);
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

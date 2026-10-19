@@ -1,3 +1,4 @@
+import { couponLabel } from "@/lib/coupons";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy, Gift, Share2, Ticket } from "lucide-react";
@@ -19,7 +20,7 @@ export function ReferralCard({ userId, mode }: { userId: string; mode: "tutor" |
         supabase.from("referral_codes").select("code").eq("user_id", userId).maybeSingle(),
         supabase.from("referrals").select("tutor_qualified_at, driver_qualified_at").eq("referrer_id", userId),
         supabase.from("referrals").select("id").eq("referred_id", userId).maybeSingle(),
-        supabase.from("referral_coupons").select("id, code, status, used_at, discount_percent").eq("owner_id", userId).order("created_at", { ascending: false }),
+        supabase.from("referral_coupons").select("id, code, status, used_at, discount_percent, discount_cents").eq("owner_id", userId).order("created_at", { ascending: false }),
         supabase.from("driver_referral_bonuses").select("id, amount_cents, status, created_at").eq("driver_id", userId).order("created_at", { ascending: false }),
       ]);
       return {
@@ -84,7 +85,7 @@ export function ReferralCard({ userId, mode }: { userId: string; mode: "tutor" |
               <p className="mb-2 flex items-center gap-2 text-sm font-semibold"><Ticket className="size-4" /> Meus cupons</p>
               {available.length === 0 && used.length === 0 && <p className="text-sm text-muted-foreground">Nenhum cupom ainda.</p>}
               <ul className="space-y-1 text-sm">
-                {available.map((c) => <li key={c.id} className="flex justify-between"><span className="font-mono">{c.code}</span><Badge>{c.discount_percent}% disponível</Badge></li>)}
+                {available.map((c) => <li key={c.id} className="flex justify-between"><span className="font-mono">{c.code}</span><Badge>{couponLabel(c)}</Badge></li>)}
                 {used.map((c) => <li key={c.id} className="flex justify-between text-muted-foreground"><span className="font-mono line-through">{c.code}</span><Badge variant="secondary">Usado</Badge></li>)}
               </ul>
             </div>

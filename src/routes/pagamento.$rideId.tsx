@@ -1,3 +1,4 @@
+import { couponAmountCents, couponLabel } from "@/lib/coupons";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -71,7 +72,7 @@ function PagamentoCorrida() {
     queryKey: ["my-coupons-available", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("referral_coupons").select("id, code, discount_percent").eq("owner_id", user?.id ?? "").eq("status", "available").order("created_at");
+      const { data } = await supabase.from("referral_coupons").select("id, code, discount_percent, discount_cents, coupon_kind").eq("owner_id", user?.id ?? "").eq("status", "available").order("created_at");
       return data ?? [];
     },
   });
@@ -95,7 +96,7 @@ function PagamentoCorrida() {
   const selectedCoupon = coupons.find((c) => c.id === couponId);
   const payAmount = ride
     ? selectedCoupon
-      ? Math.max(1, Math.round((ride.price_cents * (100 - selectedCoupon.discount_percent)) / 100))
+      ? couponAmountCents(ride.price_cents, selectedCoupon)
       : ride.price_cents
     : 0;
 
@@ -228,7 +229,7 @@ function PagamentoCorrida() {
       {ride && <Card><CardContent className="space-y-3 py-5 text-sm">
         <p className="font-semibold">{ride.pet_name}</p>
         <p className="text-muted-foreground">{ride.origin_address} → {ride.destination_address}</p>
-        <div className="flex justify-between border-t pt-3 text-lg font-semibold"><span>Total</span><span>{formatBRL(payAmount)}</span></div>{coupons.length > 0 && <div className="space-y-2 border-t pt-3"><Label htmlFor="cupom">Cupom de indicação</Label><select id="cupom" className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={couponId ?? ""} disabled={approved || submitted || payingBalance || !canTryAgain} onChange={(e) => setCouponId(e.target.value || null)}><option value="">Não usar cupom</option>{coupons.map((c) => <option key={c.id} value={c.id}>{c.code} — {c.discount_percent}% de desconto</option>)}</select>{couponId && <p className="text-xs text-primary">Desconto de {formatBRL(ride.price_cents - payAmount)} aplicado.</p>}</div>}
+        <div className="flex justify-between border-t pt-3 text-lg font-semibold"><span>Total</span><span>{formatBRL(payAmount)}</span></div>{coupons.length > 0 && <div className="space-y-2 border-t pt-3"><Label htmlFor="cupom">Cupom de desconto</Label><select id="cupom" className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={couponId ?? ""} disabled={approved || submitted || payingBalance || !canTryAgain} onChange={(e) => setCouponId(e.target.value || null)}><option value="">Não usar cupom</option>{coupons.map((c) => <option key={c.id} value={c.id}>{c.code} — {couponLabel(c)}{c.coupon_kind === "welcome" ? " (primeira corrida)" : ""}</option>)}</select>{couponId && <p className="text-xs text-primary">Desconto de {formatBRL(ride.price_cents - payAmount)} aplicado.</p>}</div>}
         <p className="flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="size-4 text-primary" /> Pagamento seguro. A GoPet não armazena dados do cartão.</p>
       </CardContent></Card>}
 
