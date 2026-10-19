@@ -43,6 +43,13 @@
       "when": 1792368207647,
       "tag": "0005_welcome_coupon",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792368463129,
+      "tag": "0006_ride_tutor_names_for_drivers",
+      "breakpoints": true
     }
   ]
 }

@@ -1200,6 +1200,13 @@ export type Database = {
           vehicle_plate: string
         }[]
       }
+      ride_tutor_names: {
+        Args: { _ride_ids: string[] }
+        Returns: {
+          full_name: string
+          ride_id: string
+        }[]
+      }
       set_active_vehicle: { Args: { _vehicle_id: string }; Returns: undefined }
       set_ride_status: {
         Args: {
