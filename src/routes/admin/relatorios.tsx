@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, CalendarRange, WalletCards } from "lucide-react";
-import { adminGetReport } from "@/lib/admin.functions";
+import { adminGetReport, type AdminReportEntry } from "@/lib/admin.functions";
 import { refreshEtaCalibration } from "@/lib/eta.functions";
 import { formatBRL, formatDateTime, statusLabels, type RideStatus } from "@/lib/rides";
 import { driverShareCents } from "@/lib/pricing";
