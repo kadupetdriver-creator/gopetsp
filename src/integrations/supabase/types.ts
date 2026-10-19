@@ -518,7 +518,9 @@ export type Database = {
       referral_coupons: {
         Row: {
           code: string
+          coupon_kind: string
           created_at: string
+          discount_cents: number
           discount_percent: number
           id: string
           owner_id: string
@@ -530,7 +532,9 @@ export type Database = {
         }
         Insert: {
           code: string
+          coupon_kind?: string
           created_at?: string
+          discount_cents?: number
           discount_percent?: number
           id?: string
           owner_id: string
@@ -542,7 +546,9 @@ export type Database = {
         }
         Update: {
           code?: string
+          coupon_kind?: string
           created_at?: string
+          discount_cents?: number
           discount_percent?: number
           id?: string
           owner_id?: string
@@ -1029,6 +1035,10 @@ export type Database = {
         Returns: Json
       }
       apply_referral_code: { Args: { _code: string }; Returns: undefined }
+      coupon_amount_cents: {
+        Args: { _cents: number; _percent: number; _price: number }
+        Returns: number
+      }
       cpf_disponivel: { Args: { _cpf: string }; Returns: boolean }
       eta_avg_speed: {
         Args: { _hour: number; _weekday: number }
@@ -1052,6 +1062,7 @@ export type Database = {
         Args: { _ride_id: string; _user_id: string }
         Returns: boolean
       }
+      issue_welcome_coupon: { Args: { _user_id: string }; Returns: undefined }
       list_preferred_drivers: {
         Args: never
         Returns: {

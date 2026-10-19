@@ -36,6 +36,13 @@
       "when": 1792324800076,
       "tag": "0004_credit_topups",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792368207647,
+      "tag": "0005_welcome_coupon",
+      "breakpoints": true
     }
   ]
 }
