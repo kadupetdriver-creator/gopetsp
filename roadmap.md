@@ -1,5 +1,10 @@
 # Roadmap — GoPet
 
+## Em andamento — tutor acompanha o pet
+- [x] Perguntar no pedido se o tutor vai junto e salvar a resposta na ida e volta, sem alterar a tarifa
+- [x] Mostrar acompanhamento no bolsão, chamadas e histórico do motorista
+- [ ] Verificar escolha Sim/Não, persistência e exibição
+
 ## Em andamento — nome do tutor
 - [x] Exibir o nome do tutor abaixo dos pets nas corridas atribuídas e no histórico do motorista
 - [x] Conferir a exibição com corridas demonstrativas no computador e celular; testes existentes e compilação sem erros

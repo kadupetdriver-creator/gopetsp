@@ -198,6 +198,7 @@ function SolicitarPage() {
   const [scheduledAt, setScheduledAt] = useState(defaultDateTime());
   const [notes, setNotes] = useState("");
   const [needsTrunk, setNeedsTrunk] = useState<boolean | null>(null);
+  const [tutorAccompaniesPet, setTutorAccompaniesPet] = useState<boolean | null>(null);
   const [hasReturn, setHasReturn] = useState<boolean | null>(null);
   const [returnAt, setReturnAt] = useState("");
   const [driverWaits, setDriverWaits] = useState<boolean | null>(null);
@@ -356,6 +357,7 @@ function SolicitarPage() {
     missingItems.push("Informar o número em todas as paradas (ou S/N)");
   }
   if (needsTrunk === null) missingItems.push("Informar se precisa do porta-malas");
+  if (tutorAccompaniesPet === null) missingItems.push("Informar se o tutor vai acompanhar o pet");
   if (hasReturn === null) {
     missingItems.push("Informar se haverá corrida de retorno");
   } else if (hasReturn) {
@@ -371,6 +373,7 @@ function SolicitarPage() {
       if (!origin || !destination) throw new Error("Selecione origem e destino nas sugestões");
       if (selectedPets.length === 0) throw new Error("Selecione ao menos um pet cadastrado");
       if (needsTrunk === null) throw new Error("Informe se deseja utilizar o porta-malas");
+      if (tutorAccompaniesPet === null) throw new Error("Informe se o tutor vai acompanhar o pet");
       if (hasReturn === null) throw new Error("Informe se haverá corrida de retorno");
       if (hasReturn && !returnAt) throw new Error("Informe o horário do retorno");
       if (hasReturn && !returnIsAfterDeparture)
@@ -407,6 +410,7 @@ function SolicitarPage() {
           serviceType,
           scheduledAt: new Date(scheduledAt).toISOString(),
           notes: notes || null,
+          tutorAccompaniesPet,
           needsTrunk: needsTrunk === true,
           hasReturn: hasReturn === true,
           returnScheduledAt: hasReturn && returnAt ? new Date(returnAt).toISOString() : null,
@@ -634,6 +638,28 @@ function SolicitarPage() {
                   >
                     <RadioGroupItem id="porta-malas-nao" value="nao" />
                     <span className="font-medium">Não</span>
+                  </label>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-3 sm:col-span-2">
+                <Label id="tutor-acompanha-label">
+                  O tutor vai acompanhar o pet? <span className="text-destructive">*</span>
+                </Label>
+                <RadioGroup
+                  aria-labelledby="tutor-acompanha-label"
+                  value={tutorAccompaniesPet === null ? "" : tutorAccompaniesPet ? "sim" : "nao"}
+                  onValueChange={(value) => setTutorAccompaniesPet(value === "sim")}
+                  className="grid gap-2 sm:grid-cols-2"
+                  required
+                >
+                  <label htmlFor="tutor-acompanha-sim" className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 ${tutorAccompaniesPet === true ? "border-primary bg-primary/10" : "border-border"}`}>
+                    <RadioGroupItem id="tutor-acompanha-sim" value="sim" />
+                    <span className="text-sm font-medium">Sim, vou com o pet</span>
+                  </label>
+                  <label htmlFor="tutor-acompanha-nao" className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 ${tutorAccompaniesPet === false ? "border-primary bg-primary/10" : "border-border"}`}>
+                    <RadioGroupItem id="tutor-acompanha-nao" value="nao" />
+                    <span className="text-sm font-medium">Não, o pet vai sem mim</span>
                   </label>
                 </RadioGroup>
               </div>
@@ -909,7 +935,7 @@ function SolicitarPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={create.isPending || !routeReady}
+                disabled={create.isPending || !routeReady || tutorAccompaniesPet === null}
               >
                 {create.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Chamar motorista

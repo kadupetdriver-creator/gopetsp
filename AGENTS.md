@@ -11,6 +11,8 @@
 
 ## Rules
 
+- Ride accompaniment is stored independently from pricing in the shared outbound/return insert; nullable values preserve unknown on legacy rides rather than implying the tutor is absent.
+
 - Driver-facing tutor names must come only from the assignment-scoped ride_tutor_names RPC, never a broad profiles query, so unassigned drivers cannot read tutor identities.
 
 - GoPet balance ride payments debit the ledger, consume coupons and set paid_at in one service-role-only database RPC; profile/ride locks and the Mercado Pago insert guard serialize balance payments and competing payment methods. Refunds return the actual debit through an idempotent RPC; checkout eligibility is shared in src/lib/credit-payment.ts.

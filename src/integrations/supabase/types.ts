@@ -789,6 +789,7 @@ export type Database = {
           status: Database["public"]["Enums"]["ride_status"]
           stops: Json
           trunk_fee_cents: number
+          tutor_accompanies_pet: boolean | null
           tutor_id: string
           updated_at: string
           waiting_fee_cents: number
@@ -831,6 +832,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["ride_status"]
           stops?: Json
           trunk_fee_cents?: number
+          tutor_accompanies_pet?: boolean | null
           tutor_id: string
           updated_at?: string
           waiting_fee_cents?: number
@@ -873,6 +875,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["ride_status"]
           stops?: Json
           trunk_fee_cents?: number
+          tutor_accompanies_pet?: boolean | null
           tutor_id?: string
           updated_at?: string
           waiting_fee_cents?: number
@@ -1010,6 +1013,7 @@ export type Database = {
           status: Database["public"]["Enums"]["ride_status"]
           stops: Json
           trunk_fee_cents: number
+          tutor_accompanies_pet: boolean | null
           tutor_id: string
           updated_at: string
           waiting_fee_cents: number
@@ -1113,6 +1117,7 @@ export type Database = {
           status: Database["public"]["Enums"]["ride_status"]
           stops: Json
           trunk_fee_cents: number
+          tutor_accompanies_pet: boolean | null
           tutor_id: string
           updated_at: string
           waiting_fee_cents: number
@@ -1250,6 +1255,7 @@ export type Database = {
           status: Database["public"]["Enums"]["ride_status"]
           stops: Json
           trunk_fee_cents: number
+          tutor_accompanies_pet: boolean | null
           tutor_id: string
           updated_at: string
           waiting_fee_cents: number
