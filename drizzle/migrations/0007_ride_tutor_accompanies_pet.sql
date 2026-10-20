@@ -1,0 +1,2 @@
+ALTER TABLE public.rides ADD COLUMN tutor_accompanies_pet boolean;
+COMMENT ON COLUMN public.rides.tutor_accompanies_pet IS 'Whether the tutor accompanies the pets; NULL means not informed on an older ride.';
