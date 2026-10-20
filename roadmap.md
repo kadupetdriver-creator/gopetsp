@@ -2,7 +2,8 @@
 
 ## Em andamento — nome do tutor
 - [x] Exibir o nome do tutor abaixo dos pets nas corridas atribuídas e no histórico do motorista
-- [ ] Conferir a exibição e a consulta protegida na tela do motorista
+- [x] Conferir a exibição com corridas demonstrativas no computador e celular; testes existentes e compilação sem erros
+- [ ] Conferir a consulta e exibição com corrida real — bloqueado por falta de cadastro de motorista na conta disponível para teste
 
 ## Concluído — saldo GoPet
 - [x] Oferecer saldo GoPet junto ao Mercado Pago no pagamento da corrida
