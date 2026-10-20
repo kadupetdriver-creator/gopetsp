@@ -243,6 +243,22 @@ function MotoristaPage() {
     },
   });
 
+  const assignedRideIds = (rides ?? [])
+    .filter((ride) => ride.driver_id === user?.id)
+    .map((ride) => ride.id)
+    .sort();
+  const { data: tutorNames = {} } = useQuery({
+    queryKey: ["ride-tutor-names", user?.id, assignedRideIds],
+    enabled: !!user && approved && assignedRideIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("ride_tutor_names", {
+        _ride_ids: assignedRideIds,
+      });
+      if (error) throw error;
+      return Object.fromEntries((data ?? []).map((row) => [row.ride_id, row.full_name]));
+    },
+  });
+
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -528,7 +544,7 @@ function MotoristaPage() {
             <EmptyState text="Nenhuma corrida em andamento. As concluídas ficam em Relatórios." />
           )}
           {active.map((ride) => (
-            <RideCard key={ride.id} ride={ride} showMap>
+            <RideCard key={ride.id} ride={ride} tutorName={tutorNames[ride.id]} showMap>
               {ride.status === "accepted" && (
                 <>
                   <Button
@@ -583,8 +599,8 @@ function MotoristaPage() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <DriverEarningsReport period={earningsPeriods.friday} rides={fridayEarnings} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.friday.start, earningsPeriods.friday.end)} />
-            <DriverEarningsReport period={earningsPeriods.monday} rides={mondayEarnings} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.monday.start, earningsPeriods.monday.end)} />
+            <DriverEarningsReport period={earningsPeriods.friday} rides={fridayEarnings} tutorNames={tutorNames} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.friday.start, earningsPeriods.friday.end)} />
+            <DriverEarningsReport period={earningsPeriods.monday} rides={mondayEarnings} tutorNames={tutorNames} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.monday.start, earningsPeriods.monday.end)} />
           </div>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Histórico</h2>
@@ -607,6 +623,9 @@ function MotoristaPage() {
                             · {formatDateTime(ride.scheduled_at)}
                           </span>
                         </p>
+                        {tutorNames[ride.id] && (
+                          <p className="break-words text-sm text-muted-foreground">Tutor: {tutorNames[ride.id]}</p>
+                        )}
                         <p className="text-muted-foreground">
                           {ride.origin_address}
                           {(ride.stops ?? []).map((stop, i) => (
@@ -726,10 +745,12 @@ function EmptyState({ text }: { text: string }) {
 
 function RideCard({
   ride,
+  tutorName,
   children,
   showMap = false,
 }: {
   ride: Ride;
+  tutorName?: string;
   children?: React.ReactNode;
   showMap?: boolean;
 }) {
@@ -749,6 +770,9 @@ function RideCard({
                 · {petSizes.find((s) => s.value === ride.pet_size)?.label}
               </span>
             </p>
+            {tutorName && (
+              <p className="break-words text-sm text-muted-foreground">Tutor: {tutorName}</p>
+            )}
             <p className="text-sm text-muted-foreground">
               {serviceTypes.find((s) => s.value === ride.service_type)?.label ?? "Transporte"}
             </p>
@@ -879,10 +903,12 @@ function DriverEarningsReport({
   period,
   rides,
   bonuses = [],
+  tutorNames = {},
 }: {
   period: { title: string; subtitle: string; start: Date; end: Date };
   rides: Ride[];
   bonuses?: DriverBonus[];
+  tutorNames?: Record<string, string>;
 }) {
   const ridesTotal = rides.reduce((sum, ride) => sum + driverValueOf(ride), 0);
   const bonusTotal = bonuses.reduce((sum, b) => sum + b.amount_cents, 0);
@@ -932,6 +958,9 @@ function DriverEarningsReport({
             <div key={ride.id} className="flex items-center justify-between gap-3 py-3 text-sm">
               <div className="min-w-0">
                 <p className="truncate font-medium">{ride.pet_name}</p>
+                {tutorNames[ride.id] && (
+                  <p className="break-words text-xs text-muted-foreground">Tutor: {tutorNames[ride.id]}</p>
+                )}
                 <p className="truncate text-xs text-muted-foreground">
                   paga em {ride.paid_at ? formatDateTime(ride.paid_at) : "—"}
                 </p>

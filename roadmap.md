@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Em andamento — nome do tutor
+- [x] Exibir o nome do tutor abaixo dos pets nas corridas atribuídas e no histórico do motorista
+- [ ] Conferir a exibição e a consulta protegida na tela do motorista
+
 ## Concluído — saldo GoPet
 - [x] Oferecer saldo GoPet junto ao Mercado Pago no pagamento da corrida
 - [x] Garantir débito atômico, bloquear saldo insuficiente e pagamentos concorrentes; pagamento, extrato e devolução verificados com corrida temporária

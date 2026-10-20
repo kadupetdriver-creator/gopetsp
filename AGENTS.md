@@ -11,6 +11,8 @@
 
 ## Rules
 
+- Driver-facing tutor names must come only from the assignment-scoped ride_tutor_names RPC, never a broad profiles query, so unassigned drivers cannot read tutor identities.
+
 - GoPet balance ride payments debit the ledger, consume coupons and set paid_at in one service-role-only database RPC; profile/ride locks and the Mercado Pago insert guard serialize balance payments and competing payment methods. Refunds return the actual debit through an idempotent RPC; checkout eligibility is shared in src/lib/credit-payment.ts.
 
 - Pet size definitions and rank live in `src/lib/pet-sizes.ts`; pricing derives its factors and every grouping uses the shared rank so new categories stay consistent across quotes and displays.
