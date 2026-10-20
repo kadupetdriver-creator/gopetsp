@@ -750,7 +750,7 @@ function RideCard({
   showMap = false,
 }: {
   ride: Ride;
-  tutorName?: string;
+  tutorName?: string | undefined;
   children?: React.ReactNode;
   showMap?: boolean;
 }) {
