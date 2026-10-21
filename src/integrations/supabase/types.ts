@@ -753,6 +753,7 @@ export type Database = {
       }
       rides: {
         Row: {
+          accompanying_people_count: number | null
           arrived_at: string | null
           created_at: string
           destination_address: string
@@ -796,6 +797,7 @@ export type Database = {
           waiting_minutes: number
         }
         Insert: {
+          accompanying_people_count?: number | null
           arrived_at?: string | null
           created_at?: string
           destination_address: string
@@ -839,6 +841,7 @@ export type Database = {
           waiting_minutes?: number
         }
         Update: {
+          accompanying_people_count?: number | null
           arrived_at?: string | null
           created_at?: string
           destination_address?: string
@@ -977,6 +980,7 @@ export type Database = {
       accept_ride: {
         Args: { _ride_id: string }
         Returns: {
+          accompanying_people_count: number | null
           arrived_at: string | null
           created_at: string
           destination_address: string
@@ -1081,6 +1085,7 @@ export type Database = {
       mark_driver_arrived: {
         Args: { _ride_id: string }
         Returns: {
+          accompanying_people_count: number | null
           arrived_at: string | null
           created_at: string
           destination_address: string
@@ -1219,6 +1224,7 @@ export type Database = {
           _status: Database["public"]["Enums"]["ride_status"]
         }
         Returns: {
+          accompanying_people_count: number | null
           arrived_at: string | null
           created_at: string
           destination_address: string

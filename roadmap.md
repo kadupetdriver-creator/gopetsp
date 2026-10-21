@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Em andamento — quantidade de pessoas
+- [ ] Perguntar quantas pessoas quando o tutor acompanha; salvar ida/volta e mostrar ao motorista
+- [ ] Testar quantidade e troca Sim/Não
+
 ## Concluído — tutor acompanha o pet
 - [x] Perguntar no pedido se o tutor vai junto e salvar a resposta na ida e volta, sem alterar a tarifa
 - [x] Mostrar acompanhamento no bolsão, chamadas e histórico do motorista

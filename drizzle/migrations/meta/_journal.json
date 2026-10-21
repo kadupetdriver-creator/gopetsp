@@ -57,6 +57,13 @@
       "when": 1792455045164,
       "tag": "0007_ride_tutor_accompanies_pet",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792542023606,
+      "tag": "0008_ride_accompanying_people_count",
+      "breakpoints": true
     }
   ]
 }
