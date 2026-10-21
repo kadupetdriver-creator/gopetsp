@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { calculateRidePrice, SIZE_RANK } from "./pricing";
 import { addressHasNumber } from "./address";
-import { parseTutorAccompaniment } from "./ride-accompaniment";
+import { parseTutorAccompaniment, parseAccompanyingPeopleCount } from "./ride-accompaniment";
 
 
 type Point = { lat: number; lng: number };
@@ -169,6 +169,7 @@ export type CreateRideInput = {
   needsTrunk: boolean;
   hasReturn?: boolean;
   tutorAccompaniesPet?: boolean;
+  accompanyingPeopleCount?: number;
   returnScheduledAt?: string | null;
   driverWaits?: boolean;
   preferredDriverId?: string | null;
@@ -223,6 +224,7 @@ export const createRide = createServerFn({ method: "POST" })
       needsTrunk: input?.needsTrunk === true,
       preferredDriverId,
       tutorAccompaniesPet: parseTutorAccompaniment(input?.tutorAccompaniesPet),
+      accompanyingPeopleCount: parseAccompanyingPeopleCount(parseTutorAccompaniment(input?.tutorAccompaniesPet), input?.accompanyingPeopleCount),
       extras,
     };
 
@@ -291,6 +293,7 @@ export const createRide = createServerFn({ method: "POST" })
         distance_km: route.distanceKm,
         needs_trunk: data.needsTrunk,
         tutor_accompanies_pet: data.tutorAccompaniesPet,
+        accompanying_people_count: data.accompanyingPeopleCount,
         trunk_fee_cents: price.trunkFeeCents,
         preferred_driver_id: data.preferredDriverId,
       };

@@ -73,6 +73,7 @@ type Ride = {
   driver_id: string | null;
   needs_trunk: boolean;
   tutor_accompanies_pet: boolean | null;
+  accompanying_people_count: number | null;
   driver_lat: number | null;
   driver_lng: number | null;
   location_updated_at: string | null;
@@ -628,7 +629,7 @@ function MotoristaPage() {
                         {tutorNames[ride.id] && (
                           <p className="break-words text-sm text-muted-foreground">Tutor: {tutorNames[ride.id]}</p>
                         )}
-                        <p className="text-sm text-muted-foreground">{tutorAccompanimentLabel(ride.tutor_accompanies_pet)}</p>
+                        <p className="text-sm text-muted-foreground">{tutorAccompanimentLabel(ride.tutor_accompanies_pet, ride.accompanying_people_count)}</p>
                         <p className="text-muted-foreground">
                           {ride.origin_address}
                           {(ride.stops ?? []).map((stop, i) => (
@@ -675,7 +676,7 @@ function MotoristaPage() {
             <p className="mt-2 text-2xl font-extrabold">
               {newRide.pet_name} · {formatBRL(driverValueOf(newRide))}
             </p>
-            <p className="mt-2 text-sm font-semibold">{tutorAccompanimentLabel(newRide.tutor_accompanies_pet)}</p>
+            <p className="mt-2 text-sm font-semibold">{tutorAccompanimentLabel(newRide.tutor_accompanies_pet, newRide.accompanying_people_count)}</p>
             <p className="mt-3 text-sm font-medium">
               Embarque: {newRide.origin_address}
               {newRide.origin_neighborhood ? ` · ${newRide.origin_neighborhood}` : ""}
@@ -777,7 +778,7 @@ function RideCard({
             {tutorName && (
               <p className="break-words text-sm text-muted-foreground">Tutor: {tutorName}</p>
             )}
-            <p className="text-sm font-medium">{tutorAccompanimentLabel(ride.tutor_accompanies_pet)}</p>
+            <p className="text-sm font-medium">{tutorAccompanimentLabel(ride.tutor_accompanies_pet, ride.accompanying_people_count)}</p>
             <p className="text-sm text-muted-foreground">
               {serviceTypes.find((s) => s.value === ride.service_type)?.label ?? "Transporte"}
             </p>

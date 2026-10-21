@@ -199,6 +199,7 @@ function SolicitarPage() {
   const [notes, setNotes] = useState("");
   const [needsTrunk, setNeedsTrunk] = useState<boolean | null>(null);
   const [tutorAccompaniesPet, setTutorAccompaniesPet] = useState<boolean | null>(null);
+  const [accompanyingPeopleCount, setAccompanyingPeopleCount] = useState("");
   const [hasReturn, setHasReturn] = useState<boolean | null>(null);
   const [returnAt, setReturnAt] = useState("");
   const [driverWaits, setDriverWaits] = useState<boolean | null>(null);
@@ -339,6 +340,8 @@ function SolicitarPage() {
 
   // Lista do que ainda falta preencher para poder chamar o motorista.
   const missingItems: string[] = [];
+  const peopleCount = Number(accompanyingPeopleCount);
+  const peopleCountValid = Number.isSafeInteger(peopleCount) && peopleCount >= 1;
   if (selectedPets.length === 0) missingItems.push("Selecionar ao menos um pet cadastrado");
   if (!origin) {
     missingItems.push("Escolher o endereço de origem nas sugestões");
@@ -358,6 +361,7 @@ function SolicitarPage() {
   }
   if (needsTrunk === null) missingItems.push("Informar se precisa do porta-malas");
   if (tutorAccompaniesPet === null) missingItems.push("Informar se o tutor vai acompanhar o pet");
+  if (tutorAccompaniesPet === true && !peopleCountValid) missingItems.push("Informar quantas pessoas vão com o pet, incluindo o tutor");
   if (hasReturn === null) {
     missingItems.push("Informar se haverá corrida de retorno");
   } else if (hasReturn) {
@@ -374,6 +378,7 @@ function SolicitarPage() {
       if (selectedPets.length === 0) throw new Error("Selecione ao menos um pet cadastrado");
       if (needsTrunk === null) throw new Error("Informe se deseja utilizar o porta-malas");
       if (tutorAccompaniesPet === null) throw new Error("Informe se o tutor vai acompanhar o pet");
+      if (tutorAccompaniesPet && !peopleCountValid) throw new Error("Informe quantas pessoas vão com o pet, incluindo o tutor");
       if (hasReturn === null) throw new Error("Informe se haverá corrida de retorno");
       if (hasReturn && !returnAt) throw new Error("Informe o horário do retorno");
       if (hasReturn && !returnIsAfterDeparture)
@@ -411,6 +416,7 @@ function SolicitarPage() {
           scheduledAt: new Date(scheduledAt).toISOString(),
           notes: notes || null,
           tutorAccompaniesPet,
+          ...(tutorAccompaniesPet ? { accompanyingPeopleCount: peopleCount } : {}),
           needsTrunk: needsTrunk === true,
           hasReturn: hasReturn === true,
           returnScheduledAt: hasReturn && returnAt ? new Date(returnAt).toISOString() : null,
@@ -649,7 +655,10 @@ function SolicitarPage() {
                 <RadioGroup
                   aria-labelledby="tutor-acompanha-label"
                   value={tutorAccompaniesPet === null ? "" : tutorAccompaniesPet ? "sim" : "nao"}
-                  onValueChange={(value) => setTutorAccompaniesPet(value === "sim")}
+                  onValueChange={(value) => {
+                    setTutorAccompaniesPet(value === "sim");
+                    if (value !== "sim") setAccompanyingPeopleCount("");
+                  }}
                   className="grid gap-2 sm:grid-cols-2"
                   required
                 >
@@ -662,6 +671,22 @@ function SolicitarPage() {
                     <span className="text-sm font-medium">Não, o pet vai sem mim</span>
                   </label>
                 </RadioGroup>
+                {tutorAccompaniesPet && (
+                  <div className="space-y-2">
+                    <Label htmlFor="quantidade-pessoas">Quantas pessoas vão, incluindo você? <span className="text-destructive">*</span></Label>
+                    <Input
+                      id="quantidade-pessoas"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      step={1}
+                      required
+                      value={accompanyingPeopleCount}
+                      onChange={(event) => setAccompanyingPeopleCount(event.target.value)}
+                      className="max-w-40"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3 sm:col-span-2">
@@ -935,7 +960,7 @@ function SolicitarPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={create.isPending || !routeReady || tutorAccompaniesPet === null}
+                disabled={create.isPending || !routeReady || tutorAccompaniesPet === null || (tutorAccompaniesPet && !peopleCountValid)}
               >
                 {create.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Chamar motorista

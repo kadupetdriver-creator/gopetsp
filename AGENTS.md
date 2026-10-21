@@ -11,7 +11,7 @@
 
 ## Rules
 
-- Ride accompaniment is stored independently from pricing in the shared outbound/return insert; nullable values preserve unknown on legacy rides rather than implying the tutor is absent.
+- Ride accompaniment and total accompanying people are stored independently from pricing in the shared outbound/return insert; nullable values preserve unknown on legacy rides and counts are cleared when the tutor does not accompany.
 
 - Driver-facing tutor names must come only from the assignment-scoped ride_tutor_names RPC, never a broad profiles query, so unassigned drivers cannot read tutor identities.
 
