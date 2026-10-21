@@ -69,6 +69,11 @@ function AuthPage() {
       toast.error("CPF inválido. Confira os números digitados.");
       return;
     }
+    const phoneDigits = onlyDigits(phone);
+    if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+      toast.error("Informe um WhatsApp válido com DDD, por exemplo (11) 90000-0000.");
+      return;
+    }
     setBusy(true);
     const { data: disponivel, error: cpfError } = await supabase.rpc("cpf_disponivel", { _cpf: cpfDigits });
     if (cpfError || disponivel === false) {
@@ -197,9 +202,12 @@ function AuthPage() {
                   <Label htmlFor="phone">WhatsApp</Label>
                   <Input
                     id="phone"
+                    type="tel"
+                    inputMode="tel"
                     placeholder="(11) 90000-0000"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    required
                   />
                 </div>
                 <div className="space-y-2">
