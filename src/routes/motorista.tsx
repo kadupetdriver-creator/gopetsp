@@ -90,7 +90,7 @@ type Ride = {
 };
 
 const selectCols =
-  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, tutor_accompanies_pet, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, paid_at, stops, preferred_driver_id, preferred_until, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
+  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, tutor_accompanies_pet, accompanying_people_count, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, paid_at, stops, preferred_driver_id, preferred_until, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
 const driverValueOf = (ride: Pick<Ride, "price_cents">) => driverShareCents(ride.price_cents);
 
