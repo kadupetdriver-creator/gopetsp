@@ -1,5 +1,10 @@
 # Roadmap — GoPet
 
+## Em andamento — chamar após pagar
+- [ ] Trocar o botão do pedido para Ir para pagamento
+- [ ] Liberar a corrida somente após pagamento confirmado e comando Chamar motorista
+- [ ] Verificar bloqueio antes do comando e liberação persistente depois
+
 ## Concluído — quantidade de pessoas
 - [x] Perguntar quantas pessoas quando o tutor acompanha; salvar ida/volta e mostrar ao motorista
 - [x] Quantidade e troca Sim/Não verificadas no formulário autenticado; testes de validação passaram
