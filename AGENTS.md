@@ -11,6 +11,8 @@
 
 ## Rules
 
+- CPF duplication exceptions are enforced by the database availability RPC, signup trigger, and partial unique index together; keep the same normalized predicate across all three so password signup and Google completion agree without weakening other CPFs.
+
 - Driver earnings date inputs use the browser-safe `driver-earnings-range.ts` predicate with São Paulo inclusive day boundaries on ride realization and bonus settlement dates; filter only the driver's existing scoped data without changing queries or permissions.
 
 - Driver ride payments use owner/admin-read-only `driver_ride_payments`, written only by an authenticated admin server function after completion, with unique ride records and audit logs; tutor `paid_at` never proves driver payment. Shared `driver-payments.ts` groups report rides by scheduled_at and computes São Paulo payment dates, keeping creation and payment timestamps separate.

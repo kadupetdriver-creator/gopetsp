@@ -78,6 +78,13 @@
       "when": 1792710124716,
       "tag": "0010_driver_ride_payment_records",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792711467261,
+      "tag": "0011_allow_designated_cpf_multiple_accounts",
+      "breakpoints": true
     }
   ]
 }
