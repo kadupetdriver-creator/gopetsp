@@ -1103,6 +1103,7 @@ export type Database = {
         Args: { _cents: number; _percent: number; _price: number }
         Returns: number
       }
+      cpf_allows_multiple_accounts: { Args: { _cpf: string }; Returns: boolean }
       cpf_disponivel: { Args: { _cpf: string }; Returns: boolean }
       eta_avg_speed: {
         Args: { _hour: number; _weekday: number }
