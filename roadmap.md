@@ -1,9 +1,9 @@
 # Roadmap — GoPet
 
-## Em andamento — chamar após pagar
-- [ ] Trocar o botão do pedido para Ir para pagamento
-- [ ] Liberar a corrida somente após pagamento confirmado e comando Chamar motorista
-- [ ] Verificar bloqueio antes do comando e liberação persistente depois
+## Concluído — chamar após pagar
+- [x] Trocar o botão do pedido para Ir para pagamento
+- [x] Liberar a corrida somente após pagamento confirmado e comando Chamar motorista
+- [x] Verificar bloqueio antes do comando e liberação persistente depois: sessão autenticada, corrida temporária com confirmação simulada sem cobrança, comando real e releitura após recarregar; teste removido
 
 ## Concluído — quantidade de pessoas
 - [x] Perguntar quantas pessoas quando o tutor acompanha; salvar ida/volta e mostrar ao motorista
@@ -52,7 +52,7 @@
 
 ## Concluído
 - [x] Criar os relatórios Ganhos Sexta-Feira e Ganhos Segunda-Feira
-- [x] Permitir motorista preferencial com prioridade de 10 minutos após o pagamento
+- [x] Permitir motorista preferencial com prioridade de 10 minutos após Chamar motorista, com pagamento confirmado
 
 - [x] Programa de indicação (cupom 20% tutor, bônus R$ 50 motorista, admin)
 - [x] Relatórios administrativos com valor total das corridas e repasse de 75%
