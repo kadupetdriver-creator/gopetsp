@@ -64,6 +64,13 @@
       "when": 1792542023606,
       "tag": "0008_ride_accompanying_people_count",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792628074344,
+      "tag": "0009_explicit_paid_ride_request",
+      "breakpoints": true
     }
   ]
 }

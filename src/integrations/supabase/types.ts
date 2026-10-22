@@ -764,6 +764,7 @@ export type Database = {
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null
+          driver_requested_at: string | null
           driver_waits: boolean
           has_return: boolean
           id: string
@@ -808,6 +809,7 @@ export type Database = {
           driver_id?: string | null
           driver_lat?: number | null
           driver_lng?: number | null
+          driver_requested_at?: string | null
           driver_waits?: boolean
           has_return?: boolean
           id?: string
@@ -852,6 +854,7 @@ export type Database = {
           driver_id?: string | null
           driver_lat?: number | null
           driver_lng?: number | null
+          driver_requested_at?: string | null
           driver_waits?: boolean
           has_return?: boolean
           id?: string
@@ -991,6 +994,7 @@ export type Database = {
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null
+          driver_requested_at: string | null
           driver_waits: boolean
           has_return: boolean
           id: string
@@ -1096,6 +1100,7 @@ export type Database = {
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null
+          driver_requested_at: string | null
           driver_waits: boolean
           has_return: boolean
           id: string
@@ -1144,6 +1149,10 @@ export type Database = {
       referral_code_valid: { Args: { _code: string }; Returns: boolean }
       refresh_eta_calibration: { Args: { _days?: number }; Returns: number }
       refund_ride_gopet_balance: { Args: { _ride_id: string }; Returns: Json }
+      request_paid_ride_driver: {
+        Args: { _ride_id: string; _tutor_id: string }
+        Returns: string
+      }
       review_driver_application: {
         Args: {
           _driver_id: string
@@ -1235,6 +1244,7 @@ export type Database = {
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null
+          driver_requested_at: string | null
           driver_waits: boolean
           has_return: boolean
           id: string
