@@ -197,7 +197,7 @@ function AuthPage() {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Cada CPF pode ter apenas uma conta GoPet.
+                    Informe o CPF do titular da conta.
                   </p>
                 </div>
                 <div className="space-y-2">
