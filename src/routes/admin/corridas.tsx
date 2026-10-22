@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Download, Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
+import { CalendarClock, CheckCircle2, Download, Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
+import { AdminRescheduleDialog } from "@/components/AdminRescheduleDialog";
+import { canAdminRescheduleRide } from "@/lib/ride-reschedule";
 import { downloadCsvFile } from "@/lib/csv";
 import { toast } from "sonner";
 import { refundRidePayment } from "@/lib/payments.functions";
@@ -98,6 +100,7 @@ function AdminCorridasPage() {
   const refundPayment = useServerFn(refundRidePayment);
   const completeRide = useServerFn(adminCompleteRide);
   const [finishing, setFinishing] = useState<Ride | null>(null);
+  const [rescheduling, setRescheduling] = useState<Ride | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<RideFilter>("todas");
   const [editing, setEditing] = useState<Ride | null>(null);
@@ -284,6 +287,7 @@ function AdminCorridasPage() {
                   </p>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">
+                  {canAdminRescheduleRide(r.status) && <Button size="sm" variant="outline" onClick={() => setRescheduling(r)}><CalendarClock className="mr-2 size-4" /> Alterar data</Button>}
                   {canAdminCompleteRide(r) && (
                     <Button size="sm" variant="outline" onClick={() => setFinishing(r)}>
                       <CheckCircle2 className="mr-2 size-4" /> Finalizar corrida
@@ -335,6 +339,11 @@ function AdminCorridasPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {rescheduling && <AdminRescheduleDialog ride={rescheduling} onClose={() => setRescheduling(null)} onSaved={() => {
+        setRescheduling(null);
+        for (const key of ["admin-rides", "rides", "ride", "ride-payment", "driver-rides", "admin-report"]) void qc.invalidateQueries({ queryKey: [key] });
+      }} />}
 
       {editing && (
         <EditRideDialog

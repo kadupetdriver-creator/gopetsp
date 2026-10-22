@@ -11,6 +11,8 @@
 
 ## Rules
 
+- Administrative rescheduling goes through an authenticated admin-only server function with tutor-request confirmation, São Paulo time parsing, conditional concurrency protection and structured audit logging; update only scheduled_at to preserve price, payment and dispatch state.
+
 - Ride payment and driver dispatch are separate: new outbound/return rows explicitly set driver_requested_at to null; only the owner-authorized service-role request_paid_ride_driver RPC releases paid rides. Restrictive RLS and an assignment trigger enforce the gate independently of frontend; existing rides are grandfathered. Preference priority starts on release, so payment delays do not consume it.
 
 - Ride accompaniment and total accompanying people are stored independently from pricing in the shared outbound/return insert; nullable values preserve unknown on legacy rides and counts are cleared when the tutor does not accompany.
