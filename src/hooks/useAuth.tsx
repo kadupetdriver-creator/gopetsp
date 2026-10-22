@@ -49,8 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
+      if (event === "TOKEN_REFRESHED") return;
       if (newSession?.user) {
         setLoading(true);
         setTimeout(() => void loadProfile(newSession.user.id).finally(() => setLoading(false)), 0);

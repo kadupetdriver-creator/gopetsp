@@ -8,6 +8,8 @@ export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
       { title: "Administração | GoPet" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
       { name: "description", content: "Painel interno de administração da GoPet." },
       { property: "og:title", content: "Administração | GoPet" },
