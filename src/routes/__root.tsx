@@ -16,6 +16,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { DriverLocationSync } from "@/components/DriverLocationSync";
+import { RegistrationGate } from "@/components/RegistrationGate";
 
 function NotFoundComponent() {
   return (
@@ -134,6 +135,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <RegistrationGate>
         <DriverLocationSync />
         <div className="flex min-h-screen flex-col">
           <SiteHeader />
@@ -153,6 +155,7 @@ function RootComponent() {
             </a>
           </footer>
         </div>
+        </RegistrationGate>
         <Toaster position="top-center" richColors />
       </AuthProvider>
     </QueryClientProvider>

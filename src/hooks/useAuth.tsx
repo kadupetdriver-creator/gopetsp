@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { needsGoogleProfileCompletion } from "@/lib/profile-completion";
 
 export type AppRole = "tutor" | "driver";
 
@@ -8,7 +9,7 @@ export type Profile = {
   id: string;
   full_name: string;
   phone: string | null;
-  
+  cpf: string | null;
   city: string;
   role: AppRole;
   vehicle_model: string | null;
@@ -21,6 +22,7 @@ type AuthContextValue = {
   profile: Profile | null;
   isAdmin: boolean;
   loading: boolean;
+  needsProfileCompletion: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -37,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [{ data }, { data: roles }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, full_name, phone, city, role, vehicle_model, vehicle_plate")
+        .select("id, full_name, phone, cpf, city, role, vehicle_model, vehicle_plate")
         .eq("id", userId)
         .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin"),
@@ -50,10 +52,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
       if (newSession?.user) {
-        setTimeout(() => void loadProfile(newSession.user.id), 0);
+        setLoading(true);
+        setTimeout(() => void loadProfile(newSession.user.id).finally(() => setLoading(false)), 0);
       } else {
         setProfile(null);
         setIsAdmin(false);
+        setLoading(false);
       }
     });
 
@@ -72,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     isAdmin,
     loading,
+    needsProfileCompletion: needsGoogleProfileCompletion(session?.user ?? null, profile),
     refreshProfile: async () => {
       if (session?.user) await loadProfile(session.user.id);
     },
