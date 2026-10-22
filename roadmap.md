@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Em andamento — filtro de rendimentos do motorista
+- [ ] Incluir datas inicial e final, totais e histórico do período com bônus
+- [ ] Conferir limites de datas de São Paulo e uso do filtro na tela
+
 ## Concluído — datas e situação dos pagamentos
 - [x] Mostrar data e hora da criação para administradores
 - [x] Usar a data da realização da corrida nos relatórios de pagamento
