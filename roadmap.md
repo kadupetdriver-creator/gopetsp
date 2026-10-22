@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Em andamento — orçamentos administrativos
+- [ ] Separar pedidos sem pagamento aprovado em Orçamentos e incluir somente pagos nas listas e contagens de corridas
+- [ ] Verificar filtros, planilha e atualização após confirmação do pagamento
+
 ## Concluído — reagendamento administrativo
 - [x] Permitir alterar data e horário a pedido do tutor, sem alterar valor ou pagamento
 - [x] Validar acesso administrativo, registrar alteração e verificar persistência pela tela com corrida temporária; teste removido
