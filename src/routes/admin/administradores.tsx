@@ -16,6 +16,8 @@ export const Route = createFileRoute("/admin/administradores")({
   head: () => ({
     meta: [
       { title: "Administradores | GoPet Admin" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
       { name: "description", content: "Gerencie quem tem acesso de administração na GoPet." },
       { property: "og:title", content: "Administradores | GoPet Admin" },

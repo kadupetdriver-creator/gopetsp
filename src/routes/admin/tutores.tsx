@@ -36,6 +36,8 @@ export const Route = createFileRoute("/admin/tutores")({
   head: () => ({
     meta: [
       { title: "Tutores | GoPet Admin" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
       { name: "description", content: "Gerencie os tutores cadastrados na GoPet." },
       { property: "og:title", content: "Tutores | GoPet Admin" },

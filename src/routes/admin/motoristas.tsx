@@ -46,6 +46,8 @@ export const Route = createFileRoute("/admin/motoristas")({
   head: () => ({
     meta: [
       { title: "Motoristas | GoPet Admin" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
       {
         name: "description",

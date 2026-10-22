@@ -45,6 +45,8 @@ export const Route = createFileRoute("/seja-motorista")({
   head: () => ({
     meta: [
       { title: "Seja motorista parceiro | GoPet" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       {
         name: "description",
         content:
