@@ -1,8 +1,8 @@
 # Roadmap — GoPet
 
-## Em andamento — exceção de CPF
-- [ ] Permitir múltiplas contas para o CPF solicitado no cadastro comum e via Google, preservando unicidade dos demais
-- [ ] Verificar a disponibilidade e proteção no banco e executar os testes de cadastro
+## Concluído — exceção de CPF
+- [x] Permitir múltiplas contas para o CPF solicitado no cadastro comum e via Google, preservando unicidade dos demais
+- [x] Regra de disponibilidade, gatilho de cadastro e índice único conferidos no banco; oito testes passaram, sem criar contas adicionais
 
 ## Concluído — filtro de rendimentos do motorista
 - [x] Incluir datas inicial e final, totais e histórico do período com bônus
