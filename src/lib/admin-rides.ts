@@ -1,11 +1,11 @@
 import { isActiveStatus, isUnderwayStatus, type RideStatus } from "./rides";
 import { driverShareCents } from "./pricing";
 
-type AdminRideState = { status: RideStatus; driver_id: string | null; paid_at: string | null };
+type AdminRideState = { status: RideStatus; driver_id: string | null; paid_at: string | null; driver_requested_at?: string | null };
 export type RideFilter = "todas" | "disponiveis" | "aceitas" | "andamento" | "completed" | "cancelled";
 
 export function isAvailableRide(ride: AdminRideState) {
-  return ride.status === "pending" && !ride.driver_id && Boolean(ride.paid_at);
+  return ride.status === "pending" && !ride.driver_id && Boolean(ride.paid_at) && Boolean(ride.driver_requested_at);
 }
 
 export function matchesAdminRideFilter(ride: AdminRideState, filter: RideFilter) {

@@ -87,10 +87,12 @@ type Ride = {
   stops: Stop[] | null;
   notes: string | null;
   arrived_at: string | null;
+  paid_at: string | null;
+  driver_requested_at: string | null;
 };
 
 const RIDE_SELECT =
-  "id, tutor_id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, stops, notes, arrived_at";
+  "id, tutor_id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, stops, notes, arrived_at, paid_at, driver_requested_at";
 
 function RideDetails() {
   const { rideId } = Route.useParams();
@@ -424,6 +426,7 @@ function RideDetails() {
       )}
 
       <div className="mt-6 flex flex-wrap gap-2">
+        {ride.paid_at && !ride.driver_requested_at && ride.status === "pending" && <Button asChild><Link to="/pagamento/$rideId" params={{ rideId: ride.id }}>Chamar motorista</Link></Button>}
         {paymentStatus === "pending" && ride.status !== "cancelled" && (
           <Button asChild className="rounded-full">
             <Link to="/pagamento/$rideId" params={{ rideId: ride.id }}>
@@ -431,7 +434,7 @@ function RideDetails() {
             </Link>
           </Button>
         )}
-        {ride.status !== "cancelled" && (
+        {ride.status !== "cancelled" && ride.paid_at && ride.driver_requested_at && (
           <Button asChild variant="secondary" className="rounded-full">
             <a href={rideWhatsAppUrl(ride)} target="_blank" rel="noopener noreferrer">
               <MessageCircle className="mr-2 size-4" />
