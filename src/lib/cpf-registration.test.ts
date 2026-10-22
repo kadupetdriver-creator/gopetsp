@@ -3,8 +3,8 @@ import { test } from "node:test";
 import { isValidCPF } from "./drivers";
 
 async function cpfRpc(name: string, cpf: string) {
-  const url = process.env.VITE_SUPABASE_URL;
-  const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const url = process.env["VITE_SUPABASE_URL"];
+  const key = process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
   if (!url || !key) throw new Error("Configuração de teste do cadastro indisponível.");
   const response = await fetch(`${url}/rest/v1/rpc/${name}`, {
     method: "POST",
