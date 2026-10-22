@@ -42,9 +42,9 @@ export const Route = createFileRoute("/admin/corridas")({
     meta: [
       { title: "Corridas | GoPet Admin" },
       { name: "robots", content: "noindex" },
-      { name: "description", content: "Acompanhe e edite todas as corridas da GoPet." },
+      { name: "description", content: "Acompanhe corridas com pagamento aprovado e orçamentos pendentes da GoPet." },
       { property: "og:title", content: "Corridas | GoPet Admin" },
-      { property: "og:description", content: "Acompanhe e edite todas as corridas da GoPet." },
+      { property: "og:description", content: "Acompanhe corridas com pagamento aprovado e orçamentos pendentes da GoPet." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -84,6 +84,7 @@ const filterOptions: { value: RideFilter; label: string }[] = [
   { value: "andamento", label: "Em andamento" },
   { value: "completed", label: "Concluídas" },
   { value: "cancelled", label: "Canceladas" },
+  { value: "orcamentos", label: "Orçamentos" },
 ];
 
 const emptyMessages: Record<RideFilter, string> = {
@@ -93,6 +94,7 @@ const emptyMessages: Record<RideFilter, string> = {
   andamento: "Nenhuma corrida em andamento.",
   completed: "Nenhuma corrida concluída.",
   cancelled: "Nenhuma corrida cancelada.",
+  orcamentos: "Nenhum orçamento com pagamento pendente.",
 };
 
 function AdminCorridasPage() {
@@ -108,6 +110,7 @@ function AdminCorridasPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-rides"],
+    refetchInterval: 5000,
     queryFn: async () => {
       const { data: rides, error } = await supabase
         .from("rides")
@@ -173,7 +176,7 @@ function AdminCorridasPage() {
 
   const exportCsv = () => {
     const fmt = (c: number) => (c / 100).toFixed(2).replace(".", ",");
-    downloadCsvFile(`gopet-corridas-${new Date().toISOString().slice(0, 10)}.csv`, [
+    downloadCsvFile(`gopet-${filter === "orcamentos" ? "orcamentos" : "corridas"}-${new Date().toISOString().slice(0, 10)}.csv`, [
       ["ID", "Data agendada", "Pet", "Serviço", "Tutor", "Motorista", "Origem", "Destino", "Distância (km)", "Status", "Pagamento", "Data pagamento", "Valor total (R$)", "Valor motorista 75% (R$)"],
       ...list.map((r) => {
         const a = adminRideAmounts(r.price_cents);
@@ -187,11 +190,11 @@ function AdminCorridasPage() {
           r.origin_address,
           r.destination_address,
           String(r.distance_km).replace(".", ","),
-          statusLabels[r.status],
+          r.paid_at ? statusLabels[r.status] : (r.status === "cancelled" ? "Orçamento cancelado" : "Orçamento"),
           r.paid_at ? "Aprovado" : "Pendente",
           r.paid_at ? formatDateTime(r.paid_at) : "",
           fmt(a.totalCents),
-          fmt(a.driverCents),
+          r.paid_at ? fmt(a.driverCents) : "",
         ];
       }),
     ]);
@@ -199,7 +202,7 @@ function AdminCorridasPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -265,8 +268,8 @@ function AdminCorridasPage() {
                       {r.driver_id ? (names.get(r.driver_id) ?? "—") : "não atribuído"}
                     </p>
                   </div>
-                  <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", statusStyles[r.status])}>
-                    {statusLabels[r.status]}
+          <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", r.paid_at ? statusStyles[r.status] : "bg-secondary text-muted-foreground")}>
+                    {r.paid_at ? statusLabels[r.status] : (r.status === "cancelled" ? "Orçamento cancelado" : "Orçamento")}
                   </span>
                 </div>
                 {isAvailableRide(r) && r.preferred_until && new Date(r.preferred_until) > new Date() && (
@@ -281,7 +284,7 @@ function AdminCorridasPage() {
                   {formatSaoPauloSchedule(r.scheduled_at)} · Valor total: <strong>{formatBRL(adminRideAmounts(r.price_cents).totalCents)}</strong> · {r.distance_km} km
                   <span className="ml-2 text-xs text-muted-foreground">{pay}</span>
                 </p>
-                {(r.driver_id || isAvailableRide(r)) && (
+                {r.paid_at && (r.driver_id || isAvailableRide(r)) && (
                   <p className="text-sm text-muted-foreground">
                     Valor ao motorista (75%): <strong className="text-foreground">{formatBRL(adminRideAmounts(r.price_cents).driverCents)}</strong>
                   </p>
@@ -293,10 +296,10 @@ function AdminCorridasPage() {
                       <CheckCircle2 className="mr-2 size-4" /> Finalizar corrida
                     </Button>
                   )}
-                  <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
+                  {r.paid_at && <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
                     <Pencil className="mr-2 size-4" /> Editar
-                  </Button>
-                  {activeGroup.includes(r.status) && r.status !== "in_progress" && (
+                  </Button>}
+                  {r.paid_at && r.driver_requested_at && activeGroup.includes(r.status) && r.status !== "in_progress" && (
                     <Button size="sm" onClick={() => setForwarding(r)}>
                       <Send className="mr-2 size-4" /> Encaminhar a motorista
                     </Button>
@@ -308,10 +311,10 @@ function AdminCorridasPage() {
                       className="text-destructive"
                       disabled={cancel.isPending}
                       onClick={() => {
-                        if (window.confirm("Cancelar esta corrida manualmente?")) cancel.mutate(r.id);
+                        if (window.confirm(r.paid_at ? "Cancelar esta corrida manualmente?" : "Cancelar este orçamento?")) cancel.mutate(r.id);
                       }}
                     >
-                      <XCircle className="mr-2 size-4" /> Cancelar corrida
+                      <XCircle className="mr-2 size-4" /> {r.paid_at ? "Cancelar corrida" : "Cancelar orçamento"}
                     </Button>
                   )}
                 </div>

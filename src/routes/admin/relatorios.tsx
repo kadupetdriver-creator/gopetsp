@@ -141,13 +141,13 @@ function AdminRelatoriosPage() {
 
   const tutorOptions = useMemo(() => {
     const map = new Map<string, string>();
-    for (const r of [...(data?.rides ?? []), ...(weeklyData?.rides ?? [])]) map.set(r.tutorId, r.tutorName);
+    for (const r of [...(data?.rides ?? []), ...(weeklyData?.rides ?? [])]) if (r.paidAt) map.set(r.tutorId, r.tutorName);
     return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
   }, [data, weeklyData]);
 
   const driverOptions = useMemo(() => {
     const map = new Map<string, string>();
-    for (const r of [...(data?.rides ?? []), ...(weeklyData?.rides ?? [])]) if (r.driverId && r.driverName) map.set(r.driverId, r.driverName);
+    for (const r of [...(data?.rides ?? []), ...(weeklyData?.rides ?? [])]) if (r.paidAt && r.driverId && r.driverName) map.set(r.driverId, r.driverName);
     return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
   }, [data, weeklyData]);
 
@@ -155,6 +155,7 @@ function AdminRelatoriosPage() {
     () =>
       (data?.rides ?? []).filter(
         (r) =>
+          Boolean(r.paidAt) &&
           (tutorId === "all" || r.tutorId === tutorId) &&
           (driverId === "all" || r.driverId === driverId),
       ),
@@ -183,6 +184,7 @@ function AdminRelatoriosPage() {
     () =>
       (weeklyData?.rides ?? []).filter(
         (r) =>
+          Boolean(r.paidAt) &&
           (tutorId === "all" || r.tutorId === tutorId) &&
           (driverId === "all" || r.driverId === driverId),
       ),
