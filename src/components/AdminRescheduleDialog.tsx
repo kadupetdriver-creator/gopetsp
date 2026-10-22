@@ -4,8 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { CalendarClock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { adminRescheduleRide } from "@/lib/admin-rides.functions";
-import { saoPauloScheduleInput } from "@/lib/ride-reschedule";
-import { formatDateTime } from "@/lib/rides";
+import { formatSaoPauloSchedule, saoPauloScheduleInput } from "@/lib/ride-reschedule";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,7 +24,7 @@ export function AdminRescheduleDialog({ ride, onClose, onSaved }: {
   });
   return <Dialog open onOpenChange={(open) => { if (!open && !save.isPending) onClose(); }}>
     <DialogContent>
-      <DialogHeader><DialogTitle>Alterar data da corrida</DialogTitle><DialogDescription>{ride.pet_name} · Agendamento atual: {formatDateTime(ride.scheduled_at)}</DialogDescription></DialogHeader>
+      <DialogHeader><DialogTitle>Alterar data da corrida</DialogTitle><DialogDescription>{ride.pet_name} · Agendamento atual: {formatSaoPauloSchedule(ride.scheduled_at)}</DialogDescription></DialogHeader>
       <div className="space-y-4">
         <div className="space-y-2"><label htmlFor="reschedule-date" className="text-sm font-medium">Nova data e horário (São Paulo)</label><Input id="reschedule-date" type="datetime-local" value={scheduledAt} disabled={save.isPending} onChange={(e) => setScheduledAt(e.target.value)} required /></div>
         <div className="flex items-center gap-2"><Checkbox id="tutor-requested-reschedule" checked={tutorRequested} disabled={save.isPending} onCheckedChange={(value) => setTutorRequested(value === true)} /><label htmlFor="tutor-requested-reschedule" className="text-sm">O tutor solicitou esta alteração</label></div>

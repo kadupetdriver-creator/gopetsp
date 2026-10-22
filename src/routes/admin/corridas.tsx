@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, CheckCircle2, Download, Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
 import { AdminRescheduleDialog } from "@/components/AdminRescheduleDialog";
-import { canAdminRescheduleRide } from "@/lib/ride-reschedule";
+import { canAdminRescheduleRide, formatSaoPauloSchedule } from "@/lib/ride-reschedule";
 import { downloadCsvFile } from "@/lib/csv";
 import { toast } from "sonner";
 import { refundRidePayment } from "@/lib/payments.functions";
@@ -179,7 +179,7 @@ function AdminCorridasPage() {
         const a = adminRideAmounts(r.price_cents);
         return [
           r.id,
-          formatDateTime(r.scheduled_at),
+          formatSaoPauloSchedule(r.scheduled_at),
           r.pet_name,
           serviceTypes.find((s) => s.value === r.service_type)?.label ?? r.service_type,
           names.get(r.tutor_id) ?? "",
@@ -278,7 +278,7 @@ function AdminCorridasPage() {
                   {r.origin_address} → {r.destination_address}
                 </p>
                 <p className="text-sm">
-                  {formatDateTime(r.scheduled_at)} · Valor total: <strong>{formatBRL(adminRideAmounts(r.price_cents).totalCents)}</strong> · {r.distance_km} km
+                  {formatSaoPauloSchedule(r.scheduled_at)} · Valor total: <strong>{formatBRL(adminRideAmounts(r.price_cents).totalCents)}</strong> · {r.distance_km} km
                   <span className="ml-2 text-xs text-muted-foreground">{pay}</span>
                 </p>
                 {(r.driver_id || isAvailableRide(r)) && (
@@ -464,7 +464,7 @@ function EditRideDialog({
             <p>
               <strong>Valor:</strong> {formatBRL(ride.price_cents)} · <strong>Tutor:</strong>{" "}
               {people.find((p) => p.id === ride.tutor_id)?.full_name ?? "—"} · <strong>Data:</strong>{" "}
-              {formatDateTime(ride.scheduled_at)}
+              {formatSaoPauloSchedule(ride.scheduled_at)}
             </p>
             <p className="mt-1">
               Valor e pagamento não são editáveis aqui. Reembolsos seguem pelo cancelamento da corrida.
@@ -548,7 +548,7 @@ function ForwardRideDialog({
             </Select>
           </Field>
           <div className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
-            {formatDateTime(ride.scheduled_at)} · {ride.pet_name} · {ride.origin_address} → {ride.destination_address}
+            {formatSaoPauloSchedule(ride.scheduled_at)} · {ride.pet_name} · {ride.origin_address} → {ride.destination_address}
           </div>
         </div>
         <DialogFooter>

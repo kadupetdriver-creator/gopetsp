@@ -1,8 +1,8 @@
 # Roadmap — GoPet
 
-## Em andamento — reagendamento administrativo
-- [ ] Permitir alterar data e horário a pedido do tutor, sem alterar valor ou pagamento
-- [ ] Validar acesso administrativo, registrar alteração e verificar persistência pela tela
+## Concluído — reagendamento administrativo
+- [x] Permitir alterar data e horário a pedido do tutor, sem alterar valor ou pagamento
+- [x] Validar acesso administrativo, registrar alteração e verificar persistência pela tela com corrida temporária; teste removido
 
 ## Concluído — chamar após pagar
 - [x] Trocar o botão do pedido para Ir para pagamento
