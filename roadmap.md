@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Em andamento — encaminhamento administrativo de corridas pagas
+- [ ] Mostrar corridas pagas sem motorista em Disponíveis, mesmo antes do comando do tutor
+- [ ] Permitir encaminhamento administrativo protegido, inclusive em branco, e verificar pela tela sem alterar pagamentos
+
 ## Concluído — orçamentos administrativos
 - [x] Separar pedidos sem pagamento aprovado em Orçamentos e incluir somente pagos nas listas e contagens de corridas, relatórios e mapa
 - [x] Conferir com sessão administrativa real: 67 corridas pagas e 51 orçamentos separados, planilhas correspondentes e persistência após recarregar; testes validam mudança de categoria após aprovação, sem nova cobrança real
