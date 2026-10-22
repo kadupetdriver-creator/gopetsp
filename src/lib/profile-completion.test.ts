@@ -18,6 +18,8 @@ test("Google exige e-mail válido antes de acessar o app", () => {
   assert.throws(() => parseCompletion({ ...profile, email: "sem-email" }));
 });
 test("Google completo pode acessar; perfil ausente bloqueia e login por senha não é alterado", () => {
+  assert.equal(needsGoogleProfileCompletion({ email: user.email, app_metadata: null }, null), false);
+  assert.equal(needsGoogleProfileCompletion(null, null), false);
   assert.equal(needsGoogleProfileCompletion(user, profile), false);
   assert.equal(needsGoogleProfileCompletion(user, null), true);
   assert.equal(needsGoogleProfileCompletion({ ...user, app_metadata: { provider: "email" } }, null), false);

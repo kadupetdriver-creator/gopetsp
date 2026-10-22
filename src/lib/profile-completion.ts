@@ -5,10 +5,10 @@ export function validRegistrationEmail(value: string | null | undefined) {
 }
 
 export function needsGoogleProfileCompletion(
-  user: { email?: string; app_metadata: { provider?: string; providers?: string[] } } | null,
+  user: { email?: string; app_metadata: { provider?: string; providers?: string[] } | null } | null,
   profile: { cpf?: string | null; phone?: string | null } | null,
 ) {
-  const google = user?.app_metadata.provider === "google" || user?.app_metadata.providers?.includes("google");
+  const google = user?.app_metadata?.provider === "google" || user?.app_metadata?.providers?.includes("google");
   return !!google && (!profile || !isValidCPF(profile.cpf ?? "") || !isValidPhone(profile.phone ?? "") || !validRegistrationEmail(user?.email));
 }
 
