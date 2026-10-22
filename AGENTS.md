@@ -11,6 +11,8 @@
 
 ## Rules
 
+- Driver ride payments use owner/admin-read-only `driver_ride_payments`, written only by an authenticated admin server function after completion, with unique ride records and audit logs; tutor `paid_at` never proves driver payment. Shared `driver-payments.ts` groups report rides by scheduled_at and computes São Paulo payment dates, keeping creation and payment timestamps separate.
+
 - Google registration completion is enforced by a shared root gate before app views mount; CPF and phone are loaded only for the current user, email comes from the authenticated identity, and a narrow owner-authorized server function saves registration fields with immutable existing CPF and database uniqueness protection.
 
 - Administrative rescheduling goes through an authenticated admin-only server function with tutor-request confirmation, São Paulo time parsing, conditional concurrency protection and structured audit logging; update only scheduled_at to preserve price, payment and dispatch state.

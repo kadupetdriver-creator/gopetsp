@@ -1,9 +1,10 @@
 # Roadmap — GoPet
 
-## Em andamento — datas e situação dos pagamentos
-- [ ] Mostrar data e hora da criação para administradores
-- [ ] Usar a data da realização da corrida nos relatórios de pagamento
-- [ ] Mostrar pagas em verde com data e a pagar em amarelo com previsão; confirmar qual pagamento deve ser considerado
+## Concluído — datas e situação dos pagamentos
+- [x] Mostrar data e hora da criação para administradores
+- [x] Usar a data da realização da corrida nos relatórios de pagamento
+- [x] Mostrar pagamentos ao motorista em verde com data e a pagar em amarelo com previsão na sexta ou segunda
+- [x] Registro administrativo conferido com corrida temporária: previsão, mudança de cor, data salva e persistência após recarregar; tela pequena sem transbordamento, quinze testes passaram e dados temporários removidos
 
 ## Concluído — cadastro via Google
 - [x] Exigir CPF, telefone e e-mail válidos antes de liberar o app após login com Google

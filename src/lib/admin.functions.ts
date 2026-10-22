@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { reportDayBoundary } from "./driver-payments";
 
 type Ctx = { supabase: any; userId: string };
 
@@ -289,6 +290,8 @@ export type AdminReportRide = {
   id: string;
   createdAt: string;
   paidAt: string | null;
+  driverPaidAt: string | null;
+  driverPaidCents: number | null;
   scheduledAt: string;
   status: string;
   priceCents: number;
@@ -321,15 +324,11 @@ export type AdminReport = {
 };
 
 function startOfDayIso(dateIso: string) {
-  const d = new Date(dateIso);
-  d.setUTCHours(0, 0, 0, 0);
-  return d.toISOString();
+  return reportDayBoundary(dateIso);
 }
 
 function endOfDayIso(dateIso: string) {
-  const d = new Date(dateIso);
-  d.setUTCHours(23, 59, 59, 999);
-  return d.toISOString();
+  return reportDayBoundary(dateIso, true);
 }
 
 /** Relatório consolidado de corridas, bônus e descontos (somente admin). */
@@ -351,7 +350,7 @@ export const adminGetReport = createServerFn({ method: "POST" })
     let ridesQuery = supabaseAdmin
       .from("rides")
       .select("id, created_at, scheduled_at, status, price_cents, tutor_id, driver_id, paid_at")
-      .order("created_at", { ascending: false })
+      .order("scheduled_at", { ascending: false })
       .limit(500);
 
     let txsQuery = supabaseAdmin
@@ -364,12 +363,12 @@ export const adminGetReport = createServerFn({ method: "POST" })
 
     if (data.startDate) {
       const from = startOfDayIso(data.startDate);
-      ridesQuery = ridesQuery.gte("created_at", from);
+      ridesQuery = ridesQuery.gte("scheduled_at", from);
       txsQuery = txsQuery.gte("created_at", from);
     }
     if (data.endDate) {
       const to = endOfDayIso(data.endDate);
-      ridesQuery = ridesQuery.lte("created_at", to);
+      ridesQuery = ridesQuery.lte("scheduled_at", to);
       txsQuery = txsQuery.lte("created_at", to);
     }
 
@@ -380,6 +379,11 @@ export const adminGetReport = createServerFn({ method: "POST" })
     ]);
     if (ridesErr) throw new Error(ridesErr.message);
     if (txErr) throw new Error(txErr.message);
+    const { data: driverPayments, error: driverPaymentsError } = rides?.length
+      ? await context.supabase.from("driver_ride_payments").select("ride_id, paid_at, amount_cents").in("ride_id", rides.map((r) => r.id))
+      : { data: [], error: null };
+    if (driverPaymentsError) throw new Error("Não foi possível consultar os pagamentos aos motoristas.");
+    const paymentsByRide = new Map((driverPayments ?? []).map((p) => [p.ride_id, p]));
 
     const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
     const nameOf = (id: string | null) => (id ? (byId.get(id)?.full_name || "Sem nome") : null);
@@ -389,6 +393,8 @@ export const adminGetReport = createServerFn({ method: "POST" })
         id: r.id,
         createdAt: r.created_at,
         paidAt: r.paid_at,
+        driverPaidAt: paymentsByRide.get(r.id)?.paid_at ?? null,
+        driverPaidCents: paymentsByRide.get(r.id)?.amount_cents ?? null,
         scheduledAt: r.scheduled_at,
         status: r.status,
         priceCents: r.price_cents,
