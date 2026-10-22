@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 export const driverPaymentRowClass = (paidAt: string | null | undefined) => paidAt ? "border-l-4 border-l-success bg-success/10" : "border-l-4 border-l-warning bg-warning/10";
 
 export function DriverPaymentStatus({ rideId, scheduledAt, paidAt, amountCents, admin = false, completed = false }: {
-  rideId: string; scheduledAt: string; paidAt?: string | null; amountCents: number; admin?: boolean; completed?: boolean;
+  rideId: string; scheduledAt: string; paidAt?: string | null | undefined; amountCents: number; admin?: boolean; completed?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState("");
