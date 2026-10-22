@@ -177,11 +177,12 @@ function AdminCorridasPage() {
   const exportCsv = () => {
     const fmt = (c: number) => (c / 100).toFixed(2).replace(".", ",");
     downloadCsvFile(`gopet-${filter === "orcamentos" ? "orcamentos" : "corridas"}-${new Date().toISOString().slice(0, 10)}.csv`, [
-      ["ID", "Data agendada", "Pet", "Serviço", "Tutor", "Motorista", "Origem", "Destino", "Distância (km)", "Status", "Pagamento", "Data pagamento", "Valor total (R$)", "Valor motorista 75% (R$)"],
+      ["ID", "Data criação", "Data agendada", "Pet", "Serviço", "Tutor", "Motorista", "Origem", "Destino", "Distância (km)", "Status", "Pagamento", "Data pagamento", "Valor total (R$)", "Valor motorista 75% (R$)"],
       ...list.map((r) => {
         const a = adminRideAmounts(r.price_cents);
         return [
           r.id,
+          formatSaoPauloSchedule(r.created_at),
           formatSaoPauloSchedule(r.scheduled_at),
           r.pet_name,
           serviceTypes.find((s) => s.value === r.service_type)?.label ?? r.service_type,
@@ -284,6 +285,7 @@ function AdminCorridasPage() {
                   {formatSaoPauloSchedule(r.scheduled_at)} · Valor total: <strong>{formatBRL(adminRideAmounts(r.price_cents).totalCents)}</strong> · {r.distance_km} km
                   <span className="ml-2 text-xs text-muted-foreground">{pay}</span>
                 </p>
+                <p className="text-xs text-muted-foreground">Criada em {formatSaoPauloSchedule(r.created_at)}</p>
                 {r.paid_at && (r.driver_id || isAvailableRide(r)) && (
                   <p className="text-sm text-muted-foreground">
                     Valor ao motorista (75%): <strong className="text-foreground">{formatBRL(adminRideAmounts(r.price_cents).driverCents)}</strong>

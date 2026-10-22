@@ -9,6 +9,9 @@ import { adminGetReport, type AdminReportEntry } from "@/lib/admin.functions";
 import { refreshEtaCalibration } from "@/lib/eta.functions";
 import { formatBRL, formatDateTime, statusLabels, type RideStatus } from "@/lib/rides";
 import { driverShareCents } from "@/lib/pricing";
+import { rideOccursWithin } from "@/lib/driver-payments";
+import { formatSaoPauloSchedule } from "@/lib/ride-reschedule";
+import { DriverPaymentStatus, driverPaymentRowClass } from "@/components/DriverPaymentStatus";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -100,8 +103,7 @@ function latestCompletedEarningsPeriods(now = new Date()) {
 function paidWithin(rides: ReportRide[], start: Date, end: Date) {
   return rides.filter((ride) => {
     if (!ride.paidAt) return false;
-    const paidAt = new Date(ride.paidAt).getTime();
-    return paidAt >= start.getTime() && paidAt <= end.getTime();
+    return rideOccursWithin(ride.scheduledAt, start, end);
   });
 }
 
@@ -128,8 +130,8 @@ function AdminRelatoriosPage() {
     queryFn: () =>
       getReport({
         data: {
-          startDate: startDate ? startDate.toISOString() : null,
-          endDate: endDate ? endDate.toISOString() : null,
+          startDate: startDate ? `${format(startDate, "yyyy-MM-dd")}T12:00:00-03:00` : null,
+          endDate: endDate ? `${format(endDate, "yyyy-MM-dd")}T12:00:00-03:00` : null,
         },
       }),
   });
@@ -285,7 +287,7 @@ function AdminRelatoriosPage() {
             <TabsContent value="corridas" className="mt-4 space-y-3">
               {rides.length === 0 && <EmptyState text="Nenhuma corrida encontrada." />}
               {rides.map((r) => (
-                <Card key={r.id} className="shadow-soft">
+                <Card key={r.id} className={cn("shadow-soft", r.driverId && r.status !== "cancelled" && driverPaymentRowClass(r.driverPaidAt))}>
                   <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
                     <div className="min-w-0">
                       <p className="font-semibold">
@@ -293,9 +295,10 @@ function AdminRelatoriosPage() {
                         <span className="text-muted-foreground"> · {r.driverName ?? "sem motorista"}</span>
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {formatDateTime(r.scheduledAt)} · {statusLabels[r.status as RideStatus] ?? r.status}
-                        {r.paymentStatus ? ` · pagamento ${r.paymentStatus}` : ""}
+                        Viagem: {formatSaoPauloSchedule(r.scheduledAt)} · {statusLabels[r.status as RideStatus] ?? r.status}
                       </p>
+                      <p className="text-xs text-muted-foreground">Criada em {formatSaoPauloSchedule(r.createdAt)} · Tutor pagou em {r.paidAt ? formatSaoPauloSchedule(r.paidAt) : "—"}</p>
+                      {r.driverId && r.status !== "cancelled" && <DriverPaymentStatus rideId={r.id} scheduledAt={r.scheduledAt} paidAt={r.driverPaidAt} amountCents={r.driverPaidCents ?? driverShareCents(r.priceCents)} admin completed={r.status === "completed"} />}
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">{formatBRL(r.priceCents)}</p>
@@ -399,12 +402,13 @@ function EarningsReport({
             </div>
           ))}
           {rides.map((ride) => (
-            <div key={ride.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+            <div key={ride.id} className={cn("flex flex-wrap items-center justify-between gap-3 px-3 py-3 text-sm", ride.driverId && ride.status !== "cancelled" && driverPaymentRowClass(ride.driverPaidAt))}>
               <div className="min-w-0">
                 <p className="truncate font-medium">{ride.tutorName}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {ride.driverName ?? "Sem motorista"} · pago em {ride.paidAt ? formatDateTime(ride.paidAt) : "—"}
+                <p className="text-xs text-muted-foreground">
+                  {ride.driverName ?? "Sem motorista"} · Viagem: {formatSaoPauloSchedule(ride.scheduledAt)}
                 </p>
+                {ride.driverId && ride.status !== "cancelled" && <DriverPaymentStatus rideId={ride.id} scheduledAt={ride.scheduledAt} paidAt={ride.driverPaidAt} amountCents={ride.driverPaidCents ?? driverShareCents(ride.priceCents)} admin completed={ride.status === "completed"} />}
               </div>
               <div className="shrink-0 text-right">
                 <p className="font-semibold">{formatBRL(ride.priceCents)}</p>

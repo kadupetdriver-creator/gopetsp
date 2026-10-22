@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { driverShareCents } from "@/lib/pricing";
 import { tutorAccompanimentLabel } from "@/lib/ride-accompaniment";
+import { rideOccursWithin } from "@/lib/driver-payments";
+import { DriverPaymentStatus, driverPaymentRowClass } from "@/components/DriverPaymentStatus";
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -153,8 +155,7 @@ function latestCompletedEarningsPeriods(now = new Date()) {
 function paidWithin(rides: Ride[], start: Date, end: Date) {
   return rides.filter((ride) => {
     if (!ride.paid_at) return false;
-    const paidAt = new Date(ride.paid_at).getTime();
-    return paidAt >= start.getTime() && paidAt <= end.getTime();
+    return rideOccursWithin(ride.scheduled_at, start, end);
   });
 }
 
@@ -206,6 +207,18 @@ function MotoristaPage() {
   });
 
   const approved = profile?.role === "driver" && application?.status === "aprovado";
+  const { data: driverPayments } = useQuery({
+    queryKey: ["driver-ride-payments", user?.id],
+    enabled: Boolean(user && approved),
+    refetchInterval: 15000,
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase.from("driver_ride_payments").select("ride_id, paid_at, amount_cents").eq("driver_id", user.id);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const paymentsByRide = Object.fromEntries((driverPayments ?? []).map((p) => [p.ride_id, p.paid_at]));
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth", search: { papel: "motorista" } });
@@ -602,8 +615,8 @@ function MotoristaPage() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <DriverEarningsReport period={earningsPeriods.friday} rides={fridayEarnings} tutorNames={tutorNames} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.friday.start, earningsPeriods.friday.end)} />
-            <DriverEarningsReport period={earningsPeriods.monday} rides={mondayEarnings} tutorNames={tutorNames} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.monday.start, earningsPeriods.monday.end)} />
+            <DriverEarningsReport period={earningsPeriods.friday} rides={fridayEarnings} paymentsByRide={paymentsByRide} tutorNames={tutorNames} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.friday.start, earningsPeriods.friday.end)} />
+            <DriverEarningsReport period={earningsPeriods.monday} rides={mondayEarnings} paymentsByRide={paymentsByRide} tutorNames={tutorNames} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.monday.start, earningsPeriods.monday.end)} />
           </div>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Histórico</h2>
@@ -616,7 +629,7 @@ function MotoristaPage() {
               .filter((r) => r.status === "completed" || r.status === "cancelled")
               .sort((a, b) => b.scheduled_at.localeCompare(a.scheduled_at))
               .map((ride) => (
-                <Card key={ride.id} className="shadow-soft">
+                <Card key={ride.id} className={cn("shadow-soft", ride.status === "completed" && driverPaymentRowClass(paymentsByRide[ride.id]))}>
                   <CardContent className="space-y-5 py-4 text-sm">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
@@ -630,6 +643,7 @@ function MotoristaPage() {
                           <p className="break-words text-sm text-muted-foreground">Tutor: {tutorNames[ride.id]}</p>
                         )}
                         <p className="text-sm text-muted-foreground">{tutorAccompanimentLabel(ride.tutor_accompanies_pet, ride.accompanying_people_count)}</p>
+                        {ride.status === "completed" && <DriverPaymentStatus rideId={ride.id} scheduledAt={ride.scheduled_at} paidAt={paymentsByRide[ride.id]} amountCents={driverValueOf(ride)} completed />}
                         <p className="text-muted-foreground">
                           {ride.origin_address}
                           {(ride.stops ?? []).map((stop, i) => (
@@ -910,11 +924,13 @@ function DriverEarningsReport({
   rides,
   bonuses = [],
   tutorNames = {},
+  paymentsByRide = {},
 }: {
   period: { title: string; subtitle: string; start: Date; end: Date };
   rides: Ride[];
   bonuses?: DriverBonus[];
   tutorNames?: Record<string, string>;
+  paymentsByRide?: Record<string, string>;
 }) {
   const ridesTotal = rides.reduce((sum, ride) => sum + driverValueOf(ride), 0);
   const bonusTotal = bonuses.reduce((sum, b) => sum + b.amount_cents, 0);
@@ -961,15 +977,16 @@ function DriverEarningsReport({
             </div>
           ))}
           {rides.map((ride) => (
-            <div key={ride.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+            <div key={ride.id} className={cn("flex flex-wrap items-center justify-between gap-3 px-3 py-3 text-sm", driverPaymentRowClass(paymentsByRide[ride.id]))}>
               <div className="min-w-0">
                 <p className="truncate font-medium">{ride.pet_name}</p>
                 {tutorNames[ride.id] && (
                   <p className="break-words text-xs text-muted-foreground">Tutor: {tutorNames[ride.id]}</p>
                 )}
                 <p className="truncate text-xs text-muted-foreground">
-                  paga em {ride.paid_at ? formatDateTime(ride.paid_at) : "—"}
+                  Viagem: {formatDateTime(ride.scheduled_at)}
                 </p>
+                <DriverPaymentStatus rideId={ride.id} scheduledAt={ride.scheduled_at} paidAt={paymentsByRide[ride.id]} amountCents={driverValueOf(ride)} completed />
               </div>
               <p className="shrink-0 font-semibold">{formatBRL(driverValueOf(ride))}</p>
             </div>
