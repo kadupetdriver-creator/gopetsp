@@ -71,6 +71,13 @@
       "when": 1792628074344,
       "tag": "0009_explicit_paid_ride_request",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792710124716,
+      "tag": "0010_driver_ride_payment_records",
+      "breakpoints": true
     }
   ]
 }

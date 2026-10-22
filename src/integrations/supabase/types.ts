@@ -138,6 +138,58 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_ride_payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          driver_id: string
+          id: string
+          paid_at: string
+          recorded_by: string
+          ride_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          driver_id: string
+          id?: string
+          paid_at: string
+          recorded_by: string
+          ride_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          driver_id?: string
+          id?: string
+          paid_at?: string
+          recorded_by?: string
+          ride_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_ride_payments_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_ride_payments_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_ride_payments_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: true
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drivers: {
         Row: {
           avatar_path: string | null
