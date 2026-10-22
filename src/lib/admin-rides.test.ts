@@ -13,7 +13,8 @@ test("Aceitas não duplica corridas A caminho ou Em andamento", () => {
 });
 
 test("Disponíveis mostram valor total e parcela de 75% sem motorista atribuído", () => {
-  assert.equal(matchesAdminRideFilter({ status: "pending", driver_id: null, paid_at: "2026-10-18" }, "disponiveis"), true);
+  assert.equal(matchesAdminRideFilter({ status: "pending", driver_id: null, paid_at: "2026-10-18", driver_requested_at: "2026-10-18" }, "disponiveis"), true);
+  assert.equal(matchesAdminRideFilter({ status: "pending", driver_id: null, paid_at: "2026-10-18", driver_requested_at: null }, "disponiveis"), false);
   assert.deepEqual(adminRideAmounts(10000), { totalCents: 10000, driverCents: 7500 });
 });
 

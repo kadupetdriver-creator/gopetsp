@@ -285,6 +285,7 @@ export const createRide = createServerFn({ method: "POST" })
 
       const baseRow = {
         tutor_id: context.userId,
+        driver_requested_at: null,
         pet_id: orderedPets[0]?.id ?? null,
         pet_name: orderedPets.map((p) => p.name).join(", "),
         pet_size: price.groupSize,

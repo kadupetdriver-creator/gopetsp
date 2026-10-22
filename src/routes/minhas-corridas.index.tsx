@@ -72,6 +72,7 @@ type Ride = {
   destination_lat: number | null;
   destination_lng: number | null;
   paid_at: string | null;
+  driver_requested_at: string | null;
 };
 
 function MinhasCorridas() {
@@ -89,7 +90,7 @@ function MinhasCorridas() {
       const { data, error } = await supabase
         .from("rides")
         .select(
-          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, paid_at",
+          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, paid_at, driver_requested_at",
         )
         .eq("tutor_id", user.id)
         .order("scheduled_at", { ascending: false });
@@ -224,6 +225,7 @@ function MinhasCorridas() {
                       </Link>
                     </Button>
                   )}
+                {ride.paid_at && !ride.driver_requested_at && ride.status === "pending" && <Button asChild size="sm"><Link to="/pagamento/$rideId" params={{ rideId: ride.id }}>Chamar motorista</Link></Button>}
               </div>
 
               {ride.driver_id && <RideDriverIdentity rideId={ride.id} />}

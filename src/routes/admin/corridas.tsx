@@ -67,6 +67,7 @@ type Ride = {
   status: RideStatus;
   created_at: string;
   paid_at: string | null;
+  driver_requested_at: string | null;
 };
 
 type Person = { id: string; full_name: string; role: "tutor" | "driver" };
@@ -108,7 +109,7 @@ function AdminCorridasPage() {
       const { data: rides, error } = await supabase
         .from("rides")
         .select(
-          "id, tutor_id, driver_id, preferred_driver_id, preferred_until, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, distance_km, status, created_at, paid_at",
+          "id, tutor_id, driver_id, preferred_driver_id, preferred_until, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, distance_km, status, created_at, paid_at, driver_requested_at",
         )
         .order("scheduled_at", { ascending: false });
       if (error) throw error;

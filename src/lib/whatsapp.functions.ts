@@ -19,12 +19,13 @@ export const dispatchRideToCentral = createServerFn({ method: "POST" })
     const { data: ride, error } = await supabase
       .from("rides")
       .select(
-        "id, tutor_id, pet_name, pet_size, service_type, origin_address, destination_address, scheduled_at, distance_km, price_cents, notes, status",
+        "id, tutor_id, pet_name, pet_size, service_type, origin_address, destination_address, scheduled_at, distance_km, price_cents, notes, status, paid_at, driver_requested_at",
       )
       .eq("id", data.rideId)
       .single();
     if (error || !ride) throw new Error("Corrida não encontrada");
     if (ride.tutor_id !== userId) throw new Error("Sem permissão para esta corrida");
+    if (!ride.paid_at || !ride.driver_requested_at) throw new Error("Confirme o pagamento e chame o motorista antes de enviar a corrida.");
 
     const { data: profile } = await supabase
       .from("profiles")

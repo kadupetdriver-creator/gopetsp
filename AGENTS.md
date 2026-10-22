@@ -11,6 +11,8 @@
 
 ## Rules
 
+- Ride payment and driver dispatch are separate: new outbound/return rows explicitly set driver_requested_at to null; only the owner-authorized service-role request_paid_ride_driver RPC releases paid rides. Restrictive RLS and an assignment trigger enforce the gate independently of frontend; existing rides are grandfathered. Preference priority starts on release, so payment delays do not consume it.
+
 - Ride accompaniment and total accompanying people are stored independently from pricing in the shared outbound/return insert; nullable values preserve unknown on legacy rides and counts are cleared when the tutor does not accompany.
 
 - Driver-facing tutor names must come only from the assignment-scoped ride_tutor_names RPC, never a broad profiles query, so unassigned drivers cannot read tutor identities.

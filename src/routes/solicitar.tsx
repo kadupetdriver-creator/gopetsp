@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { dispatchRideToCentral } from "@/lib/whatsapp.functions";
 import { createRide, getPreferredDrivers, quoteRide } from "@/lib/rides.functions";
 
 
@@ -181,7 +180,6 @@ function SolicitarPage() {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const dispatchRide = useServerFn(dispatchRideToCentral);
   const fetchQuote = useServerFn(quoteRide);
   const submitRide = useServerFn(createRide);
   const fetchPreferredDrivers = useServerFn(getPreferredDrivers);
@@ -432,12 +430,8 @@ function SolicitarPage() {
       toast.success(
         returnRideId
           ? "Criamos duas corridas: ida e volta. Agora é só pagar a corrida de ida."
-          : "Chamada criada! Agora é só realizar o pagamento.",
+          : "Pedido criado. Continue para o pagamento.",
       );
-      // Envia automaticamente o arquivo/resumo da corrida para a central no WhatsApp.
-      for (const id of [rideId, returnRideId].filter((v): v is string => !!v)) {
-        void dispatchRide({ data: { rideId: id } }).catch(() => undefined);
-      }
       void qc.invalidateQueries({ queryKey: ["rides"] });
       void navigate({ to: "/pagamento/$rideId", params: { rideId } });
     },
@@ -963,12 +957,12 @@ function SolicitarPage() {
                 disabled={create.isPending || !routeReady || tutorAccompaniesPet === null || (tutorAccompaniesPet && !peopleCountValid)}
               >
                 {create.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Chamar motorista
+                Ir para pagamento
               </Button>
               {!create.isPending && missingItems.length > 0 && (
                 <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-sm">
                   <p className="font-medium text-destructive">
-                    Falta preencher para chamar o motorista:
+                    Falta preencher para ir para pagamento:
                   </p>
                   <ul className="mt-1 list-disc space-y-0.5 pl-5 text-muted-foreground">
                     {missingItems.map((item) => (

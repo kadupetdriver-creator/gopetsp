@@ -3,7 +3,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Clock3, Copy, CreditCard, Loader2, ShieldCheck, Wallet } from "lucide-react";
+import { Car, CheckCircle2, Clock3, Copy, CreditCard, Loader2, ShieldCheck, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleGuard } from "@/hooks/useRoleGuard";
@@ -15,6 +15,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatBRL } from "@/lib/rides";
 import { getCreditBalance, payRideWithCredits } from "@/lib/credits.functions";
 import { canPayWithGoPetBalance } from "@/lib/credit-payment";
+import { canRequestRideDriver, isRideReleased } from "@/lib/ride-request";
+import { requestRideDriver } from "@/lib/ride-request.functions";
+import { dispatchRideToCentral } from "@/lib/whatsapp.functions";
 import { isValidCPF, maskCPF } from "@/lib/drivers";
 import { createMercadoPagoPayment, getMercadoPagoPublicKey, syncMercadoPagoPayment, type PaymentBrickData } from "@/lib/mercadopago.functions";
 
@@ -62,6 +65,10 @@ function PagamentoCorrida() {
   const createPayment = useServerFn(createMercadoPagoPayment);
   const fetchBalance = useServerFn(getCreditBalance);
   const payWithBalance = useServerFn(payRideWithCredits);
+  const requestDriver = useServerFn(requestRideDriver);
+  const dispatchCentral = useServerFn(dispatchRideToCentral);
+  const [requestingDriver, setRequestingDriver] = useState(false);
+  const [requestError, setRequestError] = useState<string | null>(null);
   const [payingBalance, setPayingBalance] = useState(false);
   const { data: balance, isLoading: loadingBalance, isError: balanceError } = useQuery({
     queryKey: ["credit-balance", user?.id], enabled: !!user,
@@ -87,7 +94,7 @@ function PagamentoCorrida() {
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase.from("rides")
-        .select("id, pet_name, origin_address, destination_address, price_cents, distance_km, paid_at, return_of_ride_id, status")
+        .select("id, pet_name, origin_address, destination_address, price_cents, distance_km, paid_at, driver_requested_at, return_of_ride_id, status")
         .eq("id", rideId).maybeSingle();
       if (error) throw error;
       return data;
@@ -174,6 +181,7 @@ function PagamentoCorrida() {
 
   const countdown = useMemo(() => `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`, [secondsLeft]);
   const approved = Boolean(ride?.paid_at);
+  const released = ride ? isRideReleased(ride) : false;
   const showPix = Boolean(payment?.qr_code && ["pending", "in_process"].includes(payment.status) && secondsLeft > 0);
   const canTryAgain = !payment || ["rejected", "cancelled", "expired"].includes(payment.status);
 
@@ -218,6 +226,25 @@ function PagamentoCorrida() {
     } finally { setPayingBalance(false); }
   };
 
+  const submitDriverRequest = async () => {
+    if (!ride || !canRequestRideDriver(ride) || requestingDriver) return;
+    setRequestingDriver(true);
+    setRequestError(null);
+    try {
+      const result = await requestDriver({ data: { rideId } });
+      if ("error" in result) { setRequestError(result.error); toast.error(result.error); return; }
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["ride-payment", rideId] }),
+        qc.invalidateQueries({ queryKey: ["rides"] }),
+        qc.invalidateQueries({ queryKey: ["ride", rideId] }),
+      ]);
+      toast.success("Corrida liberada para os motoristas parceiros.");
+      void dispatchCentral({ data: { rideId } }).catch(() => undefined);
+    } catch {
+      setRequestError("Não foi possível chamar o motorista. Tente novamente.");
+    } finally { setRequestingDriver(false); }
+  };
+
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5 px-4 py-8">
       <div>
@@ -248,8 +275,8 @@ function PagamentoCorrida() {
         </CardContent>
       </Card>}
 
-      {approved ? <Card className="border-success/40 bg-success/10"><CardContent className="flex flex-col items-center gap-3 py-10 text-center"><CheckCircle2 className="size-9 text-success"/><p className="font-semibold">Pagamento confirmado</p><p className="text-sm text-muted-foreground">Sua corrida foi liberada para os motoristas parceiros.</p><div className="flex flex-wrap justify-center gap-2">{returnRide && <Button asChild><Link to="/pagamento/$rideId" params={{ rideId: returnRide.id }}>Pagar corrida de volta</Link></Button>}<Button asChild variant="secondary"><Link to="/minhas-corridas/$rideId" params={{ rideId }}>Acompanhar corrida</Link></Button></div></CardContent></Card>
-      : showPix ? <Card><CardHeader><CardTitle>Pix gerado</CardTitle><CardDescription>Escaneie ou copie o código. A corrida será liberada somente após a confirmação.</CardDescription></CardHeader><CardContent className="space-y-4 text-center">{payment?.qr_code_base64 && <img className="mx-auto size-60" src={`data:image/png;base64,${payment.qr_code_base64}`} alt="QR Code Pix"/>}<div className="flex items-center justify-center gap-2 font-semibold"><Clock3 className="size-4"/> Expira em {countdown}</div><div className="flex gap-2"><Input readOnly value={payment?.qr_code ?? ""} aria-label="Código Pix copia e cola"/><Button size="icon" variant="outline" title="Copiar código Pix" onClick={async () => { await navigator.clipboard.writeText(payment?.qr_code ?? ""); toast.success("Código Pix copiado."); }}><Copy className="size-4"/></Button></div></CardContent></Card>
+      {approved ? <Card className="border-success/40 bg-success/10"><CardContent className="flex flex-col items-center gap-3 py-10 text-center"><CheckCircle2 className="size-9 text-success"/><p className="font-semibold">Pagamento confirmado</p><p className="text-sm text-muted-foreground">{released ? "Sua corrida foi liberada para os motoristas parceiros." : ride?.status === "cancelled" || ride?.status === "completed" ? "Esta corrida já foi encerrada." : "Sua corrida está paga e aguarda a chamada do motorista."}</p>{ride && canRequestRideDriver(ride) && <Button className="w-full sm:w-auto" disabled={requestingDriver} onClick={() => void submitDriverRequest()}>{requestingDriver ? <Loader2 className="size-4 animate-spin"/> : <Car className="size-4"/>}{requestingDriver ? "Chamando motorista…" : "Chamar motorista"}</Button>}{requestError && <p role="alert" className="text-sm text-destructive">{requestError}</p>}<div className="flex flex-wrap justify-center gap-2">{returnRide && <Button asChild><Link to="/pagamento/$rideId" params={{ rideId: returnRide.id }}>Pagar corrida de volta</Link></Button>}<Button asChild variant="secondary"><Link to="/minhas-corridas/$rideId" params={{ rideId }}>{released ? "Acompanhar corrida" : "Ver corrida"}</Link></Button></div></CardContent></Card>
+      : showPix ? <Card><CardHeader><CardTitle>Pix gerado</CardTitle><CardDescription>Escaneie ou copie o código. Aguarde a confirmação do pagamento para chamar o motorista.</CardDescription></CardHeader><CardContent className="space-y-4 text-center">{payment?.qr_code_base64 && <img className="mx-auto size-60" src={`data:image/png;base64,${payment.qr_code_base64}`} alt="QR Code Pix"/>}<div className="flex items-center justify-center gap-2 font-semibold"><Clock3 className="size-4"/> Expira em {countdown}</div><div className="flex gap-2"><Input readOnly value={payment?.qr_code ?? ""} aria-label="Código Pix copia e cola"/><Button size="icon" variant="outline" title="Copiar código Pix" onClick={async () => { await navigator.clipboard.writeText(payment?.qr_code ?? ""); toast.success("Código Pix copiado."); }}><Copy className="size-4"/></Button></div></CardContent></Card>
       : <Card><CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className="size-5 text-primary"/> Mercado Pago</CardTitle><CardDescription>Informe um CPF válido. Ele é obrigatório para pagamentos via Pix.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="space-y-2"><Label htmlFor="cpf-pagador">CPF do pagador</Label><Input id="cpf-pagador" inputMode="numeric" maxLength={14} value={cpf} onChange={(event) => setCpf(maskCPF(event.target.value))} placeholder="000.000.000-00"/><p className="text-xs text-muted-foreground">Obrigatório para Pix e validação do pagamento.</p></div>{payment && statusMessage[payment.status] && <p className={payment.status === "rejected" ? "text-sm text-destructive" : "text-sm text-muted-foreground"}>{statusMessage[payment.status]}</p>}{configurationError && <p className="text-sm text-destructive">{configurationError}</p>}{publicKey && ride && isValidCPF(cpf) && canTryAgain && !payingBalance && <Suspense fallback={<Skeleton className="h-80 w-full"/>}><MercadoPagoPaymentBrick publicKey={publicKey} amountCents={payAmount} {...(user?.email ? { email: user.email } : {})} cpf={cpf.replace(/\D/g, "")} onSubmit={submitPayment} onError={(message) => { setSubmitted(false); setFormError(message); toast.error(message); }}/></Suspense>}{formError && <p className="text-sm text-destructive">{formError}</p>}{submitted && <p className="flex items-center justify-center gap-2 text-sm"><Loader2 className="size-4 animate-spin"/> Processando pagamento…</p>}{!isValidCPF(cpf) && <p className="text-sm text-muted-foreground">Digite o CPF para liberar as formas de pagamento.</p>}</CardContent></Card>}
     </div>
   );
