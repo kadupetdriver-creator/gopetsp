@@ -5,7 +5,11 @@ type AdminRideState = { status: RideStatus; driver_id: string | null; paid_at: s
 export type RideFilter = "todas" | "orcamentos" | "disponiveis" | "aceitas" | "andamento" | "completed" | "cancelled";
 
 export function isAvailableRide(ride: AdminRideState) {
-  return ride.status === "pending" && !ride.driver_id && Boolean(ride.paid_at) && Boolean(ride.driver_requested_at);
+  return ride.status === "pending" && !ride.driver_id && Boolean(ride.paid_at);
+}
+
+export function canAdminForwardRide(ride: AdminRideState) {
+  return Boolean(ride.paid_at) && ["pending", "accepted", "en_route"].includes(ride.status);
 }
 
 export function matchesAdminRideFilter(ride: AdminRideState, filter: RideFilter) {

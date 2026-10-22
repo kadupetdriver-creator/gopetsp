@@ -9,8 +9,8 @@ import { downloadCsvFile } from "@/lib/csv";
 import { toast } from "sonner";
 import { refundRidePayment } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { adminRideAmounts, canAdminCompleteRide, isAvailableRide, matchesAdminRideFilter as matchesFilter, type RideFilter } from "@/lib/admin-rides";
-import { adminCompleteRide } from "@/lib/admin-rides.functions";
+import { adminRideAmounts, canAdminCompleteRide, canAdminForwardRide, isAvailableRide, matchesAdminRideFilter as matchesFilter, type RideFilter } from "@/lib/admin-rides";
+import { adminCompleteRide, adminForwardRide } from "@/lib/admin-rides.functions";
 import {
   formatBRL,
   formatDateTime,
@@ -299,7 +299,7 @@ function AdminCorridasPage() {
                   {r.paid_at && <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
                     <Pencil className="mr-2 size-4" /> Editar
                   </Button>}
-                  {r.paid_at && r.driver_requested_at && activeGroup.includes(r.status) && r.status !== "in_progress" && (
+                  {canAdminForwardRide(r) && (
                     <Button size="sm" onClick={() => setForwarding(r)}>
                       <Send className="mr-2 size-4" /> Encaminhar a motorista
                     </Button>
@@ -367,7 +367,7 @@ function AdminCorridasPage() {
           onClose={() => setForwarding(null)}
           onSaved={() => {
             setForwarding(null);
-            void qc.invalidateQueries({ queryKey: ["admin-rides"] });
+            for (const key of ["admin-rides", "driver-rides", "rides", "ride", "ride-payment", "admin-report"]) void qc.invalidateQueries({ queryKey: [key] });
           }}
         />
       )}
@@ -501,20 +501,11 @@ function ForwardRideDialog({
   onSaved: () => void;
 }) {
   const [driverId, setDriverId] = useState(ride.driver_id ?? "");
+  const forwardRide = useServerFn(adminForwardRide);
   const drivers = people.filter((p) => p.role === "driver");
 
   const send = useMutation({
-    mutationFn: async () => {
-      const blank = driverId === "none";
-      const { error } = await supabase
-        .from("rides")
-        .update({
-          driver_id: blank ? null : driverId,
-          status: blank ? "pending" : "accepted",
-        })
-        .eq("id", ride.id);
-      if (error) throw error;
-    },
+    mutationFn: () => forwardRide({ data: { rideId: ride.id, driverId: driverId === "none" ? null : driverId } }),
     onSuccess: () => {
       toast.success(
         driverId === "none" ? "Corrida devolvida ao bolsão geral, sem motorista." : "Corrida encaminhada ao motorista.",
