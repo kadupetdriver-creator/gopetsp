@@ -1,18 +1,20 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellRing, CalendarClock, CalendarRange, CheckCircle2, MapPin, Route as RouteIcon, Wallet, WalletCards } from "lucide-react";
+import { BellRing, CalendarClock, CalendarRange, CheckCircle2, MapPin, Route as RouteIcon, Wallet, WalletCards, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { driverShareCents } from "@/lib/pricing";
 import { tutorAccompanimentLabel } from "@/lib/ride-accompaniment";
 import { rideOccursWithin } from "@/lib/driver-payments";
+import { earningsRangeError, matchesEarningsRange } from "@/lib/driver-earnings-range";
 import { DriverPaymentStatus, driverPaymentRowClass } from "@/components/DriverPaymentStatus";
 
 import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -190,6 +192,8 @@ function MotoristaPage() {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const [earningsStart, setEarningsStart] = useState("");
+  const [earningsEnd, setEarningsEnd] = useState("");
 
   // Cadastro de motorista: define o status de aprovação e traz o veículo cadastrado.
   const { data: application, isLoading: appLoading } = useQuery({
@@ -398,6 +402,16 @@ function MotoristaPage() {
     })
     .reduce((sum, b) => sum + b.amount_cents, 0);
   const kmTotal = completed.reduce((sum, r) => sum + Number(r.distance_km ?? 0), 0);
+  const rangeActive = Boolean(earningsStart || earningsEnd);
+  const rangeError = earningsRangeError(earningsStart, earningsEnd);
+  const rangeCompleted = completed.filter((r) => matchesEarningsRange(r.scheduled_at, earningsStart, earningsEnd));
+  const rangeBonuses = (bonuses ?? []).filter((b) => matchesEarningsRange(b.completed_at ?? b.created_at, earningsStart, earningsEnd));
+  const rangeTotal = rangeCompleted.reduce((sum, r) => sum + driverValueOf(r), 0)
+    + rangeBonuses.reduce((sum, b) => sum + b.amount_cents, 0);
+  const rangeKm = rangeCompleted.reduce((sum, r) => sum + Number(r.distance_km ?? 0), 0);
+  const history = mine.filter((r) => (r.status === "completed" || r.status === "cancelled")
+    && matchesEarningsRange(r.scheduled_at, earningsStart, earningsEnd))
+    .sort((a, b) => b.scheduled_at.localeCompare(a.scheduled_at));
 
   // Relatórios semanais: só corridas do próprio motorista (a consulta já vem filtrada pelas regras de acesso).
   const earningsPeriods = latestCompletedEarningsPeriods();
@@ -608,26 +622,38 @@ function MotoristaPage() {
         </TabsContent>
 
         <TabsContent value="relatorios" className="mt-5 space-y-5">
+          <div className="flex flex-wrap items-end gap-3 border-b border-border pb-5">
+            <div className="min-w-0 flex-1 space-y-2 sm:flex-none">
+              <Label htmlFor="earnings-start">Data inicial</Label>
+              <Input id="earnings-start" type="date" className="w-full min-w-0 sm:w-44" value={earningsStart} onChange={(e) => setEarningsStart(e.target.value)} aria-describedby={rangeError ? "earnings-range-error" : undefined} />
+            </div>
+            <div className="min-w-0 flex-1 space-y-2 sm:flex-none">
+              <Label htmlFor="earnings-end">Data final</Label>
+              <Input id="earnings-end" type="date" className="w-full min-w-0 sm:w-44" value={earningsEnd} onChange={(e) => setEarningsEnd(e.target.value)} aria-invalid={Boolean(rangeError)} aria-describedby={rangeError ? "earnings-range-error" : undefined} />
+            </div>
+            {rangeActive && <Button variant="ghost" size="icon" aria-label="Limpar datas" title="Limpar datas" onClick={() => { setEarningsStart(""); setEarningsEnd(""); }}><X className="size-4" /></Button>}
+            {rangeError && <p id="earnings-range-error" role="alert" className="w-full text-sm text-destructive">{rangeError}</p>}
+          </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            <StatCard icon={CheckCircle2} label="Corridas realizadas" value={String(completed.length)} />
-            <StatCard icon={Wallet} label="Ganhos neste mês (com bônus)" value={formatBRL(monthEarnings + monthBonus)} />
-            <StatCard icon={RouteIcon} label="Km percorridos" value={`${kmTotal.toFixed(1)} km`} />
+            <StatCard icon={CheckCircle2} label="Corridas realizadas" value={String(rangeCompleted.length)} />
+            <StatCard icon={Wallet} label={rangeActive ? "Ganhos no período (com bônus)" : "Ganhos neste mês (com bônus)"} value={formatBRL(rangeActive ? rangeTotal : monthEarnings + monthBonus)} />
+            <StatCard icon={RouteIcon} label="Km percorridos" value={`${(rangeActive ? rangeKm : kmTotal).toFixed(1)} km`} />
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
+          {rangeActive ? (
+            <DriverEarningsReport period={{ title: "Rendimentos no período", subtitle: "Corridas realizadas e bônus", start: new Date(), end: new Date() }} periodLabel={`${earningsStart ? formatSaoPauloDate(new Date(`${earningsStart}T12:00:00-03:00`)) : "Desde o início"} a ${earningsEnd ? formatSaoPauloDate(new Date(`${earningsEnd}T12:00:00-03:00`)) : "sem data final"}`} rides={rangeCompleted} paymentsByRide={paymentsByRide} tutorNames={tutorNames} bonuses={rangeBonuses} />
+          ) : <div className="grid gap-4 lg:grid-cols-2">
             <DriverEarningsReport period={earningsPeriods.friday} rides={fridayEarnings} paymentsByRide={paymentsByRide} tutorNames={tutorNames} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.friday.start, earningsPeriods.friday.end)} />
             <DriverEarningsReport period={earningsPeriods.monday} rides={mondayEarnings} paymentsByRide={paymentsByRide} tutorNames={tutorNames} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.monday.start, earningsPeriods.monday.end)} />
-          </div>
+          </div>}
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Histórico</h2>
           </div>
-          {mine.filter((r) => r.status === "completed" || r.status === "cancelled").length === 0 && (
-            <EmptyState text="Suas corridas concluídas aparecerão aqui." />
+          {history.length === 0 && (
+            <EmptyState text={rangeActive ? "Nenhuma corrida neste período." : "Suas corridas concluídas aparecerão aqui."} />
           )}
           <div className="space-y-2">
-            {mine
-              .filter((r) => r.status === "completed" || r.status === "cancelled")
-              .sort((a, b) => b.scheduled_at.localeCompare(a.scheduled_at))
+            {history
               .map((ride) => (
                 <Card key={ride.id} className={cn("shadow-soft", ride.status === "completed" && driverPaymentRowClass(paymentsByRide[ride.id]))}>
                   <CardContent className="space-y-5 py-4 text-sm">
@@ -925,17 +951,19 @@ function DriverEarningsReport({
   bonuses = [],
   tutorNames = {},
   paymentsByRide = {},
+  periodLabel: customPeriodLabel,
 }: {
   period: { title: string; subtitle: string; start: Date; end: Date };
   rides: Ride[];
   bonuses?: DriverBonus[];
   tutorNames?: Record<string, string>;
   paymentsByRide?: Record<string, string>;
+  periodLabel?: string;
 }) {
   const ridesTotal = rides.reduce((sum, ride) => sum + driverValueOf(ride), 0);
   const bonusTotal = bonuses.reduce((sum, b) => sum + b.amount_cents, 0);
   const total = ridesTotal + bonusTotal;
-  const periodLabel = `${formatSaoPauloDate(period.start)} a ${formatSaoPauloDate(period.end)}`;
+  const periodLabel = customPeriodLabel ?? `${formatSaoPauloDate(period.start)} a ${formatSaoPauloDate(period.end)}`;
 
   return (
     <Card className="overflow-hidden shadow-soft">
