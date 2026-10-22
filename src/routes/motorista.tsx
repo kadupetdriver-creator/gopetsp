@@ -641,7 +641,7 @@ function MotoristaPage() {
           </div>
 
           {rangeActive ? (
-            <DriverEarningsReport period={{ title: "Rendimentos no período", subtitle: "Corridas realizadas e bônus", start: new Date(), end: new Date() }} periodLabel={`${earningsStart ? formatSaoPauloDate(new Date(`${earningsStart}T12:00:00-03:00`)) : "Desde o início"} a ${earningsEnd ? formatSaoPauloDate(new Date(`${earningsEnd}T12:00:00-03:00`)) : "hoje"}`} rides={rangeCompleted} paymentsByRide={paymentsByRide} tutorNames={tutorNames} bonuses={rangeBonuses} />
+            <DriverEarningsReport period={{ title: "Rendimentos no período", subtitle: "Corridas realizadas e bônus", start: new Date(), end: new Date() }} periodLabel={`${earningsStart ? formatSaoPauloDate(new Date(`${earningsStart}T12:00:00-03:00`)) : "Desde o início"} a ${earningsEnd ? formatSaoPauloDate(new Date(`${earningsEnd}T12:00:00-03:00`)) : "sem data final"}`} rides={rangeCompleted} paymentsByRide={paymentsByRide} tutorNames={tutorNames} bonuses={rangeBonuses} />
           ) : <div className="grid gap-4 lg:grid-cols-2">
             <DriverEarningsReport period={earningsPeriods.friday} rides={fridayEarnings} paymentsByRide={paymentsByRide} tutorNames={tutorNames} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.friday.start, earningsPeriods.friday.end)} />
             <DriverEarningsReport period={earningsPeriods.monday} rides={mondayEarnings} paymentsByRide={paymentsByRide} tutorNames={tutorNames} bonuses={bonusesWithin(bonuses ?? [], earningsPeriods.monday.start, earningsPeriods.monday.end)} />

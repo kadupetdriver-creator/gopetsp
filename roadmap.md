@@ -1,8 +1,8 @@
 # Roadmap — GoPet
 
-## Em andamento — filtro de rendimentos do motorista
-- [ ] Incluir datas inicial e final, totais e histórico do período com bônus
-- [ ] Conferir limites de datas de São Paulo e uso do filtro na tela
+## Concluído — filtro de rendimentos do motorista
+- [x] Incluir datas inicial e final, totais e histórico do período com bônus
+- [x] Sete testes passaram; tela com dados demonstrativos conferiu totais, exclusão de outro motorista, período vazio, intervalo invertido, limpeza e celular sem transbordamento; conta disponível não possui cadastro de motorista, portanto fluxo com rendimentos reais não verificado
 
 ## Concluído — datas e situação dos pagamentos
 - [x] Mostrar data e hora da criação para administradores
