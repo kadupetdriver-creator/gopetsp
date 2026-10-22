@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Em andamento — cadastro via Google
+- [ ] Exigir CPF, telefone e e-mail válidos antes de liberar o app após login com Google
+- [ ] Salvar cadastro com CPF único e conferir validação, bloqueio e persistência
+
 ## Concluído — encaminhamento administrativo de corridas pagas
 - [x] Mostrar corridas pagas sem motorista em Disponíveis, mesmo antes do comando do tutor; duas corridas reais do Zeus conferidas na tela
 - [x] Encaminhamento administrativo protegido testado com corrida temporária em branco e para motorista aprovado, persistência após recarregar e pagamento/valor preservados; teste removido
