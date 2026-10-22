@@ -1,5 +1,10 @@
 # Roadmap — GoPet
 
+## Em andamento — datas e situação dos pagamentos
+- [ ] Mostrar data e hora da criação para administradores
+- [ ] Usar a data da realização da corrida nos relatórios de pagamento
+- [ ] Mostrar pagas em verde com data e a pagar em amarelo com previsão; confirmar qual pagamento deve ser considerado
+
 ## Concluído — cadastro via Google
 - [x] Exigir CPF, telefone e e-mail válidos antes de liberar o app após login com Google
 - [x] Salvar cadastro com CPF único; conta temporária autenticada conferiu CPF inválido, bloqueio por acesso direto, gravação e persistência após recarregar, sem erros; conta removida e cinco testes passaram
