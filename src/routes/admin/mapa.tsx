@@ -16,6 +16,8 @@ export const Route = createFileRoute("/admin/mapa")({
       { name: "description", content: "Posição em tempo real dos motoristas em corrida." },
       { property: "og:title", content: "Mapa ao vivo dos motoristas | GoPet Admin" },
       { property: "og:description", content: "Posição em tempo real dos motoristas em corrida." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AdminMapaPage,
@@ -42,6 +44,7 @@ function AdminMapaPage() {
         .from("rides")
         .select("id, driver_id, pet_name, status, driver_lat, driver_lng, location_updated_at")
         .in("status", activeStatuses)
+        .not("paid_at", "is", null)
         .not("driver_id", "is", null);
       if (error) throw error;
 
