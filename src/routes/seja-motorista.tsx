@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import {
   ACCEPTED_DOC_TYPES,
   MAX_DOC_BYTES,
+  canEditDriverApplication,
   documentStatusLabels,
   documentTypes,
   driverStatusLabels,
@@ -74,6 +75,7 @@ type DriverRow = {
   avatar_path: string | null;
   status: DriverStatus;
   rejection_reason: string | null;
+  rejection_final: boolean;
 };
 
 type VehicleRow = {
@@ -111,14 +113,16 @@ function SejaMotoristaPage() {
 
   const { data: application, isLoading } = useQuery({
     queryKey: ["driver-application", user?.id],
+    refetchInterval: 10000,
     enabled: !!user,
     queryFn: async () => {
+      if (!user) throw new Error("Entre na sua conta para acessar o cadastro.");
       const { data: driver, error } = await supabase
         .from("drivers")
         .select(
-          "id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, status, rejection_reason",
+          "id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, status, rejection_reason, rejection_final",
         )
-        .eq("user_id", user!.id)
+        .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
       if (!driver) return { driver: null, vehicle: null, documents: [] as DocumentRow[] };
@@ -144,8 +148,7 @@ function SejaMotoristaPage() {
   });
 
   const driver = application?.driver ?? null;
-  const locked =
-    driver?.status === "em_analise" || driver?.status === "aprovado" || driver?.status === "suspenso";
+  const locked = driver ? !canEditDriverApplication(driver.status, driver.rejection_final) : false;
 
   if (loading || isLoading || !user) {
     return (
@@ -180,7 +183,7 @@ function SejaMotoristaPage() {
 
       {driver?.status === "rejeitado" && (
         <div className="mt-5 rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
-          <p className="font-semibold text-destructive">Cadastro rejeitado</p>
+          <p className="font-semibold text-destructive">Cadastro devolvido para correção</p>
           <p className="mt-1 text-muted-foreground">
             Motivo: {driver.rejection_reason ?? "não informado"}. Corrija os dados ou reenvie os
             documentos e envie novamente para análise.
@@ -218,7 +221,7 @@ function SejaMotoristaPage() {
       <div className="mt-6">
         {step === 1 && (
           <PersonalStep
-            userId={user!.id}
+            userId={user.id}
             defaults={{
               full_name: driver?.full_name ?? profile?.full_name ?? "",
               cpf: driver?.cpf ?? "",
@@ -249,7 +252,7 @@ function SejaMotoristaPage() {
         )}
         {step === 3 && driver && (
           <DocumentsStep
-            userId={user!.id}
+            userId={user.id}
             driver={driver}
             hasVehicle={!!application?.vehicle}
             documents={application?.documents ?? []}
@@ -265,7 +268,7 @@ function SejaMotoristaPage() {
   );
 }
 
-export function StatusCard({ driver }: { driver: DriverRow | { status: DriverStatus; rejection_reason: string | null } }) {
+export function StatusCard({ driver }: { driver: { status: DriverStatus; rejection_reason: string | null; rejection_final?: boolean } }) {
   const descriptions: Record<DriverStatus, string> = {
     pendente:
       "Recebemos seu cadastro. Nossa equipe vai revisar seus dados e documentos em breve.",
@@ -283,10 +286,10 @@ export function StatusCard({ driver }: { driver: DriverRow | { status: DriverSta
             driverStatusStyles[driver.status],
           )}
         >
-          {driverStatusLabels[driver.status]}
+          {driver.rejection_final ? "Recusado em definitivo" : driverStatusLabels[driver.status]}
         </span>
         <CardTitle className="mt-2">Situação do seu cadastro</CardTitle>
-        <CardDescription>{descriptions[driver.status]}</CardDescription>
+        <CardDescription>{driver.rejection_final ? "Seu cadastro foi recusado em definitivo. Não é possível atualizar ou reenviar este cadastro." : descriptions[driver.status]}</CardDescription>
       </CardHeader>
       {driver.status === "suspenso" && driver.rejection_reason && (
         <CardContent>
@@ -301,9 +304,11 @@ export function StatusCard({ driver }: { driver: DriverRow | { status: DriverSta
             <strong className="text-destructive">Motivo:</strong>{" "}
             {driver.rejection_reason ?? "não informado"}
           </p>
-          <Button onClick={() => (window.location.href = "/seja-motorista")}>
-            Corrigir e reenviar documentos
-          </Button>
+          {!driver.rejection_final && (
+            <Button onClick={() => (window.location.href = "/seja-motorista")}>
+              Atualizar cadastro e reenviar
+            </Button>
+          )}
         </CardContent>
       )}
     </Card>

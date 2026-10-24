@@ -11,6 +11,8 @@
 
 ## Rules
 
+- Driver review uses the authenticated admin decision RPC and a separate irreversible rejection flag; database guards and restrictive document/vehicle policies enforce finality while ordinary rejection remains editable and resubmittable.
+
 - CPF duplication exceptions are enforced by the database availability RPC, signup trigger, and partial unique index together; keep the same normalized predicate across all three so password signup and Google completion agree without weakening other CPFs.
 
 - Driver earnings date inputs use the browser-safe `driver-earnings-range.ts` predicate with São Paulo inclusive day boundaries on ride realization and bonus settlement dates; filter only the driver's existing scoped data without changing queries or permissions.

@@ -6,7 +6,7 @@ export const driverStatusLabels: Record<DriverStatus, string> = {
   pendente: "Aguardando revisão",
   em_analise: "Em análise",
   aprovado: "Aprovado",
-  rejeitado: "Rejeitado",
+  rejeitado: "Devolvido para correção",
   suspenso: "Suspenso",
 };
 
@@ -45,6 +45,10 @@ export const vehicleColors = ["Branco", "Prata", "Preto", "Cinza", "Vermelho", "
 
 export const ACCEPTED_DOC_TYPES = "image/jpeg,image/png,image/webp,application/pdf";
 export const MAX_DOC_BYTES = 10 * 1024 * 1024;
+
+export function canEditDriverApplication(status: DriverStatus, rejectionFinal = false) {
+  return !rejectionFinal && (status === "pendente" || status === "rejeitado");
+}
 
 export function onlyDigits(value: string) {
   return value.replace(/\D/g, "");
