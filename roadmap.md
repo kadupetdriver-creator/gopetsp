@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Em andamento — revisão de motoristas
+- [ ] Permitir corrigir e reenviar cadastros devolvidos pela administração
+- [ ] Incluir recusa definitiva protegida e conferir bloqueio de atualização/reenvio
+
 ## Concluído — exceção de CPF
 - [x] Permitir múltiplas contas para o CPF solicitado no cadastro comum e via Google, preservando unicidade dos demais
 - [x] Regra de disponibilidade, gatilho de cadastro e índice único conferidos no banco; oito testes passaram, sem criar contas adicionais
