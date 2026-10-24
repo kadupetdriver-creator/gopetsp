@@ -182,36 +182,41 @@ function AdminTutoresPage() {
         {list.map((t) => (
           <Card key={t.id} className={cn("shadow-soft", !t.is_active && "opacity-70")}>
             <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
-              <div className="min-w-0">
-                <p className="flex items-center gap-2 font-semibold">
-                  {t.full_name || "Sem nome"}
-                  {!t.is_active && (
-                    <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
-                      Desativado
-                    </span>
-                  )}
-                </p>
-                <p className="truncate text-sm text-muted-foreground">
-                  {t.email ?? "—"} · {t.phone ? maskPhone(t.phone) : "sem telefone"}
-                </p>
-                <p className="truncate text-sm text-muted-foreground">
-                  CPF {t.cpf ? maskCPF(t.cpf) : "não informado"} · {t.address || t.city} · desde{" "}
-                  {new Date(t.created_at).toLocaleDateString("pt-BR")}
-                </p>
-                {t.pets.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {t.pets.map((p) => (
-                      <span
-                        key={p.id}
-                        className="rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground"
-                      >
-                        {p.name} · {p.species} · {p.size}
-                        {p.breed ? ` · ${p.breed}` : ""}
-                        {p.weight_kg ? ` · ${p.weight_kg} kg` : ""}
+              <div className="flex min-w-0 items-start gap-3">
+                <TutorAvatar path={t.avatar_url} name={t.full_name} />
+                <div className="min-w-0">
+                  <p className="flex items-center gap-2 font-semibold">
+                    {t.full_name || "Sem nome"}
+                    {!t.is_active && (
+                      <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                        Desativado
                       </span>
-                    ))}
-                  </div>
-                )}
+                    )}
+                  </p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {t.email ?? "—"} · {t.phone ? maskPhone(t.phone) : "sem telefone"}
+                  </p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    CPF {t.cpf ? maskCPF(t.cpf) : "não informado"} · {t.address || t.city} · desde{" "}
+                    {new Date(t.created_at).toLocaleDateString("pt-BR")}
+                  </p>
+                  {t.pets.length > 0 && (
+                    <div className="mt-2 grid gap-1.5">
+                      {t.pets.map((p) => (
+                        <div key={p.id} className="flex items-center gap-2">
+                          <PetPhotoThumb path={p.photo_url} name={p.name} />
+                          <span
+                            className="truncate rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground"
+                          >
+                            {p.name} · {p.species} · {p.size}
+                            {p.breed ? ` · ${p.breed}` : ""}
+                            {p.weight_kg ? ` · ${p.weight_kg} kg` : ""}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <Button variant="outline" size="sm" onClick={() => setEditing(t)}>
                 <UserCog className="mr-2 size-4" /> Editar
