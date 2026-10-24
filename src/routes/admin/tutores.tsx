@@ -55,6 +55,7 @@ type TutorPet = {
   size: string;
   breed: string | null;
   weight_kg: number | null;
+  photo_url: string | null;
 };
 
 type Tutor = {
@@ -67,6 +68,7 @@ type Tutor = {
   role: "tutor" | "driver";
   is_active: boolean;
   created_at: string;
+  avatar_url: string | null;
   email?: string;
   pets: TutorPet[];
 };
@@ -83,13 +85,13 @@ function AdminTutoresPage() {
       const [{ data: profiles, error }, { data: emails }, { data: petRows }] = await Promise.all([
         supabase
           .from("profiles")
-          .select("id, full_name, phone, cpf, city, address, role, is_active, created_at")
+          .select("id, full_name, phone, cpf, city, address, role, is_active, created_at, avatar_url")
           .eq("role", "tutor")
           .order("created_at", { ascending: false }),
         supabase.rpc("admin_user_emails"),
         supabase
           .from("pets")
-          .select("id, owner_id, name, species, size, breed, weight_kg")
+          .select("id, owner_id, name, species, size, breed, weight_kg, photo_url")
           .order("created_at", { ascending: true }),
       ]);
       if (error) throw error;
