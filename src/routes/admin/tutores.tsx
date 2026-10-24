@@ -485,6 +485,48 @@ function EditTutorDialog({
   );
 }
 
+/** URL assinada temporária para o administrador conferir fotos privadas. */
+function useSignedAdminPhoto(bucket: string, path: string | null | undefined) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setUrl(null);
+    if (!path) return;
+    void supabase.storage
+      .from(bucket)
+      .createSignedUrl(path, 60 * 60)
+      .then(({ data }) => {
+        if (!cancelled) setUrl(data?.signedUrl ?? null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [bucket, path]);
+  return url;
+}
+
+function TutorAvatar({ path, name }: { path: string | null | undefined; name: string }) {
+  const url = useSignedAdminPhoto("driver-documents", path);
+  return url ? (
+    <img src={url} alt={`Foto de ${name}`} className="size-12 shrink-0 rounded-full object-cover" />
+  ) : (
+    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-secondary-foreground">
+      {(name || "?").slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
+
+function PetPhotoThumb({ path, name }: { path: string | null | undefined; name: string }) {
+  const url = useSignedAdminPhoto("pet-photos", path);
+  return url ? (
+    <img src={url} alt={`Foto de ${name}`} loading="lazy" className="size-10 shrink-0 rounded-lg object-cover" />
+  ) : (
+    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
+      <PawPrint className="size-4 text-secondary-foreground" />
+    </span>
+  );
+}
+
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="grid gap-1.5">
