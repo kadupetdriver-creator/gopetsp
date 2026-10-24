@@ -17,6 +17,7 @@ import { Route as MinhasCorridasRouteImport } from './routes/minhas-corridas'
 import { Route as MotoristaRouteImport } from './routes/motorista'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as RastreioRouteImport } from './routes/rastreio'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SejaMotoristaRouteImport } from './routes/seja-motorista'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
@@ -72,6 +73,11 @@ const PerfilRoute = PerfilRouteImport.update({
 const RastreioRoute = RastreioRouteImport.update({
   id: '/rastreio',
   path: '/rastreio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SejaMotoristaRoute = SejaMotoristaRouteImport.update({
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/motorista': typeof MotoristaRoute
   '/perfil': typeof PerfilRoute
   '/rastreio': typeof RastreioRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
@@ -188,6 +195,7 @@ export interface FileRoutesByTo {
   '/motorista': typeof MotoristaRoute
   '/perfil': typeof PerfilRoute
   '/rastreio': typeof RastreioRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/motorista': typeof MotoristaRoute
   '/perfil': typeof PerfilRoute
   '/rastreio': typeof RastreioRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/seja-motorista': typeof SejaMotoristaRoute
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
@@ -243,6 +252,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/perfil'
     | '/rastreio'
+    | '/reset-password'
     | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/perfil'
     | '/rastreio'
+    | '/reset-password'
     | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/motorista'
     | '/perfil'
     | '/rastreio'
+    | '/reset-password'
     | '/seja-motorista'
     | '/solicitar'
     | '/acompanhar/$token'
@@ -320,6 +332,7 @@ export interface RootRouteChildren {
   MotoristaRoute: typeof MotoristaRoute
   PerfilRoute: typeof PerfilRoute
   RastreioRoute: typeof RastreioRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SejaMotoristaRoute: typeof SejaMotoristaRoute
   SolicitarRoute: typeof SolicitarRoute
   AcompanharTokenRoute: typeof AcompanharTokenRoute
@@ -383,6 +396,13 @@ declare module '@tanstack/react-router' {
       path: '/rastreio'
       fullPath: '/rastreio'
       preLoaderRoute: typeof RastreioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/seja-motorista': {
@@ -551,6 +571,7 @@ const rootRouteChildren: RootRouteChildren = {
   MotoristaRoute: MotoristaRoute,
   PerfilRoute: PerfilRoute,
   RastreioRoute: RastreioRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SejaMotoristaRoute: SejaMotoristaRoute,
   SolicitarRoute: SolicitarRoute,
   AcompanharTokenRoute: AcompanharTokenRoute,

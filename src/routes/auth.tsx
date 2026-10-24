@@ -264,6 +264,12 @@ function AuthPage() {
                 <Button type="submit" className="w-full" disabled={busy}>
                   {busy && <Loader2 className="mr-2 size-4 animate-spin" />} Entrar
                 </Button>
+                <Link
+                  to="/reset-password"
+                  className="block text-center text-sm font-medium text-muted-foreground underline transition-colors hover:text-foreground"
+                >
+                  Esqueci minha senha
+                </Link>
               </form>
             </TabsContent>
           </Tabs>
