@@ -85,6 +85,20 @@
       "when": 1792711467261,
       "tag": "0011_allow_designated_cpf_multiple_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792859174586,
+      "tag": "0012_driver_final_rejection",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792859296521,
+      "tag": "0013_driver_final_rejection_trusted_cleanup",
+      "breakpoints": true
     }
   ]
 }

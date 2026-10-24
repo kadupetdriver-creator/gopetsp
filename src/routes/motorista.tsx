@@ -174,6 +174,7 @@ type Application = {
   id: string;
   status: DriverStatus;
   rejection_reason: string | null;
+  rejection_final: boolean;
   // O vínculo é 1:1, então o embed pode voltar como objeto ou lista.
   vehicles: VehicleInfo | VehicleInfo[] | null;
 };
@@ -198,12 +199,14 @@ function MotoristaPage() {
   // Cadastro de motorista: define o status de aprovação e traz o veículo cadastrado.
   const { data: application, isLoading: appLoading } = useQuery({
     queryKey: ["driver-application", user?.id, "panel"],
+    refetchInterval: 10000,
     enabled: !!user && !!profile,
     queryFn: async () => {
+      if (!user) throw new Error("Entre na sua conta para acessar o cadastro.");
       const { data, error } = await supabase
         .from("drivers")
-        .select("id, status, rejection_reason, vehicles(plate, model, brand, year, color, vehicle_type, is_active)")
-        .eq("user_id", user!.id)
+        .select("id, status, rejection_reason, rejection_final, vehicles(plate, model, brand, year, color, vehicle_type, is_active)")
+        .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
       return (data as unknown as Application | null) ?? null;

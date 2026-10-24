@@ -85,6 +85,7 @@ type Application = {
   pix_key: string | null;
   status: DriverStatus;
   rejection_reason: string | null;
+  rejection_final: boolean;
   submitted_at: string | null;
   created_at: string;
   vehicles: Vehicle | null;
@@ -99,7 +100,7 @@ type Application = {
 };
 
 const cols =
-  "id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, pix_key, status, rejection_reason, submitted_at, created_at, vehicles(id, plate, brand, model, year, color, vehicle_type, is_active), driver_documents(id, document_type, file_path, status, notes)";
+  "id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, avatar_path, pix_key, status, rejection_reason, rejection_final, submitted_at, created_at, vehicles(id, plate, brand, model, year, color, vehicle_type, is_active), driver_documents(id, document_type, file_path, status, notes)";
 
 const statusOrder: Record<DriverStatus, number> = {
   pendente: 0,
@@ -112,11 +113,12 @@ const statusOrder: Record<DriverStatus, number> = {
 function AdminMotoristasPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"todos" | "fila" | DriverStatus>("fila");
+  const [filter, setFilter] = useState<"todos" | "fila" | "definitivo" | DriverStatus>("fila");
   const [editing, setEditing] = useState<Application | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-drivers"],
+    refetchInterval: 10000,
     queryFn: async () => {
       const { data, error } = await supabase.from("drivers").select(cols).order("created_at", { ascending: true });
       if (error) throw error;
@@ -136,7 +138,8 @@ function AdminMotoristasPage() {
   const counts = useMemo(() => {
     const c = { fila: 0, todos: data?.length ?? 0 } as Record<string, number>;
     for (const d of data ?? []) {
-      c[d.status] = (c[d.status] ?? 0) + 1;
+      const key = d.rejection_final ? "definitivo" : d.status;
+      c[key] = (c[key] ?? 0) + 1;
       if (d.status === "pendente" || d.status === "em_analise") c["fila"] = (c["fila"] ?? 0) + 1;
     }
     return c;
@@ -147,7 +150,8 @@ function AdminMotoristasPage() {
     return (data ?? [])
       .filter((d) => {
         if (filter === "fila") return d.status === "pendente" || d.status === "em_analise";
-        if (filter !== "todos") return d.status === filter;
+        if (filter === "definitivo") return d.rejection_final;
+        if (filter !== "todos") return d.status === filter && !d.rejection_final;
         return true;
       })
       .filter((d) => {
@@ -160,10 +164,11 @@ function AdminMotoristasPage() {
   }, [data, search, filter]);
 
   const review = useMutation({
-    mutationFn: async ({ id, status, reason }: { id: string; status: DriverStatus; reason?: string | undefined }) => {
-      const { error } = await supabase.rpc("review_driver_application", {
+    mutationFn: async ({ id, status, reason, final = false }: { id: string; status: DriverStatus; reason?: string | undefined; final?: boolean }) => {
+      const { error } = await supabase.rpc("review_driver_application_decision", {
         _driver_id: id,
         _status: status,
+        _final: final,
         ...(reason ? { _reason: reason } : {}),
       });
       if (error) throw error;
@@ -206,6 +211,7 @@ function AdminMotoristasPage() {
           <SelectContent>
             <SelectItem value="fila">Fila de revisão ({counts["fila"] ?? 0})</SelectItem>
             <SelectItem value="todos">Todos ({counts["todos"] ?? 0})</SelectItem>
+            <SelectItem value="definitivo">Recusados em definitivo ({counts["definitivo"] ?? 0})</SelectItem>
             {(Object.keys(driverStatusLabels) as DriverStatus[]).map((s) => (
               <SelectItem key={s} value={s}>
                 {driverStatusLabels[s]} ({counts[s] ?? 0})
@@ -245,7 +251,7 @@ function AdminMotoristasPage() {
                 d.pix_key ?? "",
                 d.city,
                 d.neighborhood,
-                driverStatusLabels[d.status],
+                d.rejection_final ? "Recusado em definitivo" : driverStatusLabels[d.status],
                 d.vehicles?.plate ?? "",
                 d.vehicles ? `${d.vehicles.brand} ${d.vehicles.model}` : "",
                 d.vehicles?.year ?? "",
@@ -277,7 +283,7 @@ function AdminMotoristasPage() {
             app={app}
             busy={review.isPending}
             onEdit={() => setEditing(app)}
-            onReview={(status, reason) => review.mutate({ id: app.id, status, reason })}
+            onReview={(status, reason, final) => review.mutate({ id: app.id, status, reason, final: final ?? false })}
             onReviewDoc={(id, status, notes) => reviewDoc.mutate({ id, status, notes })}
           />
         ))}
@@ -307,11 +313,11 @@ function ApplicationCard({
   app: Application;
   busy: boolean;
   onEdit: () => void;
-  onReview: (status: DriverStatus, reason?: string) => void;
+  onReview: (status: DriverStatus, reason?: string, final?: boolean) => void;
   onReviewDoc: (id: string, status: DocumentStatus, notes?: string) => void;
 }) {
   const [reason, setReason] = useState("");
-  const [mode, setMode] = useState<null | "rejeitado" | "suspenso">(null);
+  const [mode, setMode] = useState<null | "rejeitado" | "suspenso" | "definitivo">(null);
   const age = Math.floor((Date.now() - new Date(app.birth_date).getTime()) / (365.25 * 24 * 3600e3));
   const highlight = app.status === "pendente" || app.status === "em_analise";
   const activeVehicle =
@@ -345,9 +351,9 @@ function ApplicationCard({
           </div>
           <div className="flex items-center gap-2">
             <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", driverStatusStyles[app.status])}>
-              {driverStatusLabels[app.status]}
+              {app.rejection_final ? "Recusado em definitivo" : driverStatusLabels[app.status]}
             </span>
-            <Button size="sm" variant="outline" onClick={onEdit}>
+            <Button size="sm" variant="outline" onClick={onEdit} disabled={app.rejection_final}>
               <Pencil className="mr-2 size-4" /> Editar
             </Button>
           </div>
@@ -355,7 +361,7 @@ function ApplicationCard({
       </CardHeader>
       <CardContent className="space-y-4">
         {app.avatar_path && (
-          <Button variant="link" className="h-auto p-0 text-sm" onClick={() => openFile(app.avatar_path!)}>
+          <Button variant="link" className="h-auto p-0 text-sm" onClick={() => { if (app.avatar_path) void openFile(app.avatar_path); }}>
             Ver foto de perfil <ExternalLink className="ml-1 size-3" />
           </Button>
         )}
@@ -413,12 +419,12 @@ function ApplicationCard({
                     <Button size="sm" variant="outline" onClick={() => openFile(doc.file_path)}>
                       Ver <ExternalLink className="ml-1 size-3" />
                     </Button>
-                    {doc.status !== "aprovado" && (
+                    {!app.rejection_final && doc.status !== "aprovado" && (
                       <Button size="sm" variant="ghost" onClick={() => onReviewDoc(doc.id, "aprovado")}>
                         OK
                       </Button>
                     )}
-                    {doc.status !== "rejeitado" && (
+                    {!app.rejection_final && doc.status !== "rejeitado" && (
                       <Button
                         size="sm"
                         variant="ghost"
@@ -449,11 +455,12 @@ function ApplicationCard({
           </p>
         )}
 
-        <div className="space-y-3 border-t border-border pt-4">
+        {!app.rejection_final && <div className="space-y-3 border-t border-border pt-4">
+          {mode === "definitivo" && <p className="text-sm text-destructive">A recusa é definitiva: este cadastro não poderá ser atualizado, reenviado ou reaberto.</p>}
           {mode && (
             <Textarea
               placeholder={
-                mode === "suspenso"
+                mode === "definitivo" ? "Informe o motivo da recusa definitiva" : mode === "suspenso"
                   ? "Explique o motivo da suspensão"
                   : "Explique ao motorista o que precisa ser corrigido"
               }
@@ -469,12 +476,12 @@ function ApplicationCard({
                   variant="destructive"
                   disabled={busy || reason.trim().length < 5}
                   onClick={() => {
-                    onReview(mode, reason.trim());
+                    onReview(mode === "definitivo" ? "rejeitado" : mode, reason.trim(), mode === "definitivo");
                     setMode(null);
                     setReason("");
                   }}
                 >
-                  {mode === "suspenso" ? "Confirmar suspensão" : "Confirmar rejeição"}
+                  {mode === "definitivo" ? "Confirmar recusa definitiva" : mode === "suspenso" ? "Confirmar suspensão" : "Devolver para correção"}
                 </Button>
                 <Button variant="ghost" onClick={() => setMode(null)}>
                   Cancelar
@@ -495,7 +502,7 @@ function ApplicationCard({
                 )}
                 {app.status !== "rejeitado" && app.status !== "suspenso" && (
                   <Button variant="outline" className="text-destructive" onClick={() => setMode("rejeitado")}>
-                    Rejeitar
+                    Devolver para correção
                   </Button>
                 )}
                 {app.status === "aprovado" && (
@@ -508,10 +515,13 @@ function ApplicationCard({
                     Reabrir para revisão
                   </Button>
                 )}
+                <Button variant="outline" className="text-destructive" disabled={busy} onClick={() => setMode("definitivo")}>
+                  Recusar em definitivo
+                </Button>
               </>
             )}
           </div>
-        </div>
+        </div>}
       </CardContent>
     </Card>
   );

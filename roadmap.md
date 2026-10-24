@@ -1,5 +1,10 @@
 # Roadmap — GoPet
 
+## Concluído — revisão de motoristas
+- [x] Permitir corrigir e reenviar cadastros devolvidos pela administração
+- [x] Incluir recusa definitiva protegida e conferir bloqueio de atualização/reenvio
+- [x] Conta administrativa conferiu devolução, correção salva, recusa definitiva e bloqueio persistente após recarregar; dois testes passaram, cadastro temporário removido
+
 ## Concluído — exceção de CPF
 - [x] Permitir múltiplas contas para o CPF solicitado no cadastro comum e via Google, preservando unicidade dos demais
 - [x] Regra de disponibilidade, gatilho de cadastro e índice único conferidos no banco; oito testes passaram, sem criar contas adicionais

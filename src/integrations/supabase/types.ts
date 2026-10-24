@@ -203,6 +203,7 @@ export type Database = {
           neighborhood: string
           phone: string
           pix_key: string | null
+          rejection_final: boolean
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -223,6 +224,7 @@ export type Database = {
           neighborhood?: string
           phone: string
           pix_key?: string | null
+          rejection_final?: boolean
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -243,6 +245,7 @@ export type Database = {
           neighborhood?: string
           phone?: string
           pix_key?: string | null
+          rejection_final?: boolean
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -1224,6 +1227,42 @@ export type Database = {
           neighborhood: string
           phone: string
           pix_key: string | null
+          rejection_final: boolean
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["driver_status"]
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "drivers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      review_driver_application_decision: {
+        Args: {
+          _driver_id: string
+          _final?: boolean
+          _reason?: string
+          _status: Database["public"]["Enums"]["driver_status"]
+        }
+        Returns: {
+          avatar_path: string | null
+          birth_date: string
+          city: string
+          cpf: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          neighborhood: string
+          phone: string
+          pix_key: string | null
+          rejection_final: boolean
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
