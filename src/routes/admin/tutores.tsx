@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Loader2, Search, UserCog } from "lucide-react";
+import { Download, Loader2, PawPrint, Search, UserCog } from "lucide-react";
 import { csvDate, downloadCsvFile } from "@/lib/csv";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,6 +55,7 @@ type TutorPet = {
   size: string;
   breed: string | null;
   weight_kg: number | null;
+  photo_url: string | null;
 };
 
 type Tutor = {
@@ -67,6 +68,7 @@ type Tutor = {
   role: "tutor" | "driver";
   is_active: boolean;
   created_at: string;
+  avatar_url: string | null;
   email?: string;
   pets: TutorPet[];
 };
@@ -83,13 +85,13 @@ function AdminTutoresPage() {
       const [{ data: profiles, error }, { data: emails }, { data: petRows }] = await Promise.all([
         supabase
           .from("profiles")
-          .select("id, full_name, phone, cpf, city, address, role, is_active, created_at")
+          .select("id, full_name, phone, cpf, city, address, role, is_active, created_at, avatar_url")
           .eq("role", "tutor")
           .order("created_at", { ascending: false }),
         supabase.rpc("admin_user_emails"),
         supabase
           .from("pets")
-          .select("id, owner_id, name, species, size, breed, weight_kg")
+          .select("id, owner_id, name, species, size, breed, weight_kg, photo_url")
           .order("created_at", { ascending: true }),
       ]);
       if (error) throw error;
@@ -180,36 +182,41 @@ function AdminTutoresPage() {
         {list.map((t) => (
           <Card key={t.id} className={cn("shadow-soft", !t.is_active && "opacity-70")}>
             <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
-              <div className="min-w-0">
-                <p className="flex items-center gap-2 font-semibold">
-                  {t.full_name || "Sem nome"}
-                  {!t.is_active && (
-                    <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
-                      Desativado
-                    </span>
-                  )}
-                </p>
-                <p className="truncate text-sm text-muted-foreground">
-                  {t.email ?? "—"} · {t.phone ? maskPhone(t.phone) : "sem telefone"}
-                </p>
-                <p className="truncate text-sm text-muted-foreground">
-                  CPF {t.cpf ? maskCPF(t.cpf) : "não informado"} · {t.address || t.city} · desde{" "}
-                  {new Date(t.created_at).toLocaleDateString("pt-BR")}
-                </p>
-                {t.pets.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {t.pets.map((p) => (
-                      <span
-                        key={p.id}
-                        className="rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground"
-                      >
-                        {p.name} · {p.species} · {p.size}
-                        {p.breed ? ` · ${p.breed}` : ""}
-                        {p.weight_kg ? ` · ${p.weight_kg} kg` : ""}
+              <div className="flex min-w-0 items-start gap-3">
+                <TutorAvatar path={t.avatar_url} name={t.full_name} />
+                <div className="min-w-0">
+                  <p className="flex items-center gap-2 font-semibold">
+                    {t.full_name || "Sem nome"}
+                    {!t.is_active && (
+                      <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                        Desativado
                       </span>
-                    ))}
-                  </div>
-                )}
+                    )}
+                  </p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {t.email ?? "—"} · {t.phone ? maskPhone(t.phone) : "sem telefone"}
+                  </p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    CPF {t.cpf ? maskCPF(t.cpf) : "não informado"} · {t.address || t.city} · desde{" "}
+                    {new Date(t.created_at).toLocaleDateString("pt-BR")}
+                  </p>
+                  {t.pets.length > 0 && (
+                    <div className="mt-2 grid gap-1.5">
+                      {t.pets.map((p) => (
+                        <div key={p.id} className="flex items-center gap-2">
+                          <PetPhotoThumb path={p.photo_url} name={p.name} />
+                          <span
+                            className="truncate rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground"
+                          >
+                            {p.name} · {p.species} · {p.size}
+                            {p.breed ? ` · ${p.breed}` : ""}
+                            {p.weight_kg ? ` · ${p.weight_kg} kg` : ""}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <Button variant="outline" size="sm" onClick={() => setEditing(t)}>
                 <UserCog className="mr-2 size-4" /> Editar
@@ -475,6 +482,48 @@ function EditTutorDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** URL assinada temporária para o administrador conferir fotos privadas. */
+function useSignedAdminPhoto(bucket: string, path: string | null | undefined) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setUrl(null);
+    if (!path) return;
+    void supabase.storage
+      .from(bucket)
+      .createSignedUrl(path, 60 * 60)
+      .then(({ data }) => {
+        if (!cancelled) setUrl(data?.signedUrl ?? null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [bucket, path]);
+  return url;
+}
+
+function TutorAvatar({ path, name }: { path: string | null | undefined; name: string }) {
+  const url = useSignedAdminPhoto("driver-documents", path);
+  return url ? (
+    <img src={url} alt={`Foto de ${name}`} className="size-12 shrink-0 rounded-full object-cover" />
+  ) : (
+    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-secondary-foreground">
+      {(name || "?").slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
+
+function PetPhotoThumb({ path, name }: { path: string | null | undefined; name: string }) {
+  const url = useSignedAdminPhoto("pet-photos", path);
+  return url ? (
+    <img src={url} alt={`Foto de ${name}`} loading="lazy" className="size-10 shrink-0 rounded-lg object-cover" />
+  ) : (
+    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
+      <PawPrint className="size-4 text-secondary-foreground" />
+    </span>
   );
 }
 
