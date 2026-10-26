@@ -31,6 +31,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import { AdminCreateTutorDialog } from "@/components/AdminCreateTutorDialog";
 
 export const Route = createFileRoute("/admin/tutores")({
   head: () => ({
@@ -124,6 +125,9 @@ function AdminTutoresPage() {
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <AdminCreateTutorDialog />
+      </div>
       <div className="flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
