@@ -254,6 +254,7 @@ function EditTutorDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const queryClient = useQueryClient();
   const [form, setForm] = useState({
     full_name: tutor.full_name,
     phone: tutor.phone ?? "",
