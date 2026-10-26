@@ -514,6 +514,7 @@ function SolicitarPage() {
                   value={originAddress}
                   onValueChange={setOriginAddress}
                   onSelect={setOrigin}
+                  place={origin}
                   required
                 />
                 <FavoriteAddresses userId={user?.id} current={origin} onPick={(p) => { setOrigin(p); setOriginAddress(p.address); }} />
@@ -571,6 +572,7 @@ function SolicitarPage() {
                   value={destinationAddress}
                   onValueChange={setDestinationAddress}
                   onSelect={setDestination}
+                  place={destination}
                   required
                 />
                 <FavoriteAddresses userId={user?.id} current={destination} onPick={(p) => { setDestination(p); setDestinationAddress(p.address); }} />

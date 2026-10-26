@@ -22,6 +22,8 @@ type Props = {
   onValueChange: (value: string) => void;
   onSelect: (place: SelectedPlace | null) => void;
   required?: boolean;
+  /** Endereço aplicado de fora (ex.: favorito), sem abrir sugestões. */
+  place?: SelectedPlace | null;
 };
 
 /** Campo de endereço com sugestões do Google Maps, com viés para São Paulo. */
@@ -31,6 +33,7 @@ export function AddressAutocomplete({
   value,
   onValueChange,
   onSelect,
+  place,
   required,
 }: Props) {
   const id = useId();
@@ -43,6 +46,15 @@ export function AddressAutocomplete({
   const [selected, setSelected] = useState<SelectedPlace | null>(null);
   const skipNext = useRef(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (place && place.address !== selected?.address) {
+      skipNext.current = true;
+      setSelected(place);
+      setOpen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [place]);
 
   useEffect(() => {
     if (skipNext.current) {
