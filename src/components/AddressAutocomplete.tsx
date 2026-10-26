@@ -66,6 +66,13 @@ export function AddressAutocomplete({
       setSuggestions([]);
       return;
     }
+    // Quando o usuário só acrescenta o número/S/N ao endereço já escolhido,
+    // não buscamos de novo: a lista não reabre por cima do formulário.
+    const streetCore = selected?.address.split(",")[0]?.trim().toLowerCase() ?? "";
+    if (selected && streetCore && query.toLowerCase().includes(streetCore)) {
+      setSuggestions([]);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     const timer = setTimeout(() => {
