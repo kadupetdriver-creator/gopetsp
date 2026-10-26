@@ -80,7 +80,7 @@ type DriverDetails = {
   vehicles: { plate: string; model: string; brand: string; color: string; year: number; vehicle_type: string; is_active: boolean }[] | null;
 };
 
-function InfoLine({ label, value }: { label: string; value?: string | number | null }) {
+function InfoLine({ label, value }: { label: string; value?: string | number | null | undefined }) {
   return (
     <p className="text-xs"><span className="text-muted-foreground">{label}: </span><span className="break-words">{value === null || value === undefined || value === "" ? "—" : value}</span></p>
   );
