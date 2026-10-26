@@ -462,6 +462,7 @@ function PersonalStep({
               onChange={(e) => set("phone", maskPhone(e.target.value))}
               required
             />
+            <PhoneValidityWarning className="mt-2" />
           </Field>
           <Field label="E-mail" id="email">
             <Input id="email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} required />

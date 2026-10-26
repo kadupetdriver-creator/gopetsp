@@ -293,6 +293,7 @@ function PerfilPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
+              <PhoneValidityWarning />
             </div>
             {isDriver && (
               <div className="space-y-2 sm:col-span-2">

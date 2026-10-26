@@ -211,6 +211,7 @@ function AuthPage() {
                     onChange={(e) => setPhone(e.target.value)}
                     required
                   />
+                  <PhoneValidityWarning />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="referral">Código de indicação (opcional)</Label>

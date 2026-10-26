@@ -48,6 +48,7 @@ export function GoogleProfileCompletion() {
         <div className="space-y-2">
           <Label htmlFor="complete-phone">Telefone / WhatsApp</Label>
           <Input id="complete-phone" type="tel" autoComplete="tel" placeholder="(11) 90000-0000" value={maskPhone(phone)} onChange={(e) => setPhone(maskPhone(e.target.value))} required disabled={busy} />
+          <PhoneValidityWarning />
         </div>
         <div className="space-y-2">
           <Label htmlFor="complete-email">E-mail</Label>
