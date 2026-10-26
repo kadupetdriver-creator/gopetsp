@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { maskCPF, maskPhone } from "@/lib/drivers";
+import { PhoneValidityWarning } from "@/components/PhoneValidityWarning";
 import { parseCompletion } from "@/lib/profile-completion";
 import { completeGoogleProfile } from "@/lib/profile-completion.functions";
 

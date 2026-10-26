@@ -41,6 +41,7 @@ import {
   type DocumentType,
   type DriverStatus,
 } from "@/lib/drivers";
+import { PhoneValidityWarning } from "@/components/PhoneValidityWarning";
 
 export const Route = createFileRoute("/seja-motorista")({
   head: () => ({

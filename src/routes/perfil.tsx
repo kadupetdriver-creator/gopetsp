@@ -23,6 +23,7 @@ import { ReferralCard } from "@/components/ReferralCard";
 import { PhotoChangeCard } from "@/components/PhotoChangeCard";
 import { DriverVehicles } from "@/components/DriverVehicles";
 import { PetSizeHelp } from "@/components/PetSizeHelp";
+import { PhoneValidityWarning } from "@/components/PhoneValidityWarning";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 const phonePattern = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;

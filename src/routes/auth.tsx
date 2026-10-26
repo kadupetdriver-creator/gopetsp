@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PasswordInput } from "@/components/PasswordInput";
 import { isValidCPF, maskCPF, onlyDigits } from "@/lib/drivers";
+import { PhoneValidityWarning } from "@/components/PhoneValidityWarning";
 
 const searchSchema = z.object({
   papel: z.enum(["tutor", "motorista"]).optional(),
