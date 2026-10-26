@@ -41,3 +41,41 @@ export const adminCreateTutor = createServerFn({ method: "POST" })
     console.info("[admin-tutor-created]", { tutorId: created.user.id, adminId: context.userId, at: new Date().toISOString() });
     return { id: created.user.id };
   });
+
+const PHOTO_EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+
+export const adminAddTutorPet = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({
+    tutorId: z.string().uuid(),
+    name: z.string().trim().min(1, "Informe o nome do pet.").max(60),
+    species: z.string().trim().min(1, "Selecione a espécie do pet.").max(30),
+    size: z.string().trim().min(1).max(30),
+    photo: z.object({ base64: z.string().max(7_000_000), type: z.string() }).nullable(),
+  }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "admin",
+    });
+    if (roleError || isAdmin !== true) throw new Error("Apenas administradores podem cadastrar pets para tutores.");
+    const { data: tutor } = await context.supabase.from("profiles").select("id, role").eq("id", data.tutorId).maybeSingle();
+    if (!tutor) throw new Error("Tutor não encontrado.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: pet, error } = await supabaseAdmin.from("pets")
+      .insert({ owner_id: data.tutorId, name: data.name, species: data.species, size: data.size })
+      .select("id").single();
+    if (error || !pet) throw new Error("Não foi possível cadastrar o pet.");
+    if (data.photo) {
+      const ext = PHOTO_EXT[data.photo.type];
+      if (!ext) throw new Error("Pet cadastrado, mas a foto precisa ser JPG, PNG ou WebP.");
+      const bytes = Uint8Array.from(atob(data.photo.base64), (c) => c.charCodeAt(0));
+      if (bytes.length > 5 * 1024 * 1024) throw new Error("Pet cadastrado, mas a foto deve ter no máximo 5 MB.");
+      const path = `${data.tutorId}/${pet.id}.${ext}`;
+      const { error: upErr } = await supabaseAdmin.storage.from("pet-photos")
+        .upload(path, bytes, { upsert: true, contentType: data.photo.type });
+      if (upErr) throw new Error("Pet cadastrado, mas não foi possível enviar a foto.");
+      await supabaseAdmin.from("pets").update({ photo_url: path }).eq("id", pet.id);
+    }
+    console.info("[admin-pet-created]", { petId: pet.id, tutorId: data.tutorId, adminId: context.userId, at: new Date().toISOString() });
+    return { id: pet.id };
+  });

@@ -32,6 +32,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { AdminCreateTutorDialog } from "@/components/AdminCreateTutorDialog";
+import { AdminAddPetForm } from "@/components/AdminAddPetForm";
 
 export const Route = createFileRoute("/admin/tutores")({
   head: () => ({
@@ -392,6 +393,10 @@ function EditTutorDialog({
           <Field label="Cidade">
             <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
           </Field>
+          <AdminAddPetForm
+            tutorId={tutor.id}
+            onAdded={() => void qc.invalidateQueries({ queryKey: ["admin-tutors"] })}
+          />
           <div className="space-y-3 rounded-xl border border-border px-3 py-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-medium">Saldo de créditos</p>
