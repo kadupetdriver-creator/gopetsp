@@ -356,6 +356,13 @@ function AdminCorridasPage() {
                   <span className="ml-2 text-xs text-muted-foreground">{pay}</span>
                 </p>
                 <p className="text-xs text-muted-foreground">Criada em {formatSaoPauloSchedule(r.created_at)}</p>
+                <RidePeopleDetails
+                  tutor={peopleById.get(r.tutor_id)}
+                  tutorEmail={emailById.get(r.tutor_id)}
+                  driverProfile={r.driver_id ? peopleById.get(r.driver_id) : undefined}
+                  driver={r.driver_id ? driverByUser.get(r.driver_id) : undefined}
+                  driverEmail={r.driver_id ? emailById.get(r.driver_id) : undefined}
+                />
                 {r.paid_at && (r.driver_id || isAvailableRide(r)) && (
                   <p className="text-sm text-muted-foreground">
                     Valor ao motorista (75%): <strong className="text-foreground">{formatBRL(adminRideAmounts(r.price_cents).driverCents)}</strong>
