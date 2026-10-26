@@ -34,6 +34,7 @@ import { RideMap } from "@/components/RideMap";
 import { ActiveRideTracker } from "@/components/ActiveRideTracker";
 import { PetPhoto } from "@/components/PetPhoto";
 import { PetSizeHelp } from "@/components/PetSizeHelp";
+import { FavoriteAddresses } from "@/components/FavoriteAddresses";
 import { SIZE_RANK } from "@/lib/pet-sizes";
 
 type PetItem = {
@@ -513,8 +514,10 @@ function SolicitarPage() {
                   value={originAddress}
                   onValueChange={setOriginAddress}
                   onSelect={setOrigin}
+                  place={origin}
                   required
                 />
+                <FavoriteAddresses userId={user?.id} current={origin} onPick={(p) => { setOrigin(p); setOriginAddress(p.address); }} />
 
               </div>
               <div className="space-y-3 sm:col-span-2">
@@ -569,8 +572,10 @@ function SolicitarPage() {
                   value={destinationAddress}
                   onValueChange={setDestinationAddress}
                   onSelect={setDestination}
+                  place={destination}
                   required
                 />
+                <FavoriteAddresses userId={user?.id} current={destination} onPick={(p) => { setDestination(p); setDestinationAddress(p.address); }} />
 
               </div>
               <div className="space-y-2 sm:col-span-2">

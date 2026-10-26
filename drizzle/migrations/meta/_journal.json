@@ -99,6 +99,13 @@
       "when": 1792859296521,
       "tag": "0013_driver_final_rejection_trusted_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793032448021,
+      "tag": "0014_favorite_addresses",
+      "breakpoints": true
     }
   ]
 }
