@@ -73,6 +73,62 @@ type Ride = {
 };
 
 type Person = { id: string; full_name: string; role: "tutor" | "driver" };
+type PersonDetails = { phone: string | null; cpf: string | null; city: string | null; address: string | null; is_active: boolean; created_at: string };
+type DriverDetails = {
+  id: string; user_id: string; full_name: string; cpf: string; birth_date: string; phone: string; email: string;
+  city: string; neighborhood: string; pix_key: string | null; status: string;
+  vehicles: { plate: string; model: string; brand: string; color: string; year: number; vehicle_type: string; is_active: boolean }[] | null;
+};
+
+function InfoLine({ label, value }: { label: string; value?: string | number | null }) {
+  return (
+    <p className="text-xs"><span className="text-muted-foreground">{label}: </span><span className="break-words">{value === null || value === undefined || value === "" ? "—" : value}</span></p>
+  );
+}
+
+function RidePeopleDetails({ tutor, tutorEmail, driverProfile, driver, driverEmail }: {
+  tutor?: Person & PersonDetails; tutorEmail?: string; driverProfile?: Person & PersonDetails; driver?: DriverDetails; driverEmail?: string;
+}) {
+  const vehicles = driver?.vehicles ?? [];
+  const active = vehicles.find((v) => v.is_active) ?? (vehicles.length === 1 ? vehicles[0] : undefined);
+  return (
+    <details className="rounded-md border bg-secondary/40 p-3">
+      <summary className="cursor-pointer text-sm font-semibold">Dados do tutor e do motorista</summary>
+      <div className="mt-3 grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1">
+          <p className="text-sm font-semibold">Tutor</p>
+          <InfoLine label="Nome" value={tutor?.full_name} />
+          <InfoLine label="Telefone" value={tutor?.phone} />
+          <InfoLine label="E-mail" value={tutorEmail} />
+          <InfoLine label="CPF" value={tutor?.cpf} />
+          <InfoLine label="Cidade" value={tutor?.city} />
+          <InfoLine label="Endereço" value={tutor?.address} />
+          <InfoLine label="Conta ativa" value={tutor ? (tutor.is_active ? "Sim" : "Não") : null} />
+          <InfoLine label="Cadastro em" value={tutor ? new Date(tutor.created_at).toLocaleDateString("pt-BR") : null} />
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-semibold">Motorista</p>
+          {!driverProfile && !driver ? (
+            <p className="text-xs text-muted-foreground">Nenhum motorista aceitou esta corrida.</p>
+          ) : (
+            <>
+              <InfoLine label="Nome" value={driver?.full_name ?? driverProfile?.full_name} />
+              <InfoLine label="Telefone" value={driver?.phone ?? driverProfile?.phone} />
+              <InfoLine label="E-mail" value={driver?.email ?? driverEmail} />
+              <InfoLine label="CPF" value={driver?.cpf ?? driverProfile?.cpf} />
+              <InfoLine label="Nascimento" value={driver?.birth_date ? new Date(`${driver.birth_date}T12:00:00`).toLocaleDateString("pt-BR") : null} />
+              <InfoLine label="Cidade / bairro" value={driver ? `${driver.city} · ${driver.neighborhood}` : driverProfile?.city} />
+              <InfoLine label="Chave Pix" value={driver?.pix_key} />
+              <InfoLine label="Situação do cadastro" value={driver?.status} />
+              <InfoLine label="Veículo ativo" value={active ? `${active.brand} ${active.model} ${active.year} · ${active.color} · placa ${active.plate}` : null} />
+              {vehicles.length > 1 && <InfoLine label="Outros veículos" value={vehicles.filter((v) => v !== active).map((v) => `${v.brand} ${v.model} (${v.plate})`).join(", ")} />}
+            </>
+          )}
+        </div>
+      </div>
+    </details>
+  );
+}
 
 const allStatuses: RideStatus[] = ["pending", "accepted", "en_route", "in_progress", "completed", "cancelled"];
 const activeGroup: RideStatus[] = ["pending", "accepted", "en_route", "in_progress"];
@@ -119,12 +175,26 @@ function AdminCorridasPage() {
         )
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
-      const { data: people } = await supabase.from("profiles").select("id, full_name, role");
-      return { rides: (rides ?? []) as unknown as Ride[], people: (people ?? []) as Person[] };
+      const [{ data: people }, { data: emails }, { data: drv }] = await Promise.all([
+        supabase.from("profiles").select("id, full_name, role, phone, cpf, city, address, is_active, created_at"),
+        supabase.rpc("admin_user_emails"),
+        supabase
+          .from("drivers")
+          .select("id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, pix_key, status, vehicles(plate, model, brand, color, year, vehicle_type, is_active)"),
+      ]);
+      return {
+        rides: (rides ?? []) as unknown as Ride[],
+        people: (people ?? []) as unknown as (Person & PersonDetails)[],
+        emails: (emails ?? []) as { user_id: string; email: string }[],
+        drivers: (drv ?? []) as unknown as DriverDetails[],
+      };
     },
   });
 
   const names = useMemo(() => new Map((data?.people ?? []).map((p) => [p.id, p.full_name])), [data]);
+  const peopleById = useMemo(() => new Map((data?.people ?? []).map((p) => [p.id, p])), [data]);
+  const emailById = useMemo(() => new Map((data?.emails ?? []).map((e) => [e.user_id, e.email])), [data]);
+  const driverByUser = useMemo(() => new Map((data?.drivers ?? []).map((d) => [d.user_id, d])), [data]);
 
   const counts = useMemo(() => {
     const rides = data?.rides ?? [];
