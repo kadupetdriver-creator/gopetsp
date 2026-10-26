@@ -79,3 +79,25 @@ export const adminAddTutorPet = createServerFn({ method: "POST" })
     console.info("[admin-pet-created]", { petId: pet.id, tutorId: data.tutorId, adminId: context.userId, at: new Date().toISOString() });
     return { id: pet.id };
   });
+
+export const adminSetTutorPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({
+    tutorId: z.string().uuid(),
+    password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres.").max(72),
+  }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "admin",
+    });
+    if (roleError || isAdmin !== true) throw new Error("Apenas administradores podem alterar senhas.");
+    const { data: tutor } = await context.supabase.from("profiles").select("id").eq("id", data.tutorId).maybeSingle();
+    if (!tutor) throw new Error("Tutor não encontrado.");
+    const { data: target } = await context.supabase.rpc("has_role", { _user_id: data.tutorId, _role: "admin" });
+    if (target === true && data.tutorId !== context.userId) throw new Error("Não é possível alterar a senha de outro administrador.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.tutorId, { password: data.password });
+    if (error) throw new Error("Não foi possível alterar a senha. Tente novamente.");
+    console.info("[admin-tutor-password-changed]", { tutorId: data.tutorId, adminId: context.userId, at: new Date().toISOString() });
+    return { ok: true };
+  });
