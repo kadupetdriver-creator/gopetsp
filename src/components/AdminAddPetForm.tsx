@@ -27,10 +27,10 @@ export function AdminAddPetForm({ tutorId, onAdded }: { tutorId: string; onAdded
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const submit = async () => {
-    if (!name.trim()) return toast.error("Informe o nome do pet.");
-    if (!species) return toast.error("Selecione a espécie do pet.");
-    if (photo && photo.size > 5 * 1024 * 1024) return toast.error("A foto deve ter no máximo 5 MB.");
+  const submit = async (): Promise<void> => {
+    if (!name.trim()) { toast.error("Informe o nome do pet."); return; }
+    if (!species) { toast.error("Selecione a espécie do pet."); return; }
+    if (photo && photo.size > 5 * 1024 * 1024) { toast.error("A foto deve ter no máximo 5 MB."); return; }
     setBusy(true);
     try {
       const encoded = photo ? { base64: await toBase64(photo), type: photo.type } : null;

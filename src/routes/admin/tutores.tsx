@@ -395,7 +395,7 @@ function EditTutorDialog({
           </Field>
           <AdminAddPetForm
             tutorId={tutor.id}
-            onAdded={() => void qc.invalidateQueries({ queryKey: ["admin-tutors"] })}
+            onAdded={() => void queryClient.invalidateQueries({ queryKey: ["admin-tutors"] })}
           />
           <div className="space-y-3 rounded-xl border border-border px-3 py-3">
             <div className="flex items-center justify-between gap-3">
