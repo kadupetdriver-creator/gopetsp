@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Concluído — aviso sobre números de telefone
+- [x] Exibir aviso destacado em vermelho e negrito em todo campo de telefone sobre cancelamento da corrida e inativação da conta
+- [x] Cadastro de tutor, perfil e cadastro de motorista conferidos na tela; complementação via Google usa o mesmo componente
+
 ## Concluído — revisão de motoristas
 - [x] Permitir corrigir e reenviar cadastros devolvidos pela administração
 - [x] Incluir recusa definitiva protegida e conferir bloqueio de atualização/reenvio
