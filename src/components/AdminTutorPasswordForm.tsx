@@ -12,8 +12,8 @@ export function AdminTutorPasswordForm({ tutorId }: { tutorId: string }) {
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
-    if (pwd.length < 8) return toast.error("A senha deve ter pelo menos 8 caracteres.");
-    if (pwd !== confirm) return toast.error("As senhas não conferem.");
+    if (pwd.length < 8) { toast.error("A senha deve ter pelo menos 8 caracteres."); return; }
+    if (pwd !== confirm) { toast.error("As senhas não conferem."); return; }
     setBusy(true);
     try {
       await setPassword({ data: { tutorId, password: pwd } });
