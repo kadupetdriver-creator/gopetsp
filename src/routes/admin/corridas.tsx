@@ -87,7 +87,7 @@ function InfoLine({ label, value }: { label: string; value?: string | number | n
 }
 
 function RidePeopleDetails({ tutor, tutorEmail, driverProfile, driver, driverEmail }: {
-  tutor?: Person & PersonDetails; tutorEmail?: string; driverProfile?: Person & PersonDetails; driver?: DriverDetails; driverEmail?: string;
+  tutor: (Person & PersonDetails) | undefined; tutorEmail: string | undefined; driverProfile: (Person & PersonDetails) | undefined; driver: DriverDetails | undefined; driverEmail: string | undefined;
 }) {
   const vehicles = driver?.vehicles ?? [];
   const active = vehicles.find((v) => v.is_active) ?? (vehicles.length === 1 ? vehicles[0] : undefined);
