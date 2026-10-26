@@ -24,6 +24,7 @@ import { PhotoChangeCard } from "@/components/PhotoChangeCard";
 import { DriverVehicles } from "@/components/DriverVehicles";
 import { PetSizeHelp } from "@/components/PetSizeHelp";
 import { PhoneValidityWarning } from "@/components/PhoneValidityWarning";
+import { ProfileFavoriteAddresses } from "@/components/ProfileFavoriteAddresses";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 const phonePattern = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
@@ -488,6 +489,19 @@ function PerfilPage() {
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
+      {!isDriver && user && (
+        <Card className="shadow-soft">
+          <CardHeader>
+            <CardTitle className="text-lg">Endereços favoritos</CardTitle>
+            <CardDescription>
+              Salve endereços aqui para usá-los com um toque ao pedir uma corrida.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ProfileFavoriteAddresses userId={user.id} />
           </CardContent>
         </Card>
       )}

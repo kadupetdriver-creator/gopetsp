@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Concluído — endereços favoritos no perfil
+- [x] Adicionar seção no perfil do tutor para cadastrar e listar endereços favoritos
+- [x] Cadastro, lista, remoção e solicitação de corrida conferidos na tela; quarenta e cinco testes passaram
+
 ## Concluído — aviso sobre números de telefone
 - [x] Exibir aviso destacado em vermelho e negrito em todo campo de telefone sobre cancelamento da corrida e inativação da conta
 - [x] Cadastro de tutor, perfil e cadastro de motorista conferidos na tela; complementação via Google usa o mesmo componente
