@@ -33,6 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { AdminCreateTutorDialog } from "@/components/AdminCreateTutorDialog";
 import { AdminAddPetForm } from "@/components/AdminAddPetForm";
+import { AdminTutorPasswordForm } from "@/components/AdminTutorPasswordForm";
 
 export const Route = createFileRoute("/admin/tutores")({
   head: () => ({
@@ -394,6 +395,7 @@ function EditTutorDialog({
           <Field label="Cidade">
             <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
           </Field>
+          <AdminTutorPasswordForm tutorId={tutor.id} />
           <AdminAddPetForm
             tutorId={tutor.id}
             onAdded={() => void queryClient.invalidateQueries({ queryKey: ["admin-tutors"] })}
