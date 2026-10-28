@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Em andamento — corrida fixa
+- [ ] Permitir criação administrativa com tutor, pet, trajeto, data e preço fixo
+- [ ] Preservar pagamento e liberação existentes e conferir criação e leitura na tela
+
 ## Concluído — endereços favoritos no perfil
 - [x] Adicionar seção no perfil do tutor para cadastrar e listar endereços favoritos
 - [x] Cadastro, lista, remoção e solicitação de corrida conferidos na tela; quarenta e cinco testes passaram
