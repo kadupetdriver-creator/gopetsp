@@ -11,6 +11,8 @@
 
 ## Rules
 
+- Fixed-price rides are created only by an authenticated admin server function, with tutor-owned pet validation and an idempotent request ID; store the full fare in price_cents and label service_type without changing payment or dispatch state so existing checkout and reports remain authoritative.
+
 - Driver review uses the authenticated admin decision RPC and a separate irreversible rejection flag; database guards and restrictive document/vehicle policies enforce finality while ordinary rejection remains editable and resubmittable.
 
 - CPF duplication exceptions are enforced by the database availability RPC, signup trigger, and partial unique index together; keep the same normalized predicate across all three so password signup and Google completion agree without weakening other CPFs.

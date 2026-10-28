@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, CheckCircle2, Download, Loader2, Pencil, Search, Send, XCircle } from "lucide-react";
+import { CalendarClock, CheckCircle2, Download, Loader2, Pencil, Plus, Search, Send, XCircle } from "lucide-react";
+import { AdminFixedRideDialog } from "@/components/AdminFixedRideDialog";
 import { AdminRescheduleDialog } from "@/components/AdminRescheduleDialog";
 import { canAdminRescheduleRide, formatSaoPauloSchedule } from "@/lib/ride-reschedule";
 import { downloadCsvFile } from "@/lib/csv";
@@ -163,6 +164,7 @@ function AdminCorridasPage() {
   const [filter, setFilter] = useState<RideFilter>("todas");
   const [editing, setEditing] = useState<Ride | null>(null);
   const [forwarding, setForwarding] = useState<Ride | null>(null);
+  const [creatingFixed, setCreatingFixed] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-rides"],
@@ -210,6 +212,7 @@ function AdminCorridasPage() {
       if (!q) return true;
       return [
         r.pet_name,
+        r.service_type,
         r.origin_address,
         r.destination_address,
         names.get(r.tutor_id),
@@ -283,6 +286,7 @@ function AdminCorridasPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <Button onClick={() => setCreatingFixed(true)}><Plus className="mr-2 size-4" /> Corrida fixa</Button>
         <Button variant="outline" disabled={list.length === 0} onClick={exportCsv}>
           <Download className="mr-2 size-4" /> Baixar planilha
         </Button>
@@ -402,6 +406,13 @@ function AdminCorridasPage() {
           );
         })}
       </div>
+
+      {creatingFixed && <AdminFixedRideDialog tutors={(data?.people ?? []).filter((p) => p.role === "tutor" && p.is_active)} onClose={() => setCreatingFixed(false)} onSaved={() => {
+        setCreatingFixed(false);
+        setFilter("orcamentos");
+        setSearch("");
+        for (const key of ["admin-rides", "rides", "my-rides"]) void qc.invalidateQueries({ queryKey: [key] });
+      }} />}
 
       {finishing && (
         <Dialog open onOpenChange={(open) => { if (!open && !finish.isPending) setFinishing(null); }}>
