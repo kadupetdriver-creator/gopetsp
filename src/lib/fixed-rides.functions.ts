@@ -31,7 +31,7 @@ export const adminCreateFixedRide = createServerFn({ method: "POST" })
         has_return: false, return_scheduled_at: null, return_fee_cents: 0, driver_waits: false, waiting_minutes: 0, waiting_fee_cents: 0,
         tutor_accompanies_pet: data.accompanies, accompanying_people_count: data.peopleCount,
       });
-      if (error && error.code !== "23505") throw new Error("Não foi possível criar a corrida fixa.");
+      if (error) throw new Error("Não foi possível criar a corrida fixa. Tente novamente.");
     }
     const { error: linkError } = await supabaseAdmin.from("ride_pets").upsert({ ride_id: data.requestId, pet_id: pet.id }, { onConflict: "ride_id,pet_id", ignoreDuplicates: true });
     if (linkError) throw new Error("Não foi possível vincular o pet. Tente salvar novamente para concluir.");

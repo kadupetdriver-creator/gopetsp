@@ -192,7 +192,7 @@ function MinhasCorridas() {
                 <div>
                   <p className="text-lg font-semibold">{ride.pet_name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {serviceTypes.find((s) => s.value === ride.service_type)?.label ?? "Transporte"}
+                    {serviceTypes.find((s) => s.value === ride.service_type)?.label ?? (ride.service_type === "Corrida fixa" ? "Corrida fixa" : "Transporte")}
                   </p>
                 </div>
                 <span
