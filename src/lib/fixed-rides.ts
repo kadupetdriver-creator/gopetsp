@@ -20,11 +20,12 @@ export function fixedPriceCents(value: string) {
 export const fixedRideSchema = z.object({
   requestId: z.string().uuid(),
   tutorId: z.string().uuid(),
-  petId: z.string().uuid(),
+  petIds: z.array(z.string().uuid()).min(1, "Selecione ao menos um pet.").max(3, "Máximo de 3 pets por corrida.").refine((ids) => new Set(ids).size === ids.length, "Não repita pets na corrida."),
   price: z.string(),
   scheduledAt: z.string(),
   origin: point,
   destination: point,
+  stops: z.array(point).max(3, "Máximo de 3 paradas por corrida."),
   accompanies: z.boolean(),
   peopleCount: z.number().int().positive().nullable(),
   notes: z.string().trim().max(1000),

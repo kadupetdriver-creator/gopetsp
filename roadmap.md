@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Em andamento — pets e paradas na corrida fixa
+- [ ] Permitir vários pets e paradas sem recalcular preço fixo
+- [ ] Conferir criação, vínculos e ordem das paradas com conta administrativa
+
 ## Concluído — corrida fixa
 - [x] Permitir criação administrativa com tutor, pet, trajeto, data e preço fixo
 - [x] Criação e persistência conferidas pela administração e tutor; valor integral salvo sem pagamento ou liberação antecipados, onze testes passaram e corrida temporária removida

@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { assertFixedRideAdmin, fixedPriceCents, parseFixedRide, type FixedRideInput } from "./fixed-rides";
 
 const input: FixedRideInput = {
-  requestId: "00000000-0000-4000-8000-000000000001", tutorId: "00000000-0000-4000-8000-000000000002", petId: "00000000-0000-4000-8000-000000000003",
+  requestId: "00000000-0000-4000-8000-000000000001", tutorId: "00000000-0000-4000-8000-000000000002", petIds: ["00000000-0000-4000-8000-000000000003"], stops: [],
   price: "123,45", scheduledAt: "2026-11-01T10:00", origin: { address: "Rua Teste, 10, São Paulo", neighborhood: null, lat: -23.55, lng: -46.65 },
   destination: { address: "Rua Destino, 20, São Paulo", neighborhood: null, lat: -23.56, lng: -46.66 }, accompanies: false, peopleCount: null, notes: "",
 };
@@ -16,6 +16,23 @@ test("Somente administradores podem criar corrida fixa", () => {
   assert.doesNotThrow(() => assertFixedRideAdmin(true));
   for (const value of [false, null]) assert.throws(() => assertFixedRideAdmin(value));
   assert.throws(() => assertFixedRideAdmin(true, new Error("permission")));
+});
+test("Vários pets preservam o preço fixo e respeitam o limite de três sem duplicação", () => {
+  const petIds = [...input.petIds, "00000000-0000-4000-8000-000000000004", "00000000-0000-4000-8000-000000000005"];
+  const parsed = parseFixedRide({ ...input, petIds }, Date.parse("2026-10-28"));
+  assert.deepEqual(parsed.petIds, petIds);
+  assert.equal(parsed.priceCents, 12345);
+  assert.throws(() => parseFixedRide({ ...input, petIds: [] }));
+  assert.throws(() => parseFixedRide({ ...input, petIds: [...petIds, input.tutorId] }));
+  assert.throws(() => parseFixedRide({ ...input, petIds: [petIds[0], petIds[0]] }));
+});
+test("Paradas mantêm ordem e preço fixo, exigindo endereços válidos e no máximo três", () => {
+  const stops = [input.destination, input.origin];
+  const parsed = parseFixedRide({ ...input, stops }, Date.parse("2026-10-28"));
+  assert.deepEqual(parsed.stops, stops);
+  assert.equal(parsed.priceCents, 12345);
+  assert.throws(() => parseFixedRide({ ...input, stops: [{ ...input.origin, address: "Rua sem número" }] }));
+  assert.throws(() => parseFixedRide({ ...input, stops: Array(4).fill(input.origin) }));
 });
 test("Corrida fixa respeita área atendida, número e data futura em São Paulo", () => {
   const now = Date.parse("2026-10-28");
