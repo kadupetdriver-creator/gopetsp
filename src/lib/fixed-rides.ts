@@ -1,0 +1,42 @@
+import { z } from "zod";
+import { addressHasNumber } from "./address";
+import { parseRescheduleInput } from "./ride-reschedule";
+
+const point = z.object({
+  address: z.string().trim().min(1).max(300),
+  neighborhood: z.string().nullable(),
+  lat: z.number().min(-24.1).max(-23.1),
+  lng: z.number().min(-47.1).max(-46.05),
+}).refine((p) => addressHasNumber(p.address), "Informe o número ou S/N em cada endereço.");
+
+export function fixedPriceCents(value: string) {
+  const normalized = value.trim().replace(",", ".");
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) throw new Error("Informe um preço válido com até duas casas decimais.");
+  const cents = Math.round(Number(normalized) * 100);
+  if (!Number.isSafeInteger(cents) || cents <= 0 || cents > 2147483647) throw new Error("Informe um preço maior que zero e dentro do valor permitido.");
+  return cents;
+}
+
+export const fixedRideSchema = z.object({
+  requestId: z.string().uuid(),
+  tutorId: z.string().uuid(),
+  petId: z.string().uuid(),
+  price: z.string(),
+  scheduledAt: z.string(),
+  origin: point,
+  destination: point,
+  accompanies: z.boolean(),
+  peopleCount: z.number().int().positive().nullable(),
+  notes: z.string().trim().max(1000),
+}).refine((d) => !d.accompanies || d.peopleCount !== null, "Informe quantas pessoas irão com o pet.");
+
+export type FixedRideInput = z.infer<typeof fixedRideSchema>;
+
+export function parseFixedRide(input: FixedRideInput, now = Date.now()) {
+  const data = fixedRideSchema.parse(input);
+  return { ...data, priceCents: fixedPriceCents(data.price), scheduledAt: parseRescheduleInput(data.scheduledAt, true, now), peopleCount: data.accompanies ? data.peopleCount : null };
+}
+
+export function assertFixedRideAdmin(isAdmin: boolean | null, error: unknown = null) {
+  if (error || isAdmin !== true) throw new Error("Apenas administradores podem criar corridas fixas.");
+}
