@@ -26,7 +26,12 @@ export const adminCreateFixedRide = createServerFn({ method: "POST" })
     if (existing && (existing.tutor_id !== data.tutorId || existing.pet_id !== firstPet.id || existing.service_type !== "Corrida fixa")) throw new Error("Identificador de corrida já utilizado.");
     if (existing) {
       const { data: snapshot, error: snapshotError } = await supabaseAdmin.from("rides").select("pet_name, price_cents, stops").eq("id", existing.id).single();
-      if (snapshotError || !snapshot || snapshot.pet_name !== orderedPets.map((p) => p.name).join(", ") || snapshot.price_cents !== data.priceCents || JSON.stringify(snapshot.stops) !== JSON.stringify(data.stops.map((s) => ({ address: s.address, lat: s.lat, lng: s.lng, neighborhood: s.neighborhood })))) {
+      const savedStops = Array.isArray(snapshot?.stops) ? snapshot.stops : [];
+      const sameStops = savedStops.length === data.stops.length && savedStops.every((saved, index) => {
+        const expected = data.stops[index];
+        return expected && saved && typeof saved === "object" && !Array.isArray(saved) && saved.address === expected.address && saved.lat === expected.lat && saved.lng === expected.lng;
+      });
+      if (snapshotError || !snapshot || snapshot.pet_name !== orderedPets.map((p) => p.name).join(", ") || snapshot.price_cents !== data.priceCents || !sameStops) {
         throw new Error("Esta corrida já foi salva com outros dados. Feche o formulário e abra uma nova corrida.");
       }
     }
