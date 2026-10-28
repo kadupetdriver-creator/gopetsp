@@ -33,6 +33,15 @@ export function AdminFixedRideDialog({ tutors, onClose, onSaved }: {
   const [accompanies, setAccompanies] = useState(false);
   const [people, setPeople] = useState("1");
   const [notes, setNotes] = useState("");
+  const moveStop = (index: number, delta: number) => setStops((items) => {
+    const next = [...items];
+    const current = next[index];
+    const adjacent = next[index + delta];
+    if (!current || !adjacent) return items;
+    next[index] = adjacent;
+    next[index + delta] = current;
+    return next;
+  });
   const pets = useQuery({
     queryKey: ["admin-fixed-ride-pets", tutorId], enabled: !!tutorId,
     queryFn: async () => {
@@ -68,8 +77,8 @@ export function AdminFixedRideDialog({ tutors, onClose, onSaved }: {
           {stops.map((stop, index) => <div key={stop.id} className="space-y-2 border-l-2 border-border pl-3">
             <AddressAutocomplete label={`Parada ${index + 1}`} value={stop.text} onValueChange={(text) => setStops((items) => items.map((item) => item.id === stop.id ? { ...item, text } : item))} onSelect={(place) => setStops((items) => items.map((item) => item.id === stop.id ? { ...item, place } : item))} place={stop.place} required />
             <div className="flex gap-1">
-              <Button type="button" size="icon" variant="ghost" title="Mover parada para cima" aria-label={`Mover parada ${index + 1} para cima`} disabled={index === 0} onClick={() => setStops((items) => { const next = [...items]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; return next; })}><ArrowUp className="size-4" /></Button>
-              <Button type="button" size="icon" variant="ghost" title="Mover parada para baixo" aria-label={`Mover parada ${index + 1} para baixo`} disabled={index === stops.length - 1} onClick={() => setStops((items) => { const next = [...items]; [next[index], next[index + 1]] = [next[index + 1], next[index]]; return next; })}><ArrowDown className="size-4" /></Button>
+              <Button type="button" size="icon" variant="ghost" title="Mover parada para cima" aria-label={`Mover parada ${index + 1} para cima`} disabled={index === 0} onClick={() => moveStop(index, -1)}><ArrowUp className="size-4" /></Button>
+              <Button type="button" size="icon" variant="ghost" title="Mover parada para baixo" aria-label={`Mover parada ${index + 1} para baixo`} disabled={index === stops.length - 1} onClick={() => moveStop(index, 1)}><ArrowDown className="size-4" /></Button>
               <Button type="button" size="icon" variant="ghost" title="Remover parada" aria-label={`Remover parada ${index + 1}`} onClick={() => setStops((items) => items.filter((item) => item.id !== stop.id))}><Trash2 className="size-4" /></Button>
             </div>
           </div>)}

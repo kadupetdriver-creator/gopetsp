@@ -24,7 +24,7 @@ test("Vários pets preservam o preço fixo e respeitam o limite de três sem dup
   assert.equal(parsed.priceCents, 12345);
   assert.throws(() => parseFixedRide({ ...input, petIds: [] }));
   assert.throws(() => parseFixedRide({ ...input, petIds: [...petIds, input.tutorId] }));
-  assert.throws(() => parseFixedRide({ ...input, petIds: [petIds[0], petIds[0]] }));
+  assert.throws(() => parseFixedRide({ ...input, petIds: [input.requestId, input.requestId] }));
 });
 test("Paradas mantêm ordem e preço fixo, exigindo endereços válidos e no máximo três", () => {
   const stops = [input.destination, input.origin];
