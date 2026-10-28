@@ -29,7 +29,7 @@ export const adminCreateFixedRide = createServerFn({ method: "POST" })
       const savedStops = Array.isArray(snapshot?.stops) ? snapshot.stops : [];
       const sameStops = savedStops.length === data.stops.length && savedStops.every((saved, index) => {
         const expected = data.stops[index];
-        return expected && saved && typeof saved === "object" && !Array.isArray(saved) && saved.address === expected.address && saved.lat === expected.lat && saved.lng === expected.lng;
+        return expected && saved && typeof saved === "object" && !Array.isArray(saved) && saved["address"] === expected.address && saved["lat"] === expected.lat && saved["lng"] === expected.lng;
       });
       if (snapshotError || !snapshot || snapshot.pet_name !== orderedPets.map((p) => p.name).join(", ") || snapshot.price_cents !== data.priceCents || !sameStops) {
         throw new Error("Esta corrida já foi salva com outros dados. Feche o formulário e abra uma nova corrida.");
