@@ -11,7 +11,7 @@
 
 ## Rules
 
-- Fixed-price rides are created only by an authenticated admin server function, with tutor-owned pet validation and an idempotent request ID; store the full fare in price_cents and label service_type without changing payment or dispatch state so existing checkout and reports remain authoritative.
+- Fixed-price rides use an authenticated admin server function with tutor-owned pets, shared size ranking, ordered stops and an idempotent request ID; all pets link through ride_pets and routing includes stops, while the full manual fare, payment and dispatch states remain authoritative.
 
 - Driver review uses the authenticated admin decision RPC and a separate irreversible rejection flag; database guards and restrictive document/vehicle policies enforce finality while ordinary rejection remains editable and resubmittable.
 
