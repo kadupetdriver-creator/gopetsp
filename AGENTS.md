@@ -11,7 +11,7 @@
 
 ## Rules
 
-- Fixed-price rides use an authenticated admin server function with tutor-owned pets, shared size ranking, ordered stops and an idempotent request ID; all pets link through ride_pets and routing includes stops, while the full manual fare, payment and dispatch states remain authoritative.
+- Fixed-price rides use an authenticated admin server function with tutor-owned pets, shared size ranking, ordered stops and an idempotent request ID; all pets link through ride_pets and routing includes stops. After successful balance settlement, release through the guarded request_paid_ride_driver RPC before returning success; retries reuse the same ride without another debit.
 
 - Driver review uses the authenticated admin decision RPC and a separate irreversible rejection flag; database guards and restrictive document/vehicle policies enforce finality while ordinary rejection remains editable and resubmittable.
 

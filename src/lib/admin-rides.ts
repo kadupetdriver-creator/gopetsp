@@ -30,5 +30,5 @@ export function canAdminCompleteRide(ride: AdminRideState) {
 }
 
 export function adminRideAmounts(priceCents: number, driverFixedCents?: number | null) {
-  return { totalCents: priceCents, driverCents: driverPayoutCents({ priceCents, driverFixedCents }) };
+  return { totalCents: priceCents, driverCents: driverPayoutCents({ priceCents, driverFixedCents: driverFixedCents ?? null }) };
 }

@@ -1,12 +1,27 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { assertFixedRideAdmin, fixedPriceCents, parseFixedRide, type FixedRideInput } from "./fixed-rides";
+import { releasePaidFixedRide } from "./fixed-ride-release";
 
 const input: FixedRideInput = {
   requestId: "00000000-0000-4000-8000-000000000001", tutorId: "00000000-0000-4000-8000-000000000002", petIds: ["00000000-0000-4000-8000-000000000003"], stops: [],
   price: "123,45", driverPrice: "92,58", scheduledAt: "2026-11-01T10:00", origin: { address: "Rua Teste, 10, São Paulo", neighborhood: null, lat: -23.55, lng: -46.65 },
   destination: { address: "Rua Destino, 20, São Paulo", neighborhood: null, lat: -23.56, lng: -46.66 }, accompanies: false, peopleCount: null, notes: "",
 };
+test("Corrida fixa paga solicita automaticamente entrada no bolsão para o tutor correto", async () => {
+  const calls: unknown[] = [];
+  const requestedAt = "2026-10-29T12:57:00.000Z";
+  const release = async (args: { _ride_id: string; _tutor_id: string }) => {
+    calls.push(args);
+    return { data: requestedAt, error: null };
+  };
+  assert.equal(await releasePaidFixedRide(input.requestId, input.tutorId, release), requestedAt);
+  assert.deepEqual(calls, [{ _ride_id: input.requestId, _tutor_id: input.tutorId }]);
+});
+test("Falha de liberação não apresenta corrida fixa como enviada ao bolsão", async () => {
+  await assert.rejects(releasePaidFixedRide(input.requestId, input.tutorId, async () => ({ data: null, error: new Error("unpaid") })));
+  await assert.rejects(releasePaidFixedRide(input.requestId, input.tutorId, async () => ({ data: null, error: null })));
+});
 test("Corrida fixa preserva exatamente o valor administrativo em centavos", () => {
   assert.equal(parseFixedRide(input, Date.parse("2026-10-28")).priceCents, 12345);
   assert.equal(fixedPriceCents("0,01"), 1);
