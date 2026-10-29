@@ -849,6 +849,7 @@ export type Database = {
           destination_lng: number | null
           destination_neighborhood: string | null
           distance_km: number
+          driver_fixed_cents: number | null
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null
@@ -894,6 +895,7 @@ export type Database = {
           destination_lng?: number | null
           destination_neighborhood?: string | null
           distance_km?: number
+          driver_fixed_cents?: number | null
           driver_id?: string | null
           driver_lat?: number | null
           driver_lng?: number | null
@@ -939,6 +941,7 @@ export type Database = {
           destination_lng?: number | null
           destination_neighborhood?: string | null
           distance_km?: number
+          driver_fixed_cents?: number | null
           driver_id?: string | null
           driver_lat?: number | null
           driver_lng?: number | null
@@ -1079,6 +1082,7 @@ export type Database = {
           destination_lng: number | null
           destination_neighborhood: string | null
           distance_km: number
+          driver_fixed_cents: number | null
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null
@@ -1186,6 +1190,7 @@ export type Database = {
           destination_lng: number | null
           destination_neighborhood: string | null
           distance_km: number
+          driver_fixed_cents: number | null
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null
@@ -1366,6 +1371,7 @@ export type Database = {
           destination_lng: number | null
           destination_neighborhood: string | null
           distance_km: number
+          driver_fixed_cents: number | null
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null

@@ -4,7 +4,7 @@ import { assertFixedRideAdmin, fixedPriceCents, parseFixedRide, type FixedRideIn
 
 const input: FixedRideInput = {
   requestId: "00000000-0000-4000-8000-000000000001", tutorId: "00000000-0000-4000-8000-000000000002", petIds: ["00000000-0000-4000-8000-000000000003"], stops: [],
-  price: "123,45", scheduledAt: "2026-11-01T10:00", origin: { address: "Rua Teste, 10, São Paulo", neighborhood: null, lat: -23.55, lng: -46.65 },
+  price: "123,45", driverPrice: "92,58", scheduledAt: "2026-11-01T10:00", origin: { address: "Rua Teste, 10, São Paulo", neighborhood: null, lat: -23.55, lng: -46.65 },
   destination: { address: "Rua Destino, 20, São Paulo", neighborhood: null, lat: -23.56, lng: -46.66 }, accompanies: false, peopleCount: null, notes: "",
 };
 test("Corrida fixa preserva exatamente o valor administrativo em centavos", () => {
@@ -40,4 +40,10 @@ test("Corrida fixa respeita área atendida, número e data futura em São Paulo"
   assert.throws(() => parseFixedRide({ ...input, origin: { ...input.origin, lat: -22 } }, now));
   assert.throws(() => parseFixedRide({ ...input, origin: { ...input.origin, address: "Rua Teste" } }, now));
   assert.throws(() => parseFixedRide({ ...input, scheduledAt: "2026-10-01T10:00" }, now));
+});
+test("Corrida fixa fixa o valor do motorista definido pela administração", () => {
+  const parsed = parseFixedRide(input, Date.parse("2026-10-28"));
+  assert.equal(parsed.driverFixedCents, 9258);
+  assert.equal(parseFixedRide({ ...input, driverPrice: "123,45" }, Date.parse("2026-10-28")).driverFixedCents, 12345);
+  for (const value of ["123,46", "0", "abc", ""]) assert.throws(() => parseFixedRide({ ...input, driverPrice: value }, Date.parse("2026-10-28")));
 });

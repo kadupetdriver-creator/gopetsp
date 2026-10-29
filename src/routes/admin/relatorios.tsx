@@ -8,7 +8,7 @@ import { CalendarIcon, CalendarRange, WalletCards } from "lucide-react";
 import { adminGetReport, type AdminReportEntry } from "@/lib/admin.functions";
 import { refreshEtaCalibration } from "@/lib/eta.functions";
 import { formatBRL, formatDateTime, statusLabels, type RideStatus } from "@/lib/rides";
-import { driverShareCents } from "@/lib/pricing";
+import { driverPayoutCents } from "@/lib/pricing";
 import { rideOccursWithin } from "@/lib/driver-payments";
 import { formatSaoPauloSchedule } from "@/lib/ride-reschedule";
 import { DriverPaymentStatus, driverPaymentRowClass } from "@/components/DriverPaymentStatus";
@@ -177,7 +177,7 @@ function AdminRelatoriosPage() {
   );
 
   const totalRides = rides.reduce((acc, r) => acc + r.priceCents, 0);
-  const totalDriverShare = rides.reduce((acc, r) => acc + driverShareCents(r.priceCents), 0);
+  const totalDriverShare = rides.reduce((acc, r) => acc + driverPayoutCents({ priceCents: r.priceCents, driverFixedCents: r.driverFixedCents }), 0);
   const totalBonus = entries.filter((e) => e.kind !== "desconto").reduce((acc, e) => acc + e.amountCents, 0);
   const driverBonusTotal = entries.filter((e) => e.kind === "bonus").reduce((acc, e) => acc + e.amountCents, 0);
   const totalDesconto = entries.filter((e) => e.kind === "desconto").reduce((acc, e) => acc + e.amountCents, 0);
@@ -298,12 +298,12 @@ function AdminRelatoriosPage() {
                         Viagem: {formatSaoPauloSchedule(r.scheduledAt)} · {statusLabels[r.status as RideStatus] ?? r.status}
                       </p>
                       <p className="text-xs text-muted-foreground">Criada em {formatSaoPauloSchedule(r.createdAt)} · Tutor pagou em {r.paidAt ? formatSaoPauloSchedule(r.paidAt) : "—"}</p>
-                      {r.driverId && r.status !== "cancelled" && <DriverPaymentStatus rideId={r.id} scheduledAt={r.scheduledAt} paidAt={r.driverPaidAt} amountCents={r.driverPaidCents ?? driverShareCents(r.priceCents)} admin completed={r.status === "completed"} />}
+                      {r.driverId && r.status !== "cancelled" && <DriverPaymentStatus rideId={r.id} scheduledAt={r.scheduledAt} paidAt={r.driverPaidAt} amountCents={r.driverPaidCents ?? driverPayoutCents({ priceCents: r.priceCents, driverFixedCents: r.driverFixedCents })} admin completed={r.status === "completed"} />}
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">{formatBRL(r.priceCents)}</p>
                       {r.driverId && (
-                        <p className="text-xs text-muted-foreground">Motorista {formatBRL(driverShareCents(r.priceCents))}</p>
+                        <p className="text-xs text-muted-foreground">Motorista {formatBRL(driverPayoutCents({ priceCents: r.priceCents, driverFixedCents: r.driverFixedCents }))}</p>
                       )}
                     </div>
                   </CardContent>
@@ -355,7 +355,7 @@ function EarningsReport({
   });
   const bonusTotal = bonuses.reduce((sum, b) => sum + b.amountCents, 0);
   const total = rides.reduce((sum, ride) => sum + ride.priceCents, 0);
-  const driverShare = rides.reduce((sum, ride) => sum + driverShareCents(ride.priceCents), 0) + bonusTotal;
+  const driverShare = rides.reduce((sum, ride) => sum + driverPayoutCents({ priceCents: ride.priceCents, driverFixedCents: ride.driverFixedCents }), 0) + bonusTotal;
   const periodLabel = `${formatSaoPauloDate(period.start)} a ${formatSaoPauloDate(period.end)}`;
 
   return (
@@ -408,11 +408,11 @@ function EarningsReport({
                 <p className="text-xs text-muted-foreground">
                   {ride.driverName ?? "Sem motorista"} · Viagem: {formatSaoPauloSchedule(ride.scheduledAt)}
                 </p>
-                {ride.driverId && ride.status !== "cancelled" && <DriverPaymentStatus rideId={ride.id} scheduledAt={ride.scheduledAt} paidAt={ride.driverPaidAt} amountCents={ride.driverPaidCents ?? driverShareCents(ride.priceCents)} admin completed={ride.status === "completed"} />}
+                {ride.driverId && ride.status !== "cancelled" && <DriverPaymentStatus rideId={ride.id} scheduledAt={ride.scheduledAt} paidAt={ride.driverPaidAt} amountCents={ride.driverPaidCents ?? driverPayoutCents({ priceCents: ride.priceCents, driverFixedCents: ride.driverFixedCents })} admin completed={ride.status === "completed"} />}
               </div>
               <div className="shrink-0 text-right">
                 <p className="font-semibold">{formatBRL(ride.priceCents)}</p>
-                <p className="text-xs text-muted-foreground">Motorista {formatBRL(driverShareCents(ride.priceCents))}</p>
+                <p className="text-xs text-muted-foreground">Motorista {formatBRL(driverPayoutCents({ priceCents: ride.priceCents, driverFixedCents: ride.driverFixedCents }))}</p>
               </div>
             </div>
           ))}

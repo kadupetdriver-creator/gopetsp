@@ -22,6 +22,7 @@ export const fixedRideSchema = z.object({
   tutorId: z.string().uuid(),
   petIds: z.array(z.string().uuid()).min(1, "Selecione ao menos um pet.").max(3, "Máximo de 3 pets por corrida.").refine((ids) => new Set(ids).size === ids.length, "Não repita pets na corrida."),
   price: z.string(),
+  driverPrice: z.string(),
   scheduledAt: z.string(),
   origin: point,
   destination: point,
@@ -33,9 +34,23 @@ export const fixedRideSchema = z.object({
 
 export type FixedRideInput = z.infer<typeof fixedRideSchema>;
 
+/** Valor fixado pela administração para o motorista: maior que zero e no máximo o valor pago pelo tutor. */
+export function fixedDriverCents(value: string, priceCents: number) {
+  const cents = fixedPriceCents(value);
+  if (cents > priceCents) throw new Error("O valor do motorista não pode ser maior que o valor pago pelo tutor.");
+  return cents;
+}
+
 export function parseFixedRide(input: FixedRideInput, now = Date.now()) {
   const data = fixedRideSchema.parse(input);
-  return { ...data, priceCents: fixedPriceCents(data.price), scheduledAt: parseRescheduleInput(data.scheduledAt, true, now), peopleCount: data.accompanies ? data.peopleCount : null };
+  const priceCents = fixedPriceCents(data.price);
+  return {
+    ...data,
+    priceCents,
+    driverFixedCents: fixedDriverCents(data.driverPrice, priceCents),
+    scheduledAt: parseRescheduleInput(data.scheduledAt, true, now),
+    peopleCount: data.accompanies ? data.peopleCount : null,
+  };
 }
 
 export function assertFixedRideAdmin(isAdmin: boolean | null, error: unknown = null) {

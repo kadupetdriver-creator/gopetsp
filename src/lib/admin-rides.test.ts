@@ -35,6 +35,7 @@ test("Disponíveis mostram valor total e parcela de 75% sem motorista atribuído
   assert.equal(matchesAdminRideFilter({ status: "pending", driver_id: null, paid_at: "2026-10-18", driver_requested_at: "2026-10-18" }, "disponiveis"), true);
   assert.equal(matchesAdminRideFilter({ status: "pending", driver_id: null, paid_at: "2026-10-18", driver_requested_at: null }, "disponiveis"), true);
   assert.deepEqual(adminRideAmounts(10000), { totalCents: 10000, driverCents: 7500 });
+  assert.deepEqual(adminRideAmounts(10000, 8000), { totalCents: 10000, driverCents: 8000 });
 });
 
 test("Admin pode finalizar corrida paga com motorista que esqueceu de encerrar", () => {

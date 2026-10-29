@@ -1,5 +1,5 @@
 import { isActiveStatus, isUnderwayStatus, type RideStatus } from "./rides";
-import { driverShareCents } from "./pricing";
+import { driverPayoutCents } from "./pricing";
 
 type AdminRideState = { status: RideStatus; driver_id: string | null; paid_at: string | null; driver_requested_at?: string | null };
 export type RideFilter = "todas" | "orcamentos" | "disponiveis" | "aceitas" | "andamento" | "completed" | "cancelled";
@@ -29,6 +29,6 @@ export function canAdminCompleteRide(ride: AdminRideState) {
   return isActiveStatus(ride.status) && Boolean(ride.driver_id) && Boolean(ride.paid_at);
 }
 
-export function adminRideAmounts(priceCents: number) {
-  return { totalCents: priceCents, driverCents: driverShareCents(priceCents) };
+export function adminRideAmounts(priceCents: number, driverFixedCents?: number | null) {
+  return { totalCents: priceCents, driverCents: driverPayoutCents({ priceCents, driverFixedCents }) };
 }
