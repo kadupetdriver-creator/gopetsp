@@ -25,20 +25,20 @@ export const adminCreateFixedRide = createServerFn({ method: "POST" })
     if (existingError) throw new Error("Não foi possível verificar a criação da corrida.");
     if (existing && (existing.tutor_id !== data.tutorId || existing.pet_id !== firstPet.id || existing.service_type !== "Corrida fixa")) throw new Error("Identificador de corrida já utilizado.");
     if (existing) {
-      const { data: snapshot, error: snapshotError } = await supabaseAdmin.from("rides").select("pet_name, price_cents, stops").eq("id", existing.id).single();
+      const { data: snapshot, error: snapshotError } = await supabaseAdmin.from("rides").select("pet_name, price_cents, driver_fixed_cents, stops").eq("id", existing.id).single();
       const savedStops = Array.isArray(snapshot?.stops) ? snapshot.stops : [];
       const sameStops = savedStops.length === data.stops.length && savedStops.every((saved, index) => {
         const expected = data.stops[index];
         return expected && saved && typeof saved === "object" && !Array.isArray(saved) && saved["address"] === expected.address && saved["lat"] === expected.lat && saved["lng"] === expected.lng;
       });
-      if (snapshotError || !snapshot || snapshot.pet_name !== orderedPets.map((p) => p.name).join(", ") || snapshot.price_cents !== data.priceCents || !sameStops) {
+      if (snapshotError || !snapshot || snapshot.pet_name !== orderedPets.map((p) => p.name).join(", ") || snapshot.price_cents !== data.priceCents || snapshot.driver_fixed_cents !== data.driverFixedCents || !sameStops) {
         throw new Error("Esta corrida já foi salva com outros dados. Feche o formulário e abra uma nova corrida.");
       }
     }
     if (!existing) {
       const { error } = await supabaseAdmin.from("rides").insert({
         id: data.requestId, tutor_id: data.tutorId, pet_id: firstPet.id, pet_name: orderedPets.map((p) => p.name).join(", "), pet_size: firstPet.size,
-        service_type: "Corrida fixa", price_cents: data.priceCents, distance_km: route.distanceKm,
+        service_type: "Corrida fixa", price_cents: data.priceCents, driver_fixed_cents: data.driverFixedCents, distance_km: route.distanceKm,
         status: "pending", paid_at: null, driver_id: null, driver_requested_at: null, preferred_driver_id: null,
         origin_address: data.origin.address, origin_neighborhood: data.origin.neighborhood, origin_lat: data.origin.lat, origin_lng: data.origin.lng,
         destination_address: data.destination.address, destination_neighborhood: data.destination.neighborhood, destination_lat: data.destination.lat, destination_lng: data.destination.lng,
@@ -65,6 +65,6 @@ export const adminCreateFixedRide = createServerFn({ method: "POST" })
         throw new Error(`Não foi possível descontar do Saldo GoPet do tutor${payObj.error ? `: ${payObj.error}` : "."}${balance} A corrida não foi criada.`);
       }
     }
-    console.info("[admin-fixed-ride-created]", { adminId: context.userId, rideId: data.requestId, tutorId: data.tutorId, priceCents: data.priceCents, at: new Date().toISOString() });
+    console.info("[admin-fixed-ride-created]", { adminId: context.userId, rideId: data.requestId, tutorId: data.tutorId, priceCents: data.priceCents, driverFixedCents: data.driverFixedCents, at: new Date().toISOString() });
     return { rideId: data.requestId };
   });

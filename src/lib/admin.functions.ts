@@ -295,6 +295,7 @@ export type AdminReportRide = {
   scheduledAt: string;
   status: string;
   priceCents: number;
+  driverFixedCents: number | null;
   paymentStatus: string | null;
   tutorId: string;
   tutorName: string;
@@ -349,7 +350,7 @@ export const adminGetReport = createServerFn({ method: "POST" })
 
     let ridesQuery = supabaseAdmin
       .from("rides")
-      .select("id, created_at, scheduled_at, status, price_cents, tutor_id, driver_id, paid_at")
+      .select("id, created_at, scheduled_at, status, price_cents, driver_fixed_cents, tutor_id, driver_id, paid_at")
       .order("scheduled_at", { ascending: false })
       .limit(500);
 
@@ -398,6 +399,7 @@ export const adminGetReport = createServerFn({ method: "POST" })
         scheduledAt: r.scheduled_at,
         status: r.status,
         priceCents: r.price_cents,
+        driverFixedCents: r.driver_fixed_cents ?? null,
         paymentStatus: r.paid_at ? "pago" : "pendente",
         tutorId: r.tutor_id,
         tutorName: nameOf(r.tutor_id) ?? "Sem nome",

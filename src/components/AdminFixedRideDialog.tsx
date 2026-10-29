@@ -25,6 +25,7 @@ export function AdminFixedRideDialog({ tutors, onClose, onSaved }: {
   const [petIds, setPetIds] = useState<string[]>([]);
   const [stops, setStops] = useState<{ id: string; text: string; place: SelectedPlace | null }[]>([]);
   const [price, setPrice] = useState("");
+  const [driverPrice, setDriverPrice] = useState("");
   const [scheduledAt, setScheduledAt] = useState(() => saoPauloScheduleInput(new Date(Date.now() + 3600000).toISOString()));
   const [originText, setOriginText] = useState("");
   const [destinationText, setDestinationText] = useState("");
@@ -57,7 +58,7 @@ export function AdminFixedRideDialog({ tutors, onClose, onSaved }: {
         if (!stop.place) throw new Error("Escolha o endereço de todas as paradas na lista de sugestões.");
         return stop.place;
       });
-      return create({ data: { requestId, tutorId, petIds, stops: selectedStops, price, scheduledAt, origin, destination, accompanies, peopleCount: accompanies ? Number(people) : null, notes } });
+      return create({ data: { requestId, tutorId, petIds, stops: selectedStops, price, driverPrice, scheduledAt, origin, destination, accompanies, peopleCount: accompanies ? Number(people) : null, notes } });
     },
     onSuccess: () => { toast.success("Corrida fixa criada e paga com o Saldo GoPet do tutor."); onSaved(); },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Não foi possível criar a corrida fixa."),
@@ -70,6 +71,7 @@ export function AdminFixedRideDialog({ tutors, onClose, onSaved }: {
           <div className="space-y-2 sm:col-span-2"><Label htmlFor="fixed-tutor">Tutor</Label><Select value={tutorId} onValueChange={(value) => { setTutorId(value); setPetIds([]); }}><SelectTrigger id="fixed-tutor"><SelectValue placeholder="Selecionar tutor" /></SelectTrigger><SelectContent>{tutors.map((t) => <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>)}</SelectContent></Select></div>
           <fieldset className="space-y-2 sm:col-span-2"><legend className="text-sm font-medium">Pets ({petIds.length}/3)</legend>{pets.isLoading && tutorId && <p className="text-xs text-muted-foreground">Carregando…</p>}{pets.data?.map((p) => <div key={p.id} className="flex items-center gap-2"><Checkbox id={`fixed-pet-${p.id}`} checked={petIds.includes(p.id)} disabled={!petIds.includes(p.id) && petIds.length >= 3} onCheckedChange={(checked) => setPetIds((ids) => checked === true ? [...ids, p.id] : ids.filter((id) => id !== p.id))} /><Label htmlFor={`fixed-pet-${p.id}`}>{p.name}</Label></div>)}{pets.isError && <p className="text-xs text-destructive">Não foi possível carregar os pets.</p>}{tutorId && !pets.isLoading && !pets.isError && pets.data?.length === 0 && <p className="text-xs text-muted-foreground">Este tutor ainda não tem pets cadastrados.</p>}</fieldset>
           <div className="space-y-2"><Label htmlFor="fixed-price">Preço fixo (R$)</Label><Input id="fixed-price" inputMode="decimal" placeholder="0,00" required value={price} onChange={(e) => setPrice(e.target.value)} /></div>
+          <div className="space-y-2"><Label htmlFor="fixed-driver-price">Valor do motorista (R$)</Label><Input id="fixed-driver-price" inputMode="decimal" placeholder="0,00" required value={driverPrice} onChange={(e) => setDriverPrice(e.target.value)} /><p className="text-xs text-muted-foreground">Valor fixado que o motorista recebe nesta corrida, em vez da regra geral de 75%.</p></div>
           <div className="space-y-2"><Label htmlFor="fixed-date">Data e horário (São Paulo)</Label><Input id="fixed-date" type="datetime-local" required value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} /></div>
         </div>
         <AddressAutocomplete label="Origem" value={originText} onValueChange={setOriginText} onSelect={setOrigin} place={origin} required />
