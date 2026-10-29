@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Em andamento — corrida fixa no bolsão automático
+- [ ] Liberar corrida fixa ao bolsão após o débito confirmado, sem comando do tutor
+- [ ] Testar liberação, repetição sem novo débito e falha segura
+
 ## Concluído — valor do motorista fixo na corrida fixa
 - [x] Campo `rides.driver_fixed_cents` e campo "Valor do motorista" no formulário da corrida fixa; validação maior que zero e até o valor pago pelo tutor
 - [x] Todas as telas e relatórios passam a usar `driverPayoutCents` (valor fixado ou 75% geral); 51 testes passaram
