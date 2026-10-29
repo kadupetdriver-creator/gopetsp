@@ -59,12 +59,12 @@ export function AdminFixedRideDialog({ tutors, onClose, onSaved }: {
       });
       return create({ data: { requestId, tutorId, petIds, stops: selectedStops, price, scheduledAt, origin, destination, accompanies, peopleCount: accompanies ? Number(people) : null, notes } });
     },
-    onSuccess: () => { toast.success("Corrida fixa criada. O tutor já pode realizar o pagamento."); onSaved(); },
+    onSuccess: () => { toast.success("Corrida fixa criada e paga com o Saldo GoPet do tutor."); onSaved(); },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Não foi possível criar a corrida fixa."),
   });
   return <Dialog open onOpenChange={(open) => { if (!open && !save.isPending) onClose(); }}>
     <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
-      <DialogHeader><DialogTitle>Corrida fixa</DialogTitle><DialogDescription>Preço total definido pela administração · pagamento pendente</DialogDescription></DialogHeader>
+      <DialogHeader><DialogTitle>Corrida fixa</DialogTitle><DialogDescription>Preço definido pela administração · descontado automaticamente do Saldo GoPet do tutor</DialogDescription></DialogHeader>
       <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); save.mutate(); }}>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2"><Label htmlFor="fixed-tutor">Tutor</Label><Select value={tutorId} onValueChange={(value) => { setTutorId(value); setPetIds([]); }}><SelectTrigger id="fixed-tutor"><SelectValue placeholder="Selecionar tutor" /></SelectTrigger><SelectContent>{tutors.map((t) => <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>)}</SelectContent></Select></div>

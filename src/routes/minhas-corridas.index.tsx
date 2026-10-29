@@ -299,6 +299,9 @@ function MinhasCorridas() {
                   {formatDateTime(ride.scheduled_at)}
                 </p>
                 <p className="font-semibold text-foreground">
+                  {ride.service_type === "Corrida fixa" && ride.paid_at && (
+                    <span className="font-normal text-muted-foreground">Valor pago: </span>
+                  )}
                   {formatBRL(ride.price_cents)}{" "}
                   <span className="font-normal text-muted-foreground">· {ride.distance_km} km</span>
                   {ride.needs_trunk && (
