@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertFixedRideAdmin, parseFixedRide, type FixedRideInput } from "./fixed-rides";
 import { SIZE_RANK } from "./pet-sizes";
+import { releasePaidFixedRide } from "./fixed-ride-release";
 
 export const adminCreateFixedRide = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -65,6 +66,9 @@ export const adminCreateFixedRide = createServerFn({ method: "POST" })
         throw new Error(`Não foi possível descontar do Saldo GoPet do tutor${payObj.error ? `: ${payObj.error}` : "."}${balance} A corrida não foi criada.`);
       }
     }
-    console.info("[admin-fixed-ride-created]", { adminId: context.userId, rideId: data.requestId, tutorId: data.tutorId, priceCents: data.priceCents, driverFixedCents: data.driverFixedCents, at: new Date().toISOString() });
+    const requestedAt = await releasePaidFixedRide(data.requestId, data.tutorId, (args) =>
+      supabaseAdmin.rpc("request_paid_ride_driver", args),
+    );
+    console.info("[admin-fixed-ride-created]", { adminId: context.userId, rideId: data.requestId, tutorId: data.tutorId, priceCents: data.priceCents, driverFixedCents: data.driverFixedCents, requestedAt, at: new Date().toISOString() });
     return { rideId: data.requestId };
   });

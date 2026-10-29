@@ -60,7 +60,7 @@ export function AdminFixedRideDialog({ tutors, onClose, onSaved }: {
       });
       return create({ data: { requestId, tutorId, petIds, stops: selectedStops, price, driverPrice, scheduledAt, origin, destination, accompanies, peopleCount: accompanies ? Number(people) : null, notes } });
     },
-    onSuccess: () => { toast.success("Corrida fixa criada e paga com o Saldo GoPet do tutor."); onSaved(); },
+    onSuccess: () => { toast.success("Corrida fixa criada, paga com o Saldo GoPet e enviada ao bolsão."); onSaved(); },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Não foi possível criar a corrida fixa."),
   });
   return <Dialog open onOpenChange={(open) => { if (!open && !save.isPending) onClose(); }}>
