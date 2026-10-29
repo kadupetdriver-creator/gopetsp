@@ -66,6 +66,7 @@ type Ride = {
   scheduled_at: string;
   notes: string | null;
   price_cents: number;
+  driver_fixed_cents: number | null;
   distance_km: number;
   status: RideStatus;
   created_at: string;
@@ -173,7 +174,7 @@ function AdminCorridasPage() {
       const { data: rides, error } = await supabase
         .from("rides")
         .select(
-          "id, tutor_id, driver_id, preferred_driver_id, preferred_until, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, distance_km, status, created_at, paid_at, driver_requested_at",
+          "id, tutor_id, driver_id, preferred_driver_id, preferred_until, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, driver_fixed_cents, distance_km, status, created_at, paid_at, driver_requested_at",
         )
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
@@ -250,9 +251,9 @@ function AdminCorridasPage() {
   const exportCsv = () => {
     const fmt = (c: number) => (c / 100).toFixed(2).replace(".", ",");
     downloadCsvFile(`gopet-${filter === "orcamentos" ? "orcamentos" : "corridas"}-${new Date().toISOString().slice(0, 10)}.csv`, [
-      ["ID", "Data criação", "Data agendada", "Pet", "Serviço", "Tutor", "Motorista", "Origem", "Destino", "Distância (km)", "Status", "Pagamento", "Data pagamento", "Valor total (R$)", "Valor motorista 75% (R$)"],
+      ["ID", "Data criação", "Data agendada", "Pet", "Serviço", "Tutor", "Motorista", "Origem", "Destino", "Distância (km)", "Status", "Pagamento", "Data pagamento", "Valor total (R$)", "Valor motorista (R$)"],
       ...list.map((r) => {
-        const a = adminRideAmounts(r.price_cents);
+        const a = adminRideAmounts(r.price_cents, r.driver_fixed_cents);
         return [
           r.id,
           formatSaoPauloSchedule(r.created_at),
@@ -369,7 +370,7 @@ function AdminCorridasPage() {
                 />
                 {r.paid_at && (r.driver_id || isAvailableRide(r)) && (
                   <p className="text-sm text-muted-foreground">
-                    Valor ao motorista (75%): <strong className="text-foreground">{formatBRL(adminRideAmounts(r.price_cents).driverCents)}</strong>
+                    {r.driver_fixed_cents == null ? "Valor ao motorista (75%):" : "Valor ao motorista (fixado):"} <strong className="text-foreground">{formatBRL(adminRideAmounts(r.price_cents, r.driver_fixed_cents).driverCents)}</strong>
                   </p>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">

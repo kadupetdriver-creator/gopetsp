@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BellRing, CalendarClock, CalendarRange, CheckCircle2, MapPin, Route as RouteIcon, Wallet, WalletCards, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { driverShareCents } from "@/lib/pricing";
+import { driverPayoutCents } from "@/lib/pricing";
 import { tutorAccompanimentLabel } from "@/lib/ride-accompaniment";
 import { rideOccursWithin } from "@/lib/driver-payments";
 import { earningsRangeError, matchesEarningsRange } from "@/lib/driver-earnings-range";
@@ -72,6 +72,7 @@ type Ride = {
   scheduled_at: string;
   notes: string | null;
   price_cents: number;
+  driver_fixed_cents: number | null;
   distance_km: number;
   status: RideStatus;
   driver_id: string | null;
@@ -94,9 +95,10 @@ type Ride = {
 };
 
 const selectCols =
-  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, distance_km, status, driver_id, needs_trunk, tutor_accompanies_pet, accompanying_people_count, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, paid_at, stops, preferred_driver_id, preferred_until, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
+  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, driver_fixed_cents, distance_km, status, driver_id, needs_trunk, tutor_accompanies_pet, accompanying_people_count, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, paid_at, stops, preferred_driver_id, preferred_until, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
-const driverValueOf = (ride: Pick<Ride, "price_cents">) => driverShareCents(ride.price_cents);
+const driverValueOf = (ride: Pick<Ride, "price_cents" | "driver_fixed_cents">) =>
+  driverPayoutCents({ priceCents: ride.price_cents, driverFixedCents: ride.driver_fixed_cents });
 
 // Períodos semanais de ganhos (horário de São Paulo), iguais aos do painel admin:
 // "Ganhos Sexta-Feira" = corridas pagas de segunda a quinta; "Ganhos Segunda-Feira" = sexta a domingo.
