@@ -104,3 +104,9 @@ export function driverShareCents(priceCents: number): number {
   return Math.round(priceCents * DRIVER_SHARE_RATE);
 }
 
+/** Valor final do motorista: valor fixado pela administração (corrida fixa) ou 75% do valor cobrado. */
+export function driverPayoutCents(ride: { priceCents: number; driverFixedCents?: number | null }): number {
+  const fixed = ride.driverFixedCents;
+  return typeof fixed === "number" && Number.isFinite(fixed) && fixed > 0 ? fixed : driverShareCents(ride.priceCents);
+}
+

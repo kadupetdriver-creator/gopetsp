@@ -1,0 +1,2 @@
+ALTER TABLE public.rides ADD COLUMN IF NOT EXISTS driver_fixed_cents integer;
+COMMENT ON COLUMN public.rides.driver_fixed_cents IS 'Valor do motorista fixado pela administracao em corridas fixas; nulo usa a regra geral de 75 por cento.';
