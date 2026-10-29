@@ -50,6 +50,21 @@ export const adminCreateFixedRide = createServerFn({ method: "POST" })
     }
     const { error: linkError } = await supabaseAdmin.from("ride_pets").upsert(orderedPets.map((pet) => ({ ride_id: data.requestId, pet_id: pet.id })), { onConflict: "ride_id,pet_id", ignoreDuplicates: true });
     if (linkError) throw new Error("Não foi possível vincular os pets. Tente salvar novamente para concluir.");
+    // Débito automático do Saldo GoPet do tutor (idempotente: corrida já paga não é debitada de novo).
+    const { data: paidRow } = await supabaseAdmin.from("rides").select("paid_at").eq("id", data.requestId).single();
+    if (!paidRow?.paid_at) {
+      const { data: payResult, error: payError } = await supabaseAdmin.rpc("pay_ride_with_gopet_balance", { _ride_id: data.requestId, _user_id: data.tutorId });
+      const payObj = (payResult ?? {}) as { error?: string; balanceCents?: number };
+      if (payError || payObj.error) {
+        if (!existing) {
+          await supabaseAdmin.from("ride_pets").delete().eq("ride_id", data.requestId);
+          await supabaseAdmin.from("rides").delete().eq("id", data.requestId).is("paid_at", null);
+        }
+        console.error("[admin-fixed-ride-debit-failed]", { rideId: data.requestId, code: payError?.code, reason: payObj.error });
+        const balance = typeof payObj.balanceCents === "number" ? ` Saldo atual: R$ ${(payObj.balanceCents / 100).toFixed(2).replace(".", ",")}.` : "";
+        throw new Error(`Não foi possível descontar do Saldo GoPet do tutor${payObj.error ? `: ${payObj.error}` : "."}${balance} A corrida não foi criada.`);
+      }
+    }
     console.info("[admin-fixed-ride-created]", { adminId: context.userId, rideId: data.requestId, tutorId: data.tutorId, priceCents: data.priceCents, at: new Date().toISOString() });
     return { rideId: data.requestId };
   });
