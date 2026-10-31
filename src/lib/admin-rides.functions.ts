@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { canAdminCompleteRide, canAdminForwardRide } from "./admin-rides";
+import { adminRidePhaseUpdate, canAdminCompleteRide, canAdminForwardRide } from "./admin-rides";
 import { canAdminRescheduleRide, parseRescheduleInput } from "./ride-reschedule";
 
 export const adminForwardRide = createServerFn({ method: "POST" })
@@ -84,5 +84,35 @@ export const adminCompleteRide = createServerFn({ method: "POST" })
       .eq("paid_at", ride.paid_at).select("id").maybeSingle();
     if (updateError || !updated) throw new Error("A corrida mudou enquanto você finalizava. Atualize e tente novamente.");
     console.info("[admin-ride-completed]", { rideId: ride.id, adminId: context.userId, previousStatus: ride.status, status: "completed", at: new Date().toISOString() });
+    return { ok: true };
+  });
+
+export const adminChangeRidePhase = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({
+    rideId: z.string().uuid(), phase: z.enum(["en_route", "arrived", "in_progress", "completed"]),
+    expectedUpdatedAt: z.string().datetime(),
+  }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "admin",
+    });
+    if (roleError || isAdmin !== true) throw new Error("Apenas administradores podem alterar as fases da corrida.");
+    const { data: ride, error } = await context.supabase.from("rides")
+      .select("id, status, driver_id, paid_at, arrived_at, updated_at").eq("id", data.rideId).maybeSingle();
+    if (error || !ride) throw new Error("Corrida não encontrada.");
+    if (ride.updated_at !== data.expectedUpdatedAt) throw new Error("A corrida mudou. Atualize e tente novamente.");
+    const now = new Date().toISOString();
+    const patch = adminRidePhaseUpdate(ride, data.phase, now);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: updated, error: updateError } = await supabaseAdmin.from("rides")
+      .update(patch).eq("id", ride.id).eq("updated_at", ride.updated_at)
+      .eq("status", ride.status).select("id").maybeSingle();
+    if (updateError || !updated) throw new Error("A corrida mudou enquanto você alterava a fase. Atualize e tente novamente.");
+    console.info("[admin-ride-phase-changed]", {
+      rideId: ride.id, adminId: context.userId, driverId: ride.driver_id,
+      previousStatus: ride.status, previousArrivedAt: ride.arrived_at,
+      phase: data.phase, ...patch, at: now,
+    });
     return { ok: true };
   });
