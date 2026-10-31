@@ -29,6 +29,31 @@ export function canAdminCompleteRide(ride: AdminRideState) {
   return isActiveStatus(ride.status) && Boolean(ride.driver_id) && Boolean(ride.paid_at);
 }
 
+export const adminRidePhases = [
+  { value: "en_route", label: "A caminho" },
+  { value: "arrived", label: "Cheguei" },
+  { value: "in_progress", label: "Em andamento" },
+  { value: "completed", label: "Finalizar" },
+] as const;
+export type AdminRidePhase = typeof adminRidePhases[number]["value"];
+
+export function adminRidePhase(ride: { status: RideStatus; arrived_at: string | null }): AdminRidePhase | null {
+  if (ride.status === "en_route") return ride.arrived_at ? "arrived" : "en_route";
+  if (ride.status === "in_progress" || ride.status === "completed") return ride.status;
+  return null;
+}
+
+export function adminRidePhaseUpdate(
+  ride: AdminRideState & { arrived_at: string | null }, phase: AdminRidePhase, now: string,
+) {
+  if (!canAdminCompleteRide(ride)) throw new Error("Só é possível alterar fases de corridas pagas, abertas e com motorista atribuído.");
+  if (!adminRidePhases.some((option) => option.value === phase)) throw new Error("Fase inválida.");
+  return {
+    status: phase === "arrived" ? "en_route" as const : phase,
+    arrived_at: phase === "en_route" ? null : phase === "arrived" ? (ride.arrived_at ?? now) : ride.arrived_at,
+  };
+}
+
 export function adminRideAmounts(priceCents: number, driverFixedCents?: number | null) {
   return { totalCents: priceCents, driverCents: driverPayoutCents({ priceCents, driverFixedCents: driverFixedCents ?? null }) };
 }

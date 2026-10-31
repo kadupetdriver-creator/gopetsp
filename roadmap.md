@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Concluído — fases pela administração
+- [x] Permitir alterar A caminho, Cheguei, Em andamento e Finalizar com acesso exclusivo administrativo
+- [x] Treze testes passaram; sessão administrativa conferiu todas as fases e correções com persistência após recarregar, chegada registrada e preço, pagamento e motorista preservados; corrida temporária removida
+
 ## Concluído — corrida fixa no bolsão automático
 - [x] Liberar corrida fixa ao bolsão após o débito confirmado, sem comando do tutor, usando RPC idempotente
 - [x] Dezesseis testes passaram, incluindo chamada automática e falha segura; formulário administrativo autenticado conferido e compilação sem erros. Não foi criada corrida real nem debitado saldo para verificar ponta a ponta.

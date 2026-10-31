@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, CheckCircle2, Download, Loader2, Pencil, Plus, Search, Send, XCircle } from "lucide-react";
+import { CalendarClock, ListOrdered, Download, Loader2, Pencil, Plus, Search, Send, XCircle } from "lucide-react";
+import { AdminRidePhaseDialog } from "@/components/AdminRidePhaseDialog";
 import { AdminFixedRideDialog } from "@/components/AdminFixedRideDialog";
 import { AdminRescheduleDialog } from "@/components/AdminRescheduleDialog";
 import { canAdminRescheduleRide, formatSaoPauloSchedule } from "@/lib/ride-reschedule";
@@ -11,7 +12,7 @@ import { toast } from "sonner";
 import { refundRidePayment } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { adminRideAmounts, canAdminCompleteRide, canAdminForwardRide, isAvailableRide, matchesAdminRideFilter as matchesFilter, type RideFilter } from "@/lib/admin-rides";
-import { adminCompleteRide, adminForwardRide } from "@/lib/admin-rides.functions";
+import { adminForwardRide } from "@/lib/admin-rides.functions";
 import {
   formatBRL,
   formatDateTime,
@@ -72,6 +73,8 @@ type Ride = {
   created_at: string;
   paid_at: string | null;
   driver_requested_at: string | null;
+  arrived_at: string | null;
+  updated_at: string;
 };
 
 type Person = { id: string; full_name: string; role: "tutor" | "driver" };
@@ -158,8 +161,7 @@ const emptyMessages: Record<RideFilter, string> = {
 function AdminCorridasPage() {
   const qc = useQueryClient();
   const refundPayment = useServerFn(refundRidePayment);
-  const completeRide = useServerFn(adminCompleteRide);
-  const [finishing, setFinishing] = useState<Ride | null>(null);
+  const [changingPhase, setChangingPhase] = useState<Ride | null>(null);
   const [rescheduling, setRescheduling] = useState<Ride | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<RideFilter>("todas");
@@ -174,7 +176,7 @@ function AdminCorridasPage() {
       const { data: rides, error } = await supabase
         .from("rides")
         .select(
-          "id, tutor_id, driver_id, preferred_driver_id, preferred_until, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, driver_fixed_cents, distance_km, status, created_at, paid_at, driver_requested_at",
+          "id, tutor_id, driver_id, preferred_driver_id, preferred_until, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, driver_fixed_cents, distance_km, status, created_at, paid_at, driver_requested_at, arrived_at, updated_at",
         )
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
@@ -235,17 +237,6 @@ function AdminCorridasPage() {
       void qc.invalidateQueries({ queryKey: ["admin-rides"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível cancelar."),
-  });
-
-  const finish = useMutation({
-    mutationFn: (rideId: string) => completeRide({ data: { rideId } }),
-    onSuccess: () => {
-      toast.success("Corrida finalizada pela administração.");
-      setFinishing(null);
-      void qc.invalidateQueries({ queryKey: ["admin-rides"] });
-      void qc.invalidateQueries({ queryKey: ["admin-report"] });
-    },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível finalizar."),
   });
 
   const exportCsv = () => {
@@ -345,7 +336,7 @@ function AdminCorridasPage() {
                     </p>
                   </div>
           <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", r.paid_at ? statusStyles[r.status] : "bg-secondary text-muted-foreground")}>
-                    {r.paid_at ? statusLabels[r.status] : (r.status === "cancelled" ? "Orçamento cancelado" : "Orçamento")}
+                    {r.paid_at ? (r.status === "en_route" && r.arrived_at ? "Cheguei" : statusLabels[r.status]) : (r.status === "cancelled" ? "Orçamento cancelado" : "Orçamento")}
                   </span>
                 </div>
                 {isAvailableRide(r) && r.preferred_until && new Date(r.preferred_until) > new Date() && (
@@ -361,6 +352,7 @@ function AdminCorridasPage() {
                   <span className="ml-2 text-xs text-muted-foreground">{pay}</span>
                 </p>
                 <p className="text-xs text-muted-foreground">Criada em {formatSaoPauloSchedule(r.created_at)}</p>
+                {r.arrived_at && <p className="text-xs text-muted-foreground">Chegada em {formatSaoPauloSchedule(r.arrived_at)}</p>}
                 <RidePeopleDetails
                   tutor={peopleById.get(r.tutor_id)}
                   tutorEmail={emailById.get(r.tutor_id)}
@@ -376,8 +368,8 @@ function AdminCorridasPage() {
                 <div className="flex flex-wrap gap-2 pt-1">
                   {canAdminRescheduleRide(r.status) && <Button size="sm" variant="outline" onClick={() => setRescheduling(r)}><CalendarClock className="mr-2 size-4" /> Alterar data</Button>}
                   {canAdminCompleteRide(r) && (
-                    <Button size="sm" variant="outline" onClick={() => setFinishing(r)}>
-                      <CheckCircle2 className="mr-2 size-4" /> Finalizar corrida
+                    <Button size="sm" variant="outline" onClick={() => setChangingPhase(r)}>
+                      <ListOrdered className="mr-2 size-4" /> Alterar fase
                     </Button>
                   )}
                   {r.paid_at && <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
@@ -415,24 +407,7 @@ function AdminCorridasPage() {
         for (const key of ["admin-rides", "rides", "my-rides"]) void qc.invalidateQueries({ queryKey: [key] });
       }} />}
 
-      {finishing && (
-        <Dialog open onOpenChange={(open) => { if (!open && !finish.isPending) setFinishing(null); }}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Finalizar corrida</DialogTitle>
-              <DialogDescription>
-                Confirma que o transporte de {finishing.pet_name} já terminou? A corrida será marcada como concluída, sem alterar o valor ou o pagamento.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="ghost" disabled={finish.isPending} onClick={() => setFinishing(null)}>Voltar</Button>
-              <Button disabled={finish.isPending} onClick={() => finish.mutate(finishing.id)}>
-                {finish.isPending && <Loader2 className="mr-2 size-4 animate-spin" />} Confirmar finalização
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      {changingPhase && <AdminRidePhaseDialog ride={changingPhase} onClose={() => setChangingPhase(null)} />}
 
       {rescheduling && <AdminRescheduleDialog ride={rescheduling} onClose={() => setRescheduling(null)} onSaved={() => {
         setRescheduling(null);
