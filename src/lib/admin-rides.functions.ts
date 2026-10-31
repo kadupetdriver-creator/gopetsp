@@ -91,7 +91,7 @@ export const adminChangeRidePhase = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({
     rideId: z.string().uuid(), phase: z.enum(["en_route", "arrived", "in_progress", "completed"]),
-    expectedUpdatedAt: z.string().datetime(),
+    expectedUpdatedAt: z.string().datetime({ offset: true }),
   }).parse(input))
   .handler(async ({ data, context }) => {
     const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
