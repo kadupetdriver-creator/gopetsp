@@ -204,6 +204,54 @@ function SolicitarPage() {
   const [driverWaits, setDriverWaits] = useState<boolean | null>(null);
   const [preferredDriverId, setPreferredDriverId] = useState("none");
 
+  // Rascunho do pedido: sobrevive quando o celular recarrega a página ao trocar de app.
+  const draftKey = user ? `gopet:solicitar-draft:${user.id}` : null;
+  const [draftReady, setDraftReady] = useState(false);
+  useEffect(() => {
+    if (!draftKey) return;
+    try {
+      const raw = window.localStorage.getItem(draftKey);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (Array.isArray(d.selectedPetIds)) setSelectedPetIds(d.selectedPetIds);
+        if (typeof d.serviceType === "string") setServiceType(d.serviceType);
+        if (typeof d.originAddress === "string") setOriginAddress(d.originAddress);
+        if (d.origin !== undefined) setOrigin(d.origin);
+        if (typeof d.destinationAddress === "string") setDestinationAddress(d.destinationAddress);
+        if (d.destination !== undefined) setDestination(d.destination);
+        if (Array.isArray(d.stops)) setStops(d.stops);
+        if (typeof d.scheduledAt === "string" && new Date(d.scheduledAt).getTime() > Date.now()) setScheduledAt(d.scheduledAt);
+        if (typeof d.notes === "string") setNotes(d.notes);
+        if (d.needsTrunk !== undefined) setNeedsTrunk(d.needsTrunk);
+        if (d.tutorAccompaniesPet !== undefined) setTutorAccompaniesPet(d.tutorAccompaniesPet);
+        if (typeof d.accompanyingPeopleCount === "string") setAccompanyingPeopleCount(d.accompanyingPeopleCount);
+        if (d.hasReturn !== undefined) setHasReturn(d.hasReturn);
+        if (typeof d.returnAt === "string") setReturnAt(d.returnAt);
+        if (d.driverWaits !== undefined) setDriverWaits(d.driverWaits);
+        if (typeof d.preferredDriverId === "string") setPreferredDriverId(d.preferredDriverId);
+      }
+    } catch {
+      /* rascunho inválido: ignora */
+    }
+    setDraftReady(true);
+  }, [draftKey]);
+  useEffect(() => {
+    if (!draftKey || !draftReady) return;
+    try {
+      window.localStorage.setItem(draftKey, JSON.stringify({
+        selectedPetIds, serviceType, originAddress, origin, destinationAddress, destination, stops,
+        scheduledAt, notes, needsTrunk, tutorAccompaniesPet, accompanyingPeopleCount, hasReturn,
+        returnAt, driverWaits, preferredDriverId,
+      }));
+    } catch {
+      /* armazenamento indisponível */
+    }
+  }, [draftKey, draftReady, selectedPetIds, serviceType, originAddress, origin, destinationAddress, destination, stops, scheduledAt, notes, needsTrunk, tutorAccompaniesPet, accompanyingPeopleCount, hasReturn, returnAt, driverWaits, preferredDriverId]);
+  const clearDraft = () => {
+    if (draftKey) try { window.localStorage.removeItem(draftKey); } catch { /* ignora */ }
+  };
+
+
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
@@ -433,6 +481,7 @@ function SolicitarPage() {
           ? "Criamos duas corridas: ida e volta. Agora é só pagar a corrida de ida."
           : "Pedido criado. Continue para o pagamento.",
       );
+      clearDraft();
       void qc.invalidateQueries({ queryKey: ["rides"] });
       void navigate({ to: "/pagamento/$rideId", params: { rideId } });
     },
