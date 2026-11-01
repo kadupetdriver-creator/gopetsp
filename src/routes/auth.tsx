@@ -110,7 +110,11 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
-    toast.success("Conta criada! Confirme o e-mail que enviamos para começar.");
+    toast.success(
+      driverSignup
+        ? "Conta de motorista criada! Confirme o e-mail que enviamos para continuar o cadastro."
+        : "Conta criada! Confirme o e-mail que enviamos para começar.",
+    );
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -173,14 +177,16 @@ function AuthPage() {
         <CardHeader>
           <CardTitle>{driverMode ? "Acesso do motorista" : "Acesse a GoPet"}</CardTitle>
           <CardDescription>
-            {driverMode
-              ? "Motoristas não criam conta por aqui: a conta de tutor é promovida após aprovação dos documentos."
-              : "Crie sua conta de tutor e peça corridas para o seu pet."}
+            {driverSignup
+              ? "Crie sua conta de motorista parceiro. Depois enviaremos seus documentos para análise."
+              : driverMode
+                ? "Entre com a conta de motorista parceiro que você criou."
+                : "Crie sua conta de tutor e peça corridas para o seu pet."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue={driverMode ? "signin" : "signup"}>
-            <TabsList className={driverMode ? "hidden" : "grid w-full grid-cols-2"}>
+          <Tabs defaultValue={driverMode && !driverSignup ? "signin" : "signup"}>
+            <TabsList className={driverMode && !driverSignup ? "hidden" : "grid w-full grid-cols-2"}>
               <TabsTrigger value="signup">Criar conta</TabsTrigger>
               <TabsTrigger value="signin">Entrar</TabsTrigger>
             </TabsList>
