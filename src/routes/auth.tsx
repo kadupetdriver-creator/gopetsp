@@ -63,7 +63,7 @@ function AuthPage() {
   useEffect(() => {
     if (loading || !user || !profile) return;
     const home = homeForRole(profile);
-    const target = profile.role === "tutor" && next ? next : home;
+    const target = next ?? home;
     void navigate({ to: target, replace: true });
   }, [loading, user, profile, next, navigate]);
 
@@ -102,7 +102,7 @@ function AuthPage() {
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: fullName, phone, cpf: cpfDigits, role: "tutor", ...(refCode ? { referral_code: refCode } : {}) },
+        data: { full_name: fullName, phone, cpf: cpfDigits, role: driverSignup ? "driver" : "tutor", ...(refCode ? { referral_code: refCode } : {}) },
       },
     });
     setBusy(false);
