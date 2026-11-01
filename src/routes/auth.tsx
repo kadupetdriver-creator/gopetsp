@@ -48,6 +48,8 @@ function AuthPage() {
   const navigate = useNavigate();
   const { papel, next } = Route.useSearch();
   const driverMode = papel === "motorista";
+  // "Quero ser motorista": a conta já nasce como motorista e segue para o cadastro de documentos.
+  const driverSignup = driverMode && next === "/seja-motorista";
   const { user, profile, loading } = useAuth();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
