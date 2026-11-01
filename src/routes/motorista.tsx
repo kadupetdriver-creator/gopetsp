@@ -490,7 +490,22 @@ function MotoristaPage() {
 
   // Cadastro ainda não aprovado (ou suspenso): só a tela de status, sem acesso a corridas.
   if (!approved) {
-    if (!application) return null;
+    if (!application) {
+      // Conta criada como motorista que ainda não enviou o cadastro: segue para as etapas.
+      return (
+        <div className="mx-auto w-full max-w-2xl px-4 py-8">
+          <h1 className="text-3xl font-semibold">Painel do motorista</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Complete seu cadastro de motorista parceiro para receber chamadas.
+          </p>
+          <div className="mt-6">
+            <Button asChild className="w-full sm:w-auto">
+              <Link to="/seja-motorista">Completar cadastro de motorista</Link>
+            </Button>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="mx-auto w-full max-w-2xl px-4 py-8">
         <h1 className="text-3xl font-semibold">Painel do motorista</h1>

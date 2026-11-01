@@ -48,7 +48,7 @@ const options = [
   },
   {
     to: "/auth",
-    search: { papel: "tutor" as const, next: "/seja-motorista" },
+    search: { papel: "motorista" as const, next: "/seja-motorista" },
     icon: Sparkles,
     title: "Quero ser Motorista",
     text: "Envie seus documentos e vire parceiro GoPet.",

@@ -48,6 +48,8 @@ function AuthPage() {
   const navigate = useNavigate();
   const { papel, next } = Route.useSearch();
   const driverMode = papel === "motorista";
+  // "Quero ser motorista": a conta já nasce como motorista e segue para o cadastro de documentos.
+  const driverSignup = driverMode && next === "/seja-motorista";
   const { user, profile, loading } = useAuth();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -61,7 +63,7 @@ function AuthPage() {
   useEffect(() => {
     if (loading || !user || !profile) return;
     const home = homeForRole(profile);
-    const target = profile.role === "tutor" && next ? next : home;
+    const target = next ?? home;
     void navigate({ to: target, replace: true });
   }, [loading, user, profile, next, navigate]);
 
@@ -100,7 +102,7 @@ function AuthPage() {
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: fullName, phone, cpf: cpfDigits, role: "tutor", ...(refCode ? { referral_code: refCode } : {}) },
+        data: { full_name: fullName, phone, cpf: cpfDigits, role: driverSignup ? "driver" : "tutor", ...(refCode ? { referral_code: refCode } : {}) },
       },
     });
     setBusy(false);
@@ -108,7 +110,11 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
-    toast.success("Conta criada! Confirme o e-mail que enviamos para começar.");
+    toast.success(
+      driverSignup
+        ? "Conta de motorista criada! Confirme o e-mail que enviamos para continuar o cadastro."
+        : "Conta criada! Confirme o e-mail que enviamos para começar.",
+    );
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -137,7 +143,17 @@ function AuthPage() {
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-10">
       <div className="flex flex-col items-center text-center">
         <BrandLogo size={104} withWordmark={false} className="mb-4" />
-        {driverMode ? (
+        {driverSignup ? (
+          <>
+            <span className="mb-2 inline-flex items-center gap-2 rounded-full bg-foreground px-3 py-1 text-xs font-semibold text-background">
+              <Car className="size-3.5" /> Área do motorista parceiro
+            </span>
+            <h1 className="text-3xl font-semibold">Quero ser motorista</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Crie sua conta de motorista (ou entre) para enviar seus documentos e virar parceiro GoPet.
+            </p>
+          </>
+        ) : driverMode ? (
           <>
             <span className="mb-2 inline-flex items-center gap-2 rounded-full bg-foreground px-3 py-1 text-xs font-semibold text-background">
               <Car className="size-3.5" /> Área do motorista parceiro
@@ -145,13 +161,6 @@ function AuthPage() {
             <h1 className="text-3xl font-semibold">Entrar como motorista</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Use o e-mail e a senha da sua conta GoPet. Seu acesso segue o status do seu cadastro.
-            </p>
-          </>
-        ) : next === "/seja-motorista" ? (
-          <>
-            <h1 className="text-3xl font-semibold">Quero ser motorista</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Entre (ou crie sua conta de tutor) para enviar a solicitação de motorista parceiro.
             </p>
           </>
         ) : (
@@ -168,14 +177,16 @@ function AuthPage() {
         <CardHeader>
           <CardTitle>{driverMode ? "Acesso do motorista" : "Acesse a GoPet"}</CardTitle>
           <CardDescription>
-            {driverMode
-              ? "Motoristas não criam conta por aqui: a conta de tutor é promovida após aprovação dos documentos."
-              : "Crie sua conta de tutor e peça corridas para o seu pet."}
+            {driverSignup
+              ? "Crie sua conta de motorista parceiro. Depois enviaremos seus documentos para análise."
+              : driverMode
+                ? "Entre com a conta de motorista parceiro que você criou."
+                : "Crie sua conta de tutor e peça corridas para o seu pet."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue={driverMode ? "signin" : "signup"}>
-            <TabsList className={driverMode ? "hidden" : "grid w-full grid-cols-2"}>
+          <Tabs defaultValue={driverMode && !driverSignup ? "signin" : "signup"}>
+            <TabsList className={driverMode && !driverSignup ? "hidden" : "grid w-full grid-cols-2"}>
               <TabsTrigger value="signup">Criar conta</TabsTrigger>
               <TabsTrigger value="signin">Entrar</TabsTrigger>
             </TabsList>
@@ -285,7 +296,7 @@ function AuthPage() {
           {driverMode && (
             <p className="mt-5 text-center text-xs text-muted-foreground">
               Ainda não é motorista?{" "}
-              <Link to="/auth" search={{ papel: "tutor", next: "/seja-motorista" }} className="font-medium text-foreground underline">
+              <Link to="/auth" search={{ papel: "motorista", next: "/seja-motorista" }} className="font-medium text-foreground underline">
                 Quero ser motorista
               </Link>
             </p>
