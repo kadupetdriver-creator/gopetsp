@@ -139,7 +139,17 @@ function AuthPage() {
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-10">
       <div className="flex flex-col items-center text-center">
         <BrandLogo size={104} withWordmark={false} className="mb-4" />
-        {driverMode ? (
+        {driverSignup ? (
+          <>
+            <span className="mb-2 inline-flex items-center gap-2 rounded-full bg-foreground px-3 py-1 text-xs font-semibold text-background">
+              <Car className="size-3.5" /> Área do motorista parceiro
+            </span>
+            <h1 className="text-3xl font-semibold">Quero ser motorista</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Crie sua conta de motorista (ou entre) para enviar seus documentos e virar parceiro GoPet.
+            </p>
+          </>
+        ) : driverMode ? (
           <>
             <span className="mb-2 inline-flex items-center gap-2 rounded-full bg-foreground px-3 py-1 text-xs font-semibold text-background">
               <Car className="size-3.5" /> Área do motorista parceiro
@@ -147,13 +157,6 @@ function AuthPage() {
             <h1 className="text-3xl font-semibold">Entrar como motorista</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Use o e-mail e a senha da sua conta GoPet. Seu acesso segue o status do seu cadastro.
-            </p>
-          </>
-        ) : next === "/seja-motorista" ? (
-          <>
-            <h1 className="text-3xl font-semibold">Quero ser motorista</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Entre (ou crie sua conta de tutor) para enviar a solicitação de motorista parceiro.
             </p>
           </>
         ) : (
