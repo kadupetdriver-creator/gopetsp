@@ -1,5 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { hasNationwideMap } from "./service-area";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function callerHasNationwideMap(context: { supabase: any; userId: string }) {
+  const { data } = await context.supabase.from("profiles").select("role, cpf").eq("id", context.userId).maybeSingle();
+  return hasNationwideMap(data);
+}
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 
@@ -52,7 +59,8 @@ export const searchAddresses = createServerFn({ method: "POST" })
     if (query.length < 3 || query.length > 200) throw new Error("Consulta inválida");
     return { query };
   })
-  .handler(async ({ data }): Promise<PlaceSuggestion[]> => {
+  .handler(async ({ data, context }): Promise<PlaceSuggestion[]> => {
+    const nationwide = await callerHasNationwideMap(context);
     const response = await fetch(`${GATEWAY_URL}/places/v1/places:autocomplete`, {
       method: "POST",
       headers: gatewayHeaders(),
@@ -61,7 +69,7 @@ export const searchAddresses = createServerFn({ method: "POST" })
         languageCode: "pt-BR",
         regionCode: "BR",
         includedRegionCodes: ["br"],
-        locationRestriction: SP_RECT,
+        ...(nationwide ? {} : { locationRestriction: SP_RECT }),
       }),
     });
     if (!response.ok) await readError(response);
@@ -101,7 +109,7 @@ export const getPlaceDetails = createServerFn({ method: "POST" })
     if (!/^[A-Za-z0-9_=-]{5,600}$/.test(placeId)) throw new Error("Local inválido");
     return { placeId };
   })
-  .handler(async ({ data }): Promise<PlaceDetails> => {
+  .handler(async ({ data, context }): Promise<PlaceDetails> => {
     const headers = gatewayHeaders();
     const response = await fetch(
       `${GATEWAY_URL}/places/v1/places/${encodeURIComponent(data.placeId)}?languageCode=pt-BR`,
@@ -123,7 +131,7 @@ export const getPlaceDetails = createServerFn({ method: "POST" })
     if (typeof lat !== "number" || typeof lng !== "number") {
       throw new Error("Não foi possível obter as coordenadas do endereço.");
     }
-    if (!isInSaoPaulo(lat, lng)) {
+    if (!isInSaoPaulo(lat, lng) && !(await callerHasNationwideMap(context))) {
       throw new Error(
         "No momento, o GoPet atende apenas endereços em São Paulo e na região metropolitana.",
       );

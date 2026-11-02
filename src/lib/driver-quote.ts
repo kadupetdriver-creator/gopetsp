@@ -4,8 +4,8 @@ import { calculateRidePrice } from "./pricing";
 import { addressHasNumber } from "./address";
 
 const point = z.object({
-  lat: z.number().finite().min(-24.1).max(-23.1),
-  lng: z.number().finite().min(-47.1).max(-46.05),
+  lat: z.number().finite().min(-34).max(6),
+  lng: z.number().finite().min(-74).max(-34),
   address: z.string().trim().min(1).max(300).refine(addressHasNumber, "Informe o número do endereço ou S/N."),
 });
 
