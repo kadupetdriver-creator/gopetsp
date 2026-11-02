@@ -74,7 +74,7 @@ export function DriverQuoteDialog({ userId }: { userId: string }) {
   }
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger asChild><Button><Calculator className="mr-2 size-4" />Criar orçamento</Button></DialogTrigger>
-    <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
+    <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] overflow-y-auto rounded-lg sm:max-w-2xl" aria-describedby={undefined}>
       <DialogHeader><DialogTitle>Criar orçamento</DialogTitle></DialogHeader>
       <form className="space-y-6" onSubmit={submit}>
         <section className="space-y-3">
@@ -87,7 +87,7 @@ export function DriverQuoteDialog({ userId }: { userId: string }) {
             {draft.sizes.length > 1 && <Button type="button" variant="ghost" size="icon" aria-label={`Remover pet ${index + 1}`} onClick={() => update({ sizes: draft.sizes.filter((_, i) => i !== index) })}><X className="size-4" /></Button>}
           </div>)}
           {draft.sizes.length < 3 && <Button type="button" variant="outline" onClick={() => update({ sizes: [...draft.sizes, "medio"] })}><Plus className="mr-2 size-4" />Adicionar pet</Button>}
-          <Label>Motivo da viagem</Label><Select value={draft.service} onValueChange={(service) => update({ service })}><SelectTrigger aria-label="Motivo da viagem"><SelectValue /></SelectTrigger><SelectContent>{serviceTypes.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}</SelectContent></Select>
+          <div className="space-y-2"><Label>Motivo da viagem</Label><Select value={draft.service} onValueChange={(service) => update({ service })}><SelectTrigger aria-label="Motivo da viagem"><SelectValue /></SelectTrigger><SelectContent>{serviceTypes.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}</SelectContent></Select></div>
         </section>
         <section className="space-y-4">
           <h2 className="font-semibold">Trajeto</h2>

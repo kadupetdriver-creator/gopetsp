@@ -1,9 +1,9 @@
 # Roadmap — GoPet
 
-## Em andamento — orçamento do motorista
-- [ ] Adicionar Criar orçamento no perfil, com pets por porte, endereços, paradas, retorno e espera
-- [ ] Reutilizar tarifas e rota oficiais sem criar corrida, cobrar saldo ou acessar dados de tutores
-- [ ] Verificar cálculo, acesso e formulário
+## Concluído — orçamento do motorista
+- [x] Adicionar Criar orçamento no perfil, com pets por porte, endereços, paradas, retorno e espera
+- [x] Reutilizar tarifas e rota oficiais sem criar corrida, cobrar saldo ou acessar dados de tutores
+- [x] Dez testes passaram; acesso ausente na conta tutor real; janela e reabertura conferidas com perfil demonstrativo, sem erros. Cálculo ponta a ponta com motorista real não verificado: sessão disponível pertence a tutor administrador.
 
 ## Concluído — fases pela administração
 - [x] Permitir alterar A caminho, Cheguei, Em andamento e Finalizar com acesso exclusivo administrativo
