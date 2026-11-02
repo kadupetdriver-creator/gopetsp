@@ -25,6 +25,7 @@ import { DriverVehicles } from "@/components/DriverVehicles";
 import { PetSizeHelp } from "@/components/PetSizeHelp";
 import { PhoneValidityWarning } from "@/components/PhoneValidityWarning";
 import { ProfileFavoriteAddresses } from "@/components/ProfileFavoriteAddresses";
+import { DriverQuoteDialog } from "@/components/DriverQuoteDialog";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 const phonePattern = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
@@ -252,6 +253,7 @@ function PerfilPage() {
           {isDriver ? "Motorista parceiro em São Paulo" : "Tutor em São Paulo"}
         </p>
       </div>
+      {user && isDriver && <DriverQuoteDialog userId={user.id} />}
       {user && <PhotoChangeCard userId={user.id} kind={isDriver ? "driver" : "tutor"} />}
       {user && <ReferralCard userId={user.id} mode="tutor" />}
       {user && isDriver && <ReferralCard userId={user.id} mode="motorista" />}
