@@ -19,6 +19,7 @@ import {
   isActiveStatus,
   serviceTypes,
   rideWhatsAppUrl,
+  sortRidesChronologically,
   statusLabels,
   statusStyles,
   type RideStatus,
@@ -95,7 +96,7 @@ function MinhasCorridas() {
         .eq("tutor_id", user.id)
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
-      return data as Ride[];
+      return sortRidesChronologically(data as Ride[]);
     },
   });
 
