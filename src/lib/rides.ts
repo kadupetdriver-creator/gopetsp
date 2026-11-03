@@ -48,6 +48,21 @@ export function canTrackRide(status: RideStatus) {
   return status === "en_route" || status === "in_progress";
 }
 
+/**
+ * Ordem cronológica das corridas: aguardando, aceitas e em andamento das mais
+ * antigas para as mais novas; concluídas e canceladas das mais novas para as mais antigas.
+ */
+export function sortRidesChronologically<T extends { status: RideStatus; scheduled_at: string | null }>(rides: T[]): T[] {
+  const isDone = (status: RideStatus) => status === "completed" || status === "cancelled";
+  return rides.slice().sort((a, b) => {
+    const aDone = isDone(a.status);
+    const bDone = isDone(b.status);
+    if (aDone !== bDone) return aDone ? 1 : -1;
+    const cmp = (a.scheduled_at ?? "").localeCompare(b.scheduled_at ?? "");
+    return aDone ? -cmp : cmp;
+  });
+}
+
 export const serviceTypes = [
   { value: "veterinario", label: "Consulta veterinária" },
   { value: "banho_tosa", label: "Banho e tosa" },
