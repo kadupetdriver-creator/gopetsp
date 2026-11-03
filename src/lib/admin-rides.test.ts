@@ -1,10 +1,31 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { adminRideAmounts, adminRidePhase, adminRidePhaseUpdate, canAdminCompleteRide, canAdminForwardRide, matchesAdminRideFilter } from "./admin-rides";
+import { adminRideAmounts, adminRidePhase, adminRidePhaseUpdate, canAdminCompleteRide, canAdminForwardRide, matchesAdminRideFilter, sortAdminRides } from "./admin-rides";
 import type { RideStatus } from "./rides";
 
 const phaseRide = { status: "accepted" as const, driver_id: "driver", paid_at: "2026-10-31", arrived_at: null };
 const arrivalTime = "2026-10-31T12:00:00.000Z";
+
+test("Orçamentos ficam das mais novas para as mais antigas e pagas em ordem cronológica", () => {
+  const rides = [
+    { status: "pending" as RideStatus, scheduled_at: "2026-11-05", created_at: "2026-11-01", paid_at: null, driver_id: null },
+    { status: "pending" as RideStatus, scheduled_at: "2026-11-04", created_at: "2026-11-03", paid_at: "2026-11-03", driver_id: null },
+    { status: "completed" as RideStatus, scheduled_at: "2026-11-01", created_at: "2026-10-30", paid_at: "2026-10-30", driver_id: "d" },
+    { status: "accepted" as RideStatus, scheduled_at: "2026-11-06", created_at: "2026-11-02", paid_at: "2026-11-02", driver_id: "d" },
+    { status: "pending" as RideStatus, scheduled_at: "2026-11-05", created_at: "2026-11-02", paid_at: null, driver_id: null },
+  ];
+  const sorted = sortAdminRides(rides);
+  assert.deepEqual(
+    sorted.map((r) => [r.paid_at, r.scheduled_at]),
+    [
+      [null, "2026-11-05"],
+      [null, "2026-11-05"],
+      ["2026-11-02", "2026-11-06"],
+      ["2026-11-03", "2026-11-04"],
+      ["2026-10-30", "2026-11-01"],
+    ],
+  );
+});
 
 test("Admin pode marcar A caminho e limpar chegada anterior ao corrigir a fase", () => {
   assert.deepEqual(adminRidePhaseUpdate({ ...phaseRide, arrived_at: arrivalTime }, "en_route", arrivalTime), { status: "en_route", arrived_at: null });

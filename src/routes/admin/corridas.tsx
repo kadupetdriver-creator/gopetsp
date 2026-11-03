@@ -11,14 +11,13 @@ import { downloadCsvFile } from "@/lib/csv";
 import { toast } from "sonner";
 import { refundRidePayment } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { adminRideAmounts, canAdminCompleteRide, canAdminForwardRide, isAvailableRide, matchesAdminRideFilter as matchesFilter, type RideFilter } from "@/lib/admin-rides";
+import { adminRideAmounts, canAdminCompleteRide, canAdminForwardRide, isAvailableRide, matchesAdminRideFilter as matchesFilter, sortAdminRides, type RideFilter } from "@/lib/admin-rides";
 import { adminForwardRide } from "@/lib/admin-rides.functions";
 import {
   formatBRL,
   formatDateTime,
   formatTime,
   serviceTypes,
-  sortRidesChronologically,
   statusLabels,
   statusStyles,
   type RideStatus,
@@ -189,7 +188,7 @@ function AdminCorridasPage() {
           .select("id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, pix_key, status, vehicles(plate, model, brand, color, year, vehicle_type, is_active)"),
       ]);
       return {
-        rides: sortRidesChronologically((rides ?? []) as unknown as Ride[]),
+        rides: sortAdminRides((rides ?? []) as unknown as Ride[]),
         people: (people ?? []) as unknown as (Person & PersonDetails)[],
         emails: (emails ?? []) as { user_id: string; email: string }[],
         drivers: (drv ?? []) as unknown as DriverDetails[],
