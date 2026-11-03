@@ -50,11 +50,13 @@ function AdminPhotos() {
       ]);
       const p = new Map((profiles.data ?? []).map((x) => [x.id, x]));
       const d = new Map((drivers.data ?? []).map((x) => [x.user_id, x.avatar_path]));
-      return (reqs ?? []).map((r) => ({
-        ...r,
-        name: p.get(r.user_id)?.full_name || "Sem nome",
-        current: r.kind === "driver" ? d.get(r.user_id) ?? null : p.get(r.user_id)?.avatar_url ?? null,
-      }));
+      return (reqs ?? [])
+        .map((r) => ({
+          ...r,
+          name: p.get(r.user_id)?.full_name || "Sem nome",
+          current: r.kind === "driver" ? d.get(r.user_id) ?? null : p.get(r.user_id)?.avatar_url ?? null,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
     },
   });
 

@@ -388,7 +388,7 @@ export const getPreferredDrivers = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase.rpc("list_preferred_drivers");
     if (error) throw new Error("Não foi possível carregar os motoristas disponíveis.");
 
-    const rows = data ?? [];
+    const rows = (data ?? []).slice().sort((a, b) => (a.full_name || "").localeCompare(b.full_name || "", "pt-BR"));
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     return Promise.all(
       rows.map(async (driver) => {
