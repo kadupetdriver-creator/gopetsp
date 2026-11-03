@@ -26,6 +26,7 @@ import {
   isActiveStatus,
   petSizes,
   serviceTypes,
+  sortRidesChronologically,
   statusLabels,
   statusStyles,
   type RideStatus,
@@ -264,7 +265,7 @@ function MotoristaPage() {
         .select(selectCols)
         .order("scheduled_at", { ascending: true });
       if (error) throw error;
-      return data as unknown as Ride[];
+      return sortRidesChronologically(data as unknown as Ride[]);
     },
   });
 

@@ -18,6 +18,7 @@ import {
   formatDateTime,
   formatTime,
   serviceTypes,
+  sortRidesChronologically,
   statusLabels,
   statusStyles,
   type RideStatus,
@@ -188,7 +189,7 @@ function AdminCorridasPage() {
           .select("id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, pix_key, status, vehicles(plate, model, brand, color, year, vehicle_type, is_active)"),
       ]);
       return {
-        rides: (rides ?? []) as unknown as Ride[],
+        rides: sortRidesChronologically((rides ?? []) as unknown as Ride[]),
         people: (people ?? []) as unknown as (Person & PersonDetails)[],
         emails: (emails ?? []) as { user_id: string; email: string }[],
         drivers: (drv ?? []) as unknown as DriverDetails[],
