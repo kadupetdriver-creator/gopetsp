@@ -1,4 +1,4 @@
-import { isActiveStatus, isUnderwayStatus, type RideStatus } from "./rides";
+import { isActiveStatus, isUnderwayStatus, sortRidesChronologically, type RideStatus } from "./rides";
 import { driverPayoutCents } from "./pricing";
 
 type AdminRideState = { status: RideStatus; driver_id: string | null; paid_at: string | null; driver_requested_at?: string | null };
@@ -27,6 +27,17 @@ export function matchesAdminRideFilter(ride: AdminRideState, filter: RideFilter)
 
 export function canAdminCompleteRide(ride: AdminRideState) {
   return isActiveStatus(ride.status) && Boolean(ride.driver_id) && Boolean(ride.paid_at);
+}
+
+/**
+ * Ordenação da administração: orçamentos (corridas não pagas) das mais novas para
+ * as mais antigas; corridas pagas em ordem cronológica pela data de realização.
+ */
+export function sortAdminRides<T extends { status: RideStatus; scheduled_at: string | null; created_at: string; paid_at: string | null }>(rides: T[]): T[] {
+  const quotes = rides
+    .filter((r) => !r.paid_at)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return [...quotes, ...sortRidesChronologically(rides.filter((r) => Boolean(r.paid_at)))];
 }
 
 export const adminRidePhases = [
