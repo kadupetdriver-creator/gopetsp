@@ -122,7 +122,8 @@ function AdminTutoresPage() {
       return [t.full_name, t.email, t.phone, t.cpf, t.address, t.city, ...t.pets.map((p) => p.name)].some((v) =>
         v?.toLowerCase().includes(q),
       );
-    });
+    })
+    .sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR"));
   }, [data, search, filter]);
 
   return (

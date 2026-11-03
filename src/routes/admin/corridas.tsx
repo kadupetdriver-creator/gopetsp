@@ -400,7 +400,7 @@ function AdminCorridasPage() {
         })}
       </div>
 
-      {creatingFixed && <AdminFixedRideDialog tutors={(data?.people ?? []).filter((p) => p.role === "tutor" && p.is_active)} onClose={() => setCreatingFixed(false)} onSaved={() => {
+      {creatingFixed && <AdminFixedRideDialog tutors={(data?.people ?? []).filter((p) => p.role === "tutor" && p.is_active).sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR"))} onClose={() => setCreatingFixed(false)} onSaved={() => {
         setCreatingFixed(false);
         setFilter("orcamentos");
         setSearch("");
@@ -463,7 +463,7 @@ function EditRideDialog({
     status: ride.status,
     driver_id: ride.driver_id ?? "none",
   });
-  const drivers = people.filter((p) => p.role === "driver");
+  const drivers = people.filter((p) => p.role === "driver").sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR"));
 
   const save = useMutation({
     mutationFn: async () => {
@@ -568,7 +568,7 @@ function ForwardRideDialog({
 }) {
   const [driverId, setDriverId] = useState(ride.driver_id ?? "");
   const forwardRide = useServerFn(adminForwardRide);
-  const drivers = people.filter((p) => p.role === "driver");
+  const drivers = people.filter((p) => p.role === "driver").sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR"));
 
   const send = useMutation({
     mutationFn: () => forwardRide({ data: { rideId: ride.id, driverId: driverId === "none" ? null : driverId } }),

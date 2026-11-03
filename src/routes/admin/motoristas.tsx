@@ -160,7 +160,7 @@ function AdminMotoristasPage() {
           v?.toLowerCase().includes(q),
         );
       })
-      .sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+      .sort((a, b) => statusOrder[a.status] - statusOrder[b.status] || a.full_name.localeCompare(b.full_name, "pt-BR"));
   }, [data, search, filter]);
 
   const review = useMutation({
