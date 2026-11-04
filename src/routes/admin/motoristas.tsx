@@ -114,6 +114,7 @@ function AdminMotoristasPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"todos" | "fila" | "definitivo" | DriverStatus>("fila");
+  const [sort, setSort] = useState<"alfabetica" | "recentes" | "antigos">("alfabetica");
   const [editing, setEditing] = useState<Application | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -160,8 +161,12 @@ function AdminMotoristasPage() {
           v?.toLowerCase().includes(q),
         );
       })
-      .sort((a, b) => statusOrder[a.status] - statusOrder[b.status] || a.full_name.localeCompare(b.full_name, "pt-BR"));
-  }, [data, search, filter]);
+      .sort((a, b) => {
+        if (sort === "recentes") return b.created_at.localeCompare(a.created_at);
+        if (sort === "antigos") return a.created_at.localeCompare(b.created_at);
+        return statusOrder[a.status] - statusOrder[b.status] || a.full_name.localeCompare(b.full_name, "pt-BR");
+      });
+  }, [data, search, filter, sort]);
 
   const review = useMutation({
     mutationFn: async ({ id, status, reason, final = false }: { id: string; status: DriverStatus; reason?: string | undefined; final?: boolean }) => {
@@ -217,6 +222,16 @@ function AdminMotoristasPage() {
                 {driverStatusLabels[s]} ({counts[s] ?? 0})
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+        <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+          <SelectTrigger className="sm:w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="alfabetica">Ordem alfabética</SelectItem>
+            <SelectItem value="recentes">Cadastro mais recente</SelectItem>
+            <SelectItem value="antigos">Cadastro mais antigo</SelectItem>
           </SelectContent>
         </Select>
         <Button
