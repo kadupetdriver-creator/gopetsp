@@ -80,6 +80,7 @@ function AdminTutoresPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"todos" | "ativos" | "inativos">("todos");
+  const [sort, setSort] = useState<"alfabetica" | "recentes" | "antigos">("alfabetica");
   const [editing, setEditing] = useState<Tutor | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -123,8 +124,12 @@ function AdminTutoresPage() {
         v?.toLowerCase().includes(q),
       );
     })
-    .sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR"));
-  }, [data, search, filter]);
+    .sort((a, b) => {
+      if (sort === "recentes") return b.created_at.localeCompare(a.created_at);
+      if (sort === "antigos") return a.created_at.localeCompare(b.created_at);
+      return a.full_name.localeCompare(b.full_name, "pt-BR");
+    });
+  }, [data, search, filter, sort]);
 
   return (
     <div className="space-y-4">
@@ -149,6 +154,16 @@ function AdminTutoresPage() {
             <SelectItem value="todos">Todos</SelectItem>
             <SelectItem value="ativos">Ativos</SelectItem>
             <SelectItem value="inativos">Desativados</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+          <SelectTrigger className="sm:w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="alfabetica">Ordem alfabética</SelectItem>
+            <SelectItem value="recentes">Cadastro mais recente</SelectItem>
+            <SelectItem value="antigos">Cadastro mais antigo</SelectItem>
           </SelectContent>
         </Select>
         <Button
