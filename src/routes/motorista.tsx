@@ -1,3 +1,4 @@
+import { WaitingItinerary } from "@/components/WaitingItinerary";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -693,7 +694,7 @@ function MotoristaPage() {
                           <p className="break-words text-sm text-muted-foreground">Tutor: {tutorNames[ride.id]}</p>
                         )}
                         <p className="text-sm text-muted-foreground">{tutorAccompanimentLabel(ride.tutor_accompanies_pet, ride.accompanying_people_count)}</p>
-{waitingTimeLabel(ride) && <p className="text-sm text-muted-foreground">{waitingTimeLabel(ride)}</p>}
+<WaitingItinerary ride={ride} />
                         {ride.status === "completed" && <DriverPaymentStatus rideId={ride.id} scheduledAt={ride.scheduled_at} paidAt={paymentsByRide[ride.id]} amountCents={driverValueOf(ride)} completed />}
                         <p className="text-muted-foreground">
                           {ride.origin_address}
@@ -742,7 +743,7 @@ function MotoristaPage() {
               {newRide.pet_name} · {formatBRL(driverValueOf(newRide))}
             </p>
             <p className="mt-2 text-sm font-semibold">{tutorAccompanimentLabel(newRide.tutor_accompanies_pet, newRide.accompanying_people_count)}</p>
-{waitingTimeLabel(newRide) && <p className="mt-2 text-sm font-semibold">{waitingTimeLabel(newRide)}</p>}
+<WaitingItinerary ride={newRide} className="mt-2 border-primary-foreground/40 bg-primary-foreground/10" />
             <p className="mt-3 text-sm font-medium">
               Embarque: {newRide.origin_address}
               {newRide.origin_neighborhood ? ` · ${newRide.origin_neighborhood}` : ""}
@@ -845,7 +846,7 @@ function RideCard({
               <p className="break-words text-sm text-muted-foreground">Tutor: {tutorName}</p>
             )}
             <p className="text-sm font-medium">{tutorAccompanimentLabel(ride.tutor_accompanies_pet, ride.accompanying_people_count)}</p>
-{waitingTimeLabel(ride) && <p className="text-sm font-medium">{waitingTimeLabel(ride)}</p>}
+<WaitingItinerary ride={ride} />
             <p className="text-sm text-muted-foreground">
               {serviceTypes.find((s) => s.value === ride.service_type)?.label ?? "Transporte"}
             </p>
