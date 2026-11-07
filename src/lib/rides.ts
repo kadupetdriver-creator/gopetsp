@@ -219,3 +219,16 @@ export function distanceKmBetween(a: [number, number], b: [number, number]): num
     Math.cos(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 }
+
+/** Texto do tempo de espera contratado (motorista aguarda no local até o retorno). */
+export function waitingTimeLabel(ride: {
+  driver_waits?: boolean | null;
+  waiting_minutes?: number | null;
+}): string | null {
+  const m = ride.waiting_minutes ?? 0;
+  if (!ride.driver_waits || m <= 0) return null;
+  const h = Math.floor(m / 60);
+  const r = m % 60;
+  const t = h > 0 ? `${h}h${r ? ` ${r}min` : ""}` : `${r} min`;
+  return `Espera contratada: ${t}`;
+}

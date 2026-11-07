@@ -23,6 +23,7 @@ import {
   statusLabels,
   statusStyles,
   type RideStatus,
+  waitingTimeLabel,
 } from "@/lib/rides";
 import { RideMap } from "@/components/RideMap";
 import { RideDriverIdentity } from "@/components/RideDriverIdentity";
@@ -65,6 +66,8 @@ type Ride = {
   status: RideStatus;
   driver_id: string | null;
   needs_trunk: boolean;
+  driver_waits: boolean | null;
+  waiting_minutes: number | null;
   driver_lat: number | null;
   driver_lng: number | null;
   location_updated_at: string | null;
@@ -91,7 +94,7 @@ function MinhasCorridas() {
       const { data, error } = await supabase
         .from("rides")
         .select(
-          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, paid_at, driver_requested_at",
+          "id, pet_name, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, price_cents, distance_km, status, driver_id, needs_trunk, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, paid_at, driver_requested_at, driver_waits, waiting_minutes",
         )
         .eq("tutor_id", user.id)
         .order("scheduled_at", { ascending: false });
@@ -310,6 +313,11 @@ function MinhasCorridas() {
                       Porta-malas
                     </span>
                   )}
+{waitingTimeLabel(ride) && (
+              <span className="ml-2 rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-foreground">
+                {waitingTimeLabel(ride)}
+              </span>
+            )}
                 </p>
               </div>
 
