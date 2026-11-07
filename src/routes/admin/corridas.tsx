@@ -1,3 +1,4 @@
+import { WaitingItinerary } from "@/components/WaitingItinerary";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
@@ -21,7 +22,6 @@ import {
   statusLabels,
   statusStyles,
   type RideStatus,
-  waitingTimeLabel,
 } from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -350,7 +350,7 @@ function AdminCorridasPage() {
                 <p className="text-sm text-muted-foreground">
                   {r.origin_address} → {r.destination_address}
                 </p>
-                {waitingTimeLabel(r) && <p className="text-sm font-semibold text-primary">{waitingTimeLabel(r)}</p>}
+                <WaitingItinerary ride={r} />
                 <p className="text-sm">
                   {formatSaoPauloSchedule(r.scheduled_at)} · Valor total: <strong>{formatBRL(adminRideAmounts(r.price_cents).totalCents)}</strong> · {r.distance_km} km
                   <span className="ml-2 text-xs text-muted-foreground">{pay}</span>
