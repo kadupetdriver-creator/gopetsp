@@ -31,7 +31,6 @@ import {
   statusLabels,
   statusStyles,
   type RideStatus,
-  waitingTimeLabel,
 } from "@/lib/rides";
 import { RideMap } from "@/components/RideMap";
 import { cn } from "@/lib/utils";

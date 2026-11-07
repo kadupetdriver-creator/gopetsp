@@ -22,7 +22,6 @@ import {
   statusLabels,
   statusStyles,
   type RideStatus,
-  waitingTimeLabel,
 } from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
