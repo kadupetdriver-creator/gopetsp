@@ -80,6 +80,8 @@ type Ride = {
   needs_trunk: boolean;
   tutor_accompanies_pet: boolean | null;
   accompanying_people_count: number | null;
+  driver_waits: boolean | null;
+  waiting_minutes: number | null;
   driver_lat: number | null;
   driver_lng: number | null;
   location_updated_at: string | null;
@@ -96,7 +98,7 @@ type Ride = {
 };
 
 const selectCols =
-  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, driver_fixed_cents, distance_km, status, driver_id, needs_trunk, tutor_accompanies_pet, accompanying_people_count, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, paid_at, stops, preferred_driver_id, preferred_until, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
+  "id, tutor_id, pet_name, pet_size, service_type, origin_address, origin_neighborhood, destination_address, destination_neighborhood, scheduled_at, notes, price_cents, driver_fixed_cents, distance_km, status, driver_id, needs_trunk, tutor_accompanies_pet, accompanying_people_count, driver_waits, waiting_minutes, driver_lat, driver_lng, location_updated_at, origin_lat, origin_lng, destination_lat, destination_lng, arrived_at, paid_at, stops, preferred_driver_id, preferred_until, ride_pets(pets(name, species, breed, size, temperament, weight_kg, health_notes, transport_items, photo_url))";
 
 const driverValueOf = (ride: Pick<Ride, "price_cents" | "driver_fixed_cents">) =>
   driverPayoutCents({ priceCents: ride.price_cents, driverFixedCents: ride.driver_fixed_cents });
@@ -690,6 +692,7 @@ function MotoristaPage() {
                           <p className="break-words text-sm text-muted-foreground">Tutor: {tutorNames[ride.id]}</p>
                         )}
                         <p className="text-sm text-muted-foreground">{tutorAccompanimentLabel(ride.tutor_accompanies_pet, ride.accompanying_people_count)}</p>
+{waitingTimeLabel(ride) && <p className="text-sm text-muted-foreground">{waitingTimeLabel(ride)}</p>}
                         {ride.status === "completed" && <DriverPaymentStatus rideId={ride.id} scheduledAt={ride.scheduled_at} paidAt={paymentsByRide[ride.id]} amountCents={driverValueOf(ride)} completed />}
                         <p className="text-muted-foreground">
                           {ride.origin_address}
@@ -738,6 +741,7 @@ function MotoristaPage() {
               {newRide.pet_name} · {formatBRL(driverValueOf(newRide))}
             </p>
             <p className="mt-2 text-sm font-semibold">{tutorAccompanimentLabel(newRide.tutor_accompanies_pet, newRide.accompanying_people_count)}</p>
+{waitingTimeLabel(newRide) && <p className="mt-2 text-sm font-semibold">{waitingTimeLabel(newRide)}</p>}
             <p className="mt-3 text-sm font-medium">
               Embarque: {newRide.origin_address}
               {newRide.origin_neighborhood ? ` · ${newRide.origin_neighborhood}` : ""}
@@ -840,6 +844,7 @@ function RideCard({
               <p className="break-words text-sm text-muted-foreground">Tutor: {tutorName}</p>
             )}
             <p className="text-sm font-medium">{tutorAccompanimentLabel(ride.tutor_accompanies_pet, ride.accompanying_people_count)}</p>
+{waitingTimeLabel(ride) && <p className="text-sm font-medium">{waitingTimeLabel(ride)}</p>}
             <p className="text-sm text-muted-foreground">
               {serviceTypes.find((s) => s.value === ride.service_type)?.label ?? "Transporte"}
             </p>
