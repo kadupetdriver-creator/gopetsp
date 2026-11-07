@@ -21,6 +21,7 @@ import {
   statusLabels,
   statusStyles,
   type RideStatus,
+  waitingTimeLabel,
 } from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,8 @@ type Ride = {
   driver_requested_at: string | null;
   arrived_at: string | null;
   updated_at: string;
+  driver_waits: boolean | null;
+  waiting_minutes: number | null;
 };
 
 type Person = { id: string; full_name: string; role: "tutor" | "driver" };
@@ -176,7 +179,7 @@ function AdminCorridasPage() {
       const { data: rides, error } = await supabase
         .from("rides")
         .select(
-          "id, tutor_id, driver_id, preferred_driver_id, preferred_until, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, driver_fixed_cents, distance_km, status, created_at, paid_at, driver_requested_at, arrived_at, updated_at",
+          "id, tutor_id, driver_id, preferred_driver_id, preferred_until, pet_name, service_type, origin_address, destination_address, scheduled_at, notes, price_cents, driver_fixed_cents, distance_km, status, created_at, paid_at, driver_requested_at, arrived_at, updated_at, driver_waits, waiting_minutes",
         )
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
@@ -347,6 +350,7 @@ function AdminCorridasPage() {
                 <p className="text-sm text-muted-foreground">
                   {r.origin_address} → {r.destination_address}
                 </p>
+                {waitingTimeLabel(r) && <p className="text-sm font-semibold text-primary">{waitingTimeLabel(r)}</p>}
                 <p className="text-sm">
                   {formatSaoPauloSchedule(r.scheduled_at)} · Valor total: <strong>{formatBRL(adminRideAmounts(r.price_cents).totalCents)}</strong> · {r.distance_km} km
                   <span className="ml-2 text-xs text-muted-foreground">{pay}</span>
