@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 import { CANCELLATION_FEES_ACTIVE, driverShareOfFee } from "./cancellation-policy";
 import { centsToMpAmount, partialRefundSupport, refundAmountCents } from "./cancellation-refund";
 
@@ -40,7 +41,7 @@ export const refundRidePayment = createServerFn({ method: "POST" })
     const partialMode = CANCELLATION_FEES_ACTIVE && !!cancellation;
     if (!ride.paid_at) return { status: "none" };
 
-    const record = async (fields: Record<string, unknown>) => {
+    const record = async (fields: Database["public"]["Tables"]["ride_cancellations"]["Update"]) => {
       if (cancellation) await supabaseAdmin.from("ride_cancellations").update(fields).eq("id", cancellation.id);
     };
 
@@ -54,7 +55,7 @@ export const refundRidePayment = createServerFn({ method: "POST" })
       if (!locked) return { status: "refunded", refundedCents: cancellation.refunded_amount_cents ?? 0 };
     }
 
-    const finish = async (method: string, paidCents: number, refunded: number, extra: Record<string, unknown> = {}) => {
+    const finish = async (method: string, paidCents: number, refunded: number, extra: Database["public"]["Tables"]["ride_cancellations"]["Update"] = {}) => {
       const retained = paidCents - refunded;
       await record({
         refund_status: refunded > 0 ? "refunded" : "retained", refund_method: method,
