@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { CANCELLATION_FEES_ACTIVE, canTutorCancel, cancellationQuote } from "./cancellation-policy";
+import { CANCELLATION_FEES_ACTIVE, canTutorCancel, cancellationQuote, driverShareOfFee } from "./cancellation-policy";
 
 const RIDE_COLS = "id, tutor_id, driver_id, status, scheduled_at, price_cents, paid_at, arrived_at, en_route_at, driver_fixed_cents";
 
@@ -80,12 +80,8 @@ export const adminSetCancellationException = createServerFn({ method: "POST" })
     const { data: row, error } = await context.supabase.from("ride_cancellations").select("*").eq("id", data.id).maybeSingle();
     if (error || !row) throw new Error("Cancelamento não encontrado.");
     const fee = data.kind ? 0 : row.original_fee_cents;
-    const share = data.kind ? 0 : Math.round(row.original_fee_cents === 0 ? 0 : (row.driver_share_cents || 0) / Math.max(row.fee_cents, 1) * row.original_fee_cents);
-    const { cancellationQuote: _q, driverShareOfFee } = await import("./cancellation-policy");
-    void _q;
     const { data: rideRow } = await context.supabase.from("rides").select("driver_fixed_cents").eq("id", row.ride_id).maybeSingle();
     const driverShare = data.kind ? 0 : driverShareOfFee(fee, row.ride_price_cents, rideRow?.driver_fixed_cents);
-    void share;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error: upErr } = await supabaseAdmin.from("ride_cancellations").update({
       exception_kind: data.kind, exception_notes: data.kind ? data.notes : null,
