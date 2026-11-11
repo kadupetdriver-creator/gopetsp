@@ -29,7 +29,7 @@ import { RideMap } from "@/components/RideMap";
 import { RideDriverIdentity } from "@/components/RideDriverIdentity";
 import { cn } from "@/lib/utils";
 import { paymentStatusLabels, paymentStatusStyles, ridePaymentState } from "@/lib/payments";
-import { TutorCancelRideButton, CancellationHistoryLine } from "@/components/TutorCancelRideButton";
+import { TutorCancelRideButton } from "@/components/TutorCancelRideButton";
 import { canTutorCancel } from "@/lib/cancellation-policy";
 
 export const Route = createFileRoute("/minhas-corridas/")({
