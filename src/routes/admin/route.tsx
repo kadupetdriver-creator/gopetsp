@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Camera, Gift, BarChart3, Car, MapPinned, Route as RouteIcon, ShieldCheck, Users, Wallet } from "lucide-react";
+import { Ban, Camera, Gift, BarChart3, Car, MapPinned, Route as RouteIcon, ShieldCheck, Users, Wallet } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -23,6 +23,7 @@ const sections = [
   { to: "/admin/tutores", label: "Tutores", icon: Users },
   { to: "/admin/motoristas", label: "Motoristas", icon: Car },
   { to: "/admin/corridas", label: "Corridas", icon: RouteIcon },
+  { to: "/admin/cancelamentos", label: "Cancelamentos", icon: Ban },
   { to: "/admin/mapa", label: "Mapa ao vivo", icon: MapPinned },
   { to: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
   { to: "/admin/indicacoes", label: "Indicações", icon: Gift },

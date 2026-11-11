@@ -23,6 +23,7 @@ import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAdministradoresRouteImport } from './routes/admin/administradores'
+import { Route as AdminCancelamentosRouteImport } from './routes/admin/cancelamentos'
 import { Route as AdminCorridasRouteImport } from './routes/admin/corridas'
 import { Route as AdminFotosRouteImport } from './routes/admin/fotos'
 import { Route as AdminIndicacoesRouteImport } from './routes/admin/indicacoes'
@@ -105,6 +106,11 @@ const AdminAdministradoresRoute = AdminAdministradoresRouteImport.update({
   path: '/administradores',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminCancelamentosRoute = AdminCancelamentosRouteImport.update({
+  id: '/cancelamentos',
+  path: '/cancelamentos',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminCorridasRoute = AdminCorridasRouteImport.update({
   id: '/corridas',
   path: '/corridas',
@@ -175,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/administradores': typeof AdminAdministradoresRoute
+  '/admin/cancelamentos': typeof AdminCancelamentosRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/fotos': typeof AdminFotosRoute
   '/admin/indicacoes': typeof AdminIndicacoesRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByTo {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/administradores': typeof AdminAdministradoresRoute
+  '/admin/cancelamentos': typeof AdminCancelamentosRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/fotos': typeof AdminFotosRoute
   '/admin/indicacoes': typeof AdminIndicacoesRoute
@@ -228,6 +236,7 @@ export interface FileRoutesById {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/administradores': typeof AdminAdministradoresRoute
+  '/admin/cancelamentos': typeof AdminCancelamentosRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/fotos': typeof AdminFotosRoute
   '/admin/indicacoes': typeof AdminIndicacoesRoute
@@ -257,6 +266,7 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/admin/administradores'
+    | '/admin/cancelamentos'
     | '/admin/corridas'
     | '/admin/fotos'
     | '/admin/indicacoes'
@@ -282,6 +292,7 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/admin/administradores'
+    | '/admin/cancelamentos'
     | '/admin/corridas'
     | '/admin/fotos'
     | '/admin/indicacoes'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/admin/administradores'
+    | '/admin/cancelamentos'
     | '/admin/corridas'
     | '/admin/fotos'
     | '/admin/indicacoes'
@@ -440,6 +452,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdministradoresRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/cancelamentos': {
+      id: '/admin/cancelamentos'
+      path: '/cancelamentos'
+      fullPath: '/admin/cancelamentos'
+      preLoaderRoute: typeof AdminCancelamentosRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/corridas': {
       id: '/admin/corridas'
       path: '/corridas'
@@ -522,6 +541,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteRouteChildren {
   AdminAdministradoresRoute: typeof AdminAdministradoresRoute
+  AdminCancelamentosRoute: typeof AdminCancelamentosRoute
   AdminCorridasRoute: typeof AdminCorridasRoute
   AdminFotosRoute: typeof AdminFotosRoute
   AdminIndicacoesRoute: typeof AdminIndicacoesRoute
@@ -534,6 +554,7 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAdministradoresRoute: AdminAdministradoresRoute,
+  AdminCancelamentosRoute: AdminCancelamentosRoute,
   AdminCorridasRoute: AdminCorridasRoute,
   AdminFotosRoute: AdminFotosRoute,
   AdminIndicacoesRoute: AdminIndicacoesRoute,
