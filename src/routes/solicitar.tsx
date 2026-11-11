@@ -189,6 +189,7 @@ function SolicitarPage() {
 
 
   const [selectedPetIds, setSelectedPetIds] = useState<string[]>([]);
+  const [policyAccepted, setPolicyAccepted] = useState(false);
   const [serviceType, setServiceType] = useState("veterinario");
   const [originAddress, setOriginAddress] = useState("");
   const [origin, setOrigin] = useState<SelectedPlace | null>(null);
