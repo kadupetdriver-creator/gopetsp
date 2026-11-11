@@ -708,6 +708,15 @@ export type Database = {
           rate_percent: number
           reason: string | null
           refund_cents: number
+          refund_error: string | null
+          refund_idempotency_key: string
+          refund_method: string | null
+          refund_mp_order_id: string | null
+          refund_status: string
+          refund_transaction_id: string | null
+          refunded_amount_cents: number | null
+          refunded_at: string | null
+          retained_amount_cents: number | null
           ride_id: string
           ride_price_cents: number
           scheduled_at: string
@@ -737,6 +746,15 @@ export type Database = {
           rate_percent: number
           reason?: string | null
           refund_cents: number
+          refund_error?: string | null
+          refund_idempotency_key?: string
+          refund_method?: string | null
+          refund_mp_order_id?: string | null
+          refund_status?: string
+          refund_transaction_id?: string | null
+          refunded_amount_cents?: number | null
+          refunded_at?: string | null
+          retained_amount_cents?: number | null
           ride_id: string
           ride_price_cents: number
           scheduled_at: string
@@ -766,6 +784,15 @@ export type Database = {
           rate_percent?: number
           reason?: string | null
           refund_cents?: number
+          refund_error?: string | null
+          refund_idempotency_key?: string
+          refund_method?: string | null
+          refund_mp_order_id?: string | null
+          refund_status?: string
+          refund_transaction_id?: string | null
+          refunded_amount_cents?: number | null
+          refunded_at?: string | null
+          retained_amount_cents?: number | null
           ride_id?: string
           ride_price_cents?: number
           scheduled_at?: string
@@ -1346,6 +1373,10 @@ export type Database = {
       referral_code_valid: { Args: { _code: string }; Returns: boolean }
       refresh_eta_calibration: { Args: { _days?: number }; Returns: number }
       refund_ride_gopet_balance: { Args: { _ride_id: string }; Returns: Json }
+      refund_ride_gopet_balance_amount: {
+        Args: { _amount_cents: number; _ride_id: string }
+        Returns: Json
+      }
       request_paid_ride_driver: {
         Args: { _ride_id: string; _tutor_id: string }
         Returns: string

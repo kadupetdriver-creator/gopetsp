@@ -78,6 +78,7 @@ export const adminSetCancellationException = createServerFn({ method: "POST" })
     if (isAdmin !== true) throw new Error("Apenas administradores podem autorizar exceções.");
     if (data.kind && data.notes.length < 5) throw new Error("Descreva a justificativa da exceção.");
     const { data: row, error } = await context.supabase.from("ride_cancellations").select("*").eq("id", data.id).maybeSingle();
+    if (row && ["refunded", "retained", "processing"].includes(row.refund_status)) throw new Error("O estorno desta corrida já foi processado; a exceção não pode mais alterar valores.");
     if (error || !row) throw new Error("Cancelamento não encontrado.");
     const fee = data.kind ? 0 : row.original_fee_cents;
     const { data: rideRow } = await context.supabase.from("rides").select("driver_fixed_cents").eq("id", row.ride_id).maybeSingle();

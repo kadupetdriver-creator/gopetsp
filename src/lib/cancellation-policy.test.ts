@@ -35,3 +35,20 @@ test("corrida fixa: parcela proporcional ao valor fixo", () => {
   const q = cancellationQuote({ ...base, scheduled_at: at(10), driver_fixed_cents: 6000 }, now);
   assert.equal(q.driverShareCents, 1800);
 });
+
+import { centsToMpAmount, partialRefundSupport, refundAmountCents } from "./cancellation-refund";
+
+test("estorno: integral enquanto cobrança desativada", () => {
+  assert.equal(refundAmountCents(10000, { refund_cents: 7000 }, false), 10000);
+});
+test("estorno: 70% com cobrança ativa", () => {
+  assert.equal(refundAmountCents(10000, { refund_cents: 7000 }, true), 7000);
+  assert.equal(centsToMpAmount(7000), "70.00");
+});
+test("estorno parcial bloqueado para pagamento pendente", () => {
+  assert.equal(partialRefundSupport({ orderStatus: "action_required", paymentType: "pix", paidAt: null, alreadyRefunded: false }).allowed, false);
+  assert.equal(partialRefundSupport({ orderStatus: "processed", paymentType: "credit_card", paidAt: new Date().toISOString(), alreadyRefunded: false }).allowed, true);
+});
+test("estorno proporcional ao valor pago com cupom", () => {
+  assert.equal(refundAmountCents(9500, { refund_cents: 7000, ride_price_cents: 10000 }, true), 6650);
+});

@@ -14,6 +14,29 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { adminListCancellations, adminSetCancellationException } from "@/lib/cancellation.functions";
 import { CANCELLATION_FEES_ACTIVE, driverStateLabels, tierLabels, type CancellationTier, type DriverState } from "@/lib/cancellation-policy";
 import { formatBRL } from "@/lib/rides";
+import { adminSimulateCancellationRefund } from "@/lib/payments.functions";
+
+const refundStatusLabels: Record<string, string> = {
+  not_requested: "Estorno não solicitado", processing: "Estorno em processamento", refunded: "Estornado",
+  retained: "Valor retido (sem estorno)", failed: "Falha no estorno",
+};
+
+function RefundSimulation({ id }: { id: string }) {
+  const fn = useServerFn(adminSimulateCancellationRefund);
+  const m = useMutation({ mutationFn: () => fn({ data: { cancellationId: id } }), onError: (e) => toast.error(e instanceof Error ? e.message : "Falha na simulação") });
+  return (
+    <div className="space-y-1">
+      <Button size="sm" variant="outline" disabled={m.isPending} onClick={() => m.mutate()}>
+        {m.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}Simular estorno parcial
+      </Button>
+      {m.data && (
+        <p className="rounded-lg border border-primary/40 px-2 py-1 text-xs">
+          Simulação (nada foi estornado) · {m.data.method} · Pago {formatBRL(m.data.paidCents)} · Devolveria <b>{formatBRL(m.data.refundCents)}</b> · Reteria {formatBRL(m.data.retainedCents)} · Estorno parcial {m.data.partialAllowed ? "permitido" : "não permitido"} — {m.data.note}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/admin/cancelamentos")({
   head: () => ({
@@ -56,8 +79,8 @@ function CancellationsPage() {
   const totals = rows.reduce((a, r) => ({ fee: a.fee + r.fee_cents, refund: a.refund + r.refund_cents, share: a.share + r.driver_share_cents }), { fee: 0, refund: 0, share: 0 });
 
   const exportCsv = () => {
-    const head = ["Cancelada em", "Agendada para", "Pet", "Tutor", "Motorista", "Situação do motorista", "Saiu a caminho", "Chegou", "Motivo", "Faixa", "Taxa %", "Valor corrida", "Taxa", "Reembolso previsto", "Parcela motorista", "Exceção", "Justificativa"];
-    const lines = rows.map((r) => [dt(r.cancelled_at), dt(r.scheduled_at), r.pet_name, r.tutor_name, r.driver_name ?? "", driverStateLabels[r.driver_state as DriverState] ?? r.driver_state, dt(r.en_route_at), dt(r.arrived_at), r.reason ?? "", tierLabels[r.tier as CancellationTier] ?? r.tier, r.rate_percent, formatBRL(r.ride_price_cents), formatBRL(r.fee_cents), formatBRL(r.refund_cents), formatBRL(r.driver_share_cents), r.exception_kind ? exceptionLabels[r.exception_kind] : "", r.exception_notes ?? ""]);
+    const head = ["Cancelada em", "Agendada para", "Pet", "Tutor", "Motorista", "Situação do motorista", "Saiu a caminho", "Chegou", "Motivo", "Faixa", "Taxa %", "Valor corrida", "Taxa", "Reembolso previsto", "Parcela motorista", "Exceção", "Justificativa", "Situação do estorno", "Devolvido", "Retido", "Transação"];
+    const lines = rows.map((r) => [dt(r.cancelled_at), dt(r.scheduled_at), r.pet_name, r.tutor_name, r.driver_name ?? "", driverStateLabels[r.driver_state as DriverState] ?? r.driver_state, dt(r.en_route_at), dt(r.arrived_at), r.reason ?? "", tierLabels[r.tier as CancellationTier] ?? r.tier, r.rate_percent, formatBRL(r.ride_price_cents), formatBRL(r.fee_cents), formatBRL(r.refund_cents), formatBRL(r.driver_share_cents), r.exception_kind ? exceptionLabels[r.exception_kind] : "", r.exception_notes ?? "", refundStatusLabels[r.refund_status] ?? r.refund_status, r.refunded_amount_cents != null ? formatBRL(r.refunded_amount_cents) : "", r.retained_amount_cents != null ? formatBRL(r.retained_amount_cents) : "", r.refund_transaction_id ?? ""]);
     const csv = [head, ...lines].map((l) => l.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(";")).join("\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
@@ -104,7 +127,17 @@ function CancellationsPage() {
             <p className="font-medium">{tierLabels[r.tier as CancellationTier] ?? r.tier}</p>
             <p>Corrida {formatBRL(r.ride_price_cents)} · Taxa {r.rate_percent}% = <b>{formatBRL(r.fee_cents)}</b> · Reembolso {formatBRL(r.refund_cents)} · Motorista {formatBRL(r.driver_share_cents)}{!r.was_paid && " · não paga"}</p>
             {r.exception_kind && <p className="rounded-lg bg-primary/15 px-2 py-1">Exceção: {exceptionLabels[r.exception_kind]} — {r.exception_notes} ({dt(r.exception_at)})</p>}
-            <Button size="sm" variant="secondary" onClick={() => setEditing(r)}>Analisar exceção</Button>
+            <p className="text-muted-foreground">
+              {refundStatusLabels[r.refund_status] ?? r.refund_status}
+              {r.refunded_amount_cents != null && <> · Devolvido <b>{formatBRL(r.refunded_amount_cents)}</b> · Retido <b>{formatBRL(r.retained_amount_cents ?? 0)}</b></>}
+              {r.refund_method && <> · {r.refund_method === "gopet_balance" ? "Saldo GoPet" : "Mercado Pago"}</>}
+              {r.refund_transaction_id && <> · Transação {r.refund_transaction_id}</>}
+              {r.refund_error && <span className="text-destructive"> · {r.refund_error}</span>}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="secondary" onClick={() => setEditing(r)}>Analisar exceção</Button>
+              {r.was_paid && <RefundSimulation id={r.id} />}
+            </div>
           </CardContent>
         </Card>
       ))}
