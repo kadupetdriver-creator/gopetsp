@@ -686,6 +686,104 @@ export type Database = {
         }
         Relationships: []
       }
+      ride_cancellations: {
+        Row: {
+          arrived_at: string | null
+          cancelled_at: string
+          cancelled_by: string
+          created_at: string
+          driver_id: string | null
+          driver_share_cents: number
+          driver_state: string
+          en_route_at: string | null
+          exception_at: string | null
+          exception_by: string | null
+          exception_kind: string | null
+          exception_notes: string | null
+          fee_cents: number
+          fees_active: boolean
+          id: string
+          original_fee_cents: number
+          previous_status: string
+          rate_percent: number
+          reason: string | null
+          refund_cents: number
+          ride_id: string
+          ride_price_cents: number
+          scheduled_at: string
+          tier: string
+          tutor_id: string
+          updated_at: string
+          was_paid: boolean
+        }
+        Insert: {
+          arrived_at?: string | null
+          cancelled_at?: string
+          cancelled_by: string
+          created_at?: string
+          driver_id?: string | null
+          driver_share_cents: number
+          driver_state: string
+          en_route_at?: string | null
+          exception_at?: string | null
+          exception_by?: string | null
+          exception_kind?: string | null
+          exception_notes?: string | null
+          fee_cents: number
+          fees_active?: boolean
+          id?: string
+          original_fee_cents: number
+          previous_status: string
+          rate_percent: number
+          reason?: string | null
+          refund_cents: number
+          ride_id: string
+          ride_price_cents: number
+          scheduled_at: string
+          tier: string
+          tutor_id: string
+          updated_at?: string
+          was_paid?: boolean
+        }
+        Update: {
+          arrived_at?: string | null
+          cancelled_at?: string
+          cancelled_by?: string
+          created_at?: string
+          driver_id?: string | null
+          driver_share_cents?: number
+          driver_state?: string
+          en_route_at?: string | null
+          exception_at?: string | null
+          exception_by?: string | null
+          exception_kind?: string | null
+          exception_notes?: string | null
+          fee_cents?: number
+          fees_active?: boolean
+          id?: string
+          original_fee_cents?: number
+          previous_status?: string
+          rate_percent?: number
+          reason?: string | null
+          refund_cents?: number
+          ride_id?: string
+          ride_price_cents?: number
+          scheduled_at?: string
+          tier?: string
+          tutor_id?: string
+          updated_at?: string
+          was_paid?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_cancellations_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: true
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_dispatches: {
         Row: {
           content: string
@@ -855,6 +953,7 @@ export type Database = {
           driver_lng: number | null
           driver_requested_at: string | null
           driver_waits: boolean
+          en_route_at: string | null
           has_return: boolean
           id: string
           location_updated_at: string | null
@@ -901,6 +1000,7 @@ export type Database = {
           driver_lng?: number | null
           driver_requested_at?: string | null
           driver_waits?: boolean
+          en_route_at?: string | null
           has_return?: boolean
           id?: string
           location_updated_at?: string | null
@@ -947,6 +1047,7 @@ export type Database = {
           driver_lng?: number | null
           driver_requested_at?: string | null
           driver_waits?: boolean
+          en_route_at?: string | null
           has_return?: boolean
           id?: string
           location_updated_at?: string | null
@@ -1088,6 +1189,7 @@ export type Database = {
           driver_lng: number | null
           driver_requested_at: string | null
           driver_waits: boolean
+          en_route_at: string | null
           has_return: boolean
           id: string
           location_updated_at: string | null
@@ -1196,6 +1298,7 @@ export type Database = {
           driver_lng: number | null
           driver_requested_at: string | null
           driver_waits: boolean
+          en_route_at: string | null
           has_return: boolean
           id: string
           location_updated_at: string | null
@@ -1377,6 +1480,7 @@ export type Database = {
           driver_lng: number | null
           driver_requested_at: string | null
           driver_waits: boolean
+          en_route_at: string | null
           has_return: boolean
           id: string
           location_updated_at: string | null
