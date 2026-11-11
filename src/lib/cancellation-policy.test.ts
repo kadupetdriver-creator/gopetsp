@@ -49,3 +49,6 @@ test("estorno parcial bloqueado para pagamento pendente", () => {
   assert.equal(partialRefundSupport({ orderStatus: "action_required", paymentType: "pix", paidAt: null, alreadyRefunded: false }).allowed, false);
   assert.equal(partialRefundSupport({ orderStatus: "processed", paymentType: "credit_card", paidAt: new Date().toISOString(), alreadyRefunded: false }).allowed, true);
 });
+test("estorno proporcional ao valor pago com cupom", () => {
+  assert.equal(refundAmountCents(9500, { refund_cents: 7000, ride_price_cents: 10000 }, true), 6650);
+});

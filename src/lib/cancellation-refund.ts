@@ -19,9 +19,12 @@ export function partialRefundSupport(input: {
 }
 
 /** Valor a devolver: integral sem registro/sem cobrança ativa; senão o valor previsto da política. */
-export function refundAmountCents(paidCents: number, cancellation: { refund_cents: number } | null, feesActive: boolean) {
+/** Proporcional ao valor efetivamente pago (cupons reduzem o valor pago). */
+export function refundAmountCents(paidCents: number, cancellation: { refund_cents: number; ride_price_cents?: number } | null, feesActive: boolean) {
   if (!feesActive || !cancellation) return paidCents;
-  return Math.max(0, Math.min(paidCents, cancellation.refund_cents));
+  const price = cancellation.ride_price_cents ?? paidCents;
+  const value = price > 0 ? Math.round((paidCents * cancellation.refund_cents) / price) : paidCents;
+  return Math.max(0, Math.min(paidCents, value));
 }
 
 export const centsToMpAmount = (cents: number) => (cents / 100).toFixed(2);
