@@ -512,6 +512,7 @@ function SolicitarPage() {
         className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]"
         onSubmit={(e) => {
           e.preventDefault();
+          if (!policyAccepted) return;
           create.mutate();
         }}
       >
