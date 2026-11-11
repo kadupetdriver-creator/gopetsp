@@ -29,7 +29,8 @@ import { RideMap } from "@/components/RideMap";
 import { RideDriverIdentity } from "@/components/RideDriverIdentity";
 import { cn } from "@/lib/utils";
 import { paymentStatusLabels, paymentStatusStyles, ridePaymentState } from "@/lib/payments";
-import { refundRidePayment } from "@/lib/payments.functions";
+import { TutorCancelRideButton } from "@/components/TutorCancelRideButton";
+import { canTutorCancel } from "@/lib/cancellation-policy";
 
 export const Route = createFileRoute("/minhas-corridas/")({
   head: () => ({
@@ -83,7 +84,6 @@ function MinhasCorridas() {
   const { user } = useRoleGuard("tutor", "/minhas-corridas");
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const refundPayment = useServerFn(refundRidePayment);
 
   const { data: rides, isLoading } = useQuery({
     queryKey: ["rides", "tutor", user?.id],
@@ -119,28 +119,6 @@ function MinhasCorridas() {
     };
   }, [user, qc]);
 
-  const cancel = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc("set_ride_status", {
-        _ride_id: id,
-        _status: "cancelled",
-      });
-      if (error) throw error;
-
-      const result = await refundPayment({ data: { rideId: id } });
-      if ("error" in result) throw new Error(result.error);
-      return result.status;
-    },
-    onSuccess: (status) => {
-      toast.success(
-        status === "refunded"
-          ? "Corrida cancelada. O reembolso integral foi solicitado."
-          : "Corrida cancelada.",
-      );
-      void qc.invalidateQueries({ queryKey: ["rides"] });
-    },
-    onError: () => toast.error("Não foi possível cancelar."),
-  });
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
@@ -334,15 +312,8 @@ function MinhasCorridas() {
                     </a>
                   </Button>
                 )}
-                {(ride.status === "pending" || ride.status === "accepted") && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => cancel.mutate(ride.id)}
-                    disabled={cancel.isPending}
-                  >
-                    Cancelar corrida
-                  </Button>
+                {canTutorCancel(ride.status) && (
+                  <TutorCancelRideButton rideId={ride.id} size="sm" onDone={() => void qc.invalidateQueries({ queryKey: ["rides"] })} />
                 )}
               </div>
             </CardContent>

@@ -41,7 +41,8 @@ import {
 } from "@/lib/rides";
 import { cn } from "@/lib/utils";
 import { paymentStatusLabels, paymentStatusStyles, ridePaymentState } from "@/lib/payments";
-import { refundRidePayment } from "@/lib/payments.functions";
+import { TutorCancelRideButton, CancellationHistoryLine } from "@/components/TutorCancelRideButton";
+import { canTutorCancel } from "@/lib/cancellation-policy";
 import { getRideDriverDetails } from "@/lib/rides.functions";
 
 export const Route = createFileRoute("/minhas-corridas/$rideId")({
@@ -101,7 +102,6 @@ function RideDetails() {
   const { rideId } = Route.useParams();
   const { user } = useRoleGuard("tutor", "/minhas-corridas");
   const qc = useQueryClient();
-  const refundPayment = useServerFn(refundRidePayment);
 
   const { data: ride, isLoading } = useQuery({
     queryKey: ["ride", rideId],
@@ -174,26 +174,15 @@ function RideDetails() {
     };
   }, [user, qc, rideId]);
 
-  const cancel = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.rpc("set_ride_status", {
-        _ride_id: rideId,
-        _status: "cancelled",
-      });
-      if (error) throw error;
-      const result = await refundPayment({ data: { rideId } });
-      if ("error" in result) throw new Error(result.error);
-      return result.status;
+
+  const { data: cancellation } = useQuery({
+    queryKey: ["ride-cancellation", rideId],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("ride_cancellations")
+        .select("cancelled_at, rate_percent, fee_cents, refund_cents, reason").eq("ride_id", rideId).maybeSingle();
+      return data;
     },
-    onSuccess: (status) => {
-      toast.success(
-        status === "refunded"
-          ? "Corrida cancelada. O reembolso integral foi solicitado."
-          : "Corrida cancelada.",
-      );
-      void qc.invalidateQueries({ queryKey: ["ride", rideId] });
-    },
-    onError: () => toast.error("Não foi possível cancelar."),
   });
 
   if (isLoading || !ride) {
@@ -450,11 +439,12 @@ function RideDetails() {
             </a>
           </Button>
         )}
-        {(ride.status === "pending" || ride.status === "accepted") && (
-          <Button variant="outline" onClick={() => cancel.mutate()} disabled={cancel.isPending}>
-            Cancelar corrida
-          </Button>
+        {canTutorCancel(ride.status) && (
+          <TutorCancelRideButton rideId={ride.id} onDone={() => { void qc.invalidateQueries({ queryKey: ["ride", rideId] }); void qc.invalidateQueries({ queryKey: ["ride-cancellation", rideId] }); }} />
         )}
+      </div>
+      {cancellation && <div className="mt-4"><CancellationHistoryLine c={cancellation} /></div>}
+      <div>
       </div>
     </div>
   );

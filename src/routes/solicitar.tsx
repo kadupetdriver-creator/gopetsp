@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { CancellationPolicyNotice } from "@/components/CancellationPolicyNotice";
 import { useServerFn } from "@tanstack/react-start";
 import { createRide, getPreferredDrivers, quoteRide } from "@/lib/rides.functions";
 
@@ -188,6 +189,7 @@ function SolicitarPage() {
 
 
   const [selectedPetIds, setSelectedPetIds] = useState<string[]>([]);
+  const [policyAccepted, setPolicyAccepted] = useState(false);
   const [serviceType, setServiceType] = useState("veterinario");
   const [originAddress, setOriginAddress] = useState("");
   const [origin, setOrigin] = useState<SelectedPlace | null>(null);
@@ -387,6 +389,7 @@ function SolicitarPage() {
 
   // Lista do que ainda falta preencher para poder chamar o motorista.
   const missingItems: string[] = [];
+  if (!policyAccepted) missingItems.push("Aceitar as condições de cancelamento");
   const peopleCount = Number(accompanyingPeopleCount);
   const peopleCountValid = Number.isSafeInteger(peopleCount) && peopleCount >= 1;
   if (selectedPets.length === 0) missingItems.push("Selecionar ao menos um pet cadastrado");
@@ -509,6 +512,7 @@ function SolicitarPage() {
         className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]"
         onSubmit={(e) => {
           e.preventDefault();
+          if (!policyAccepted) return;
           create.mutate();
         }}
       >
@@ -1005,10 +1009,11 @@ function SolicitarPage() {
                 Pagamento seguro no app por cartão de crédito, cartão de débito ou Pix antes do
                 início do transporte.
               </div>
+              <CancellationPolicyNotice accepted={policyAccepted} onAcceptedChange={setPolicyAccepted} />
               <Button
                 type="submit"
                 className="w-full"
-                disabled={create.isPending || !routeReady || tutorAccompaniesPet === null || (tutorAccompaniesPet && !peopleCountValid)}
+                disabled={!policyAccepted || create.isPending || !routeReady || tutorAccompaniesPet === null || (tutorAccompaniesPet && !peopleCountValid)}
               >
                 {create.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Ir para pagamento
