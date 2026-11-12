@@ -1,6 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { Car, ChevronRight, Loader2, PawPrint, ShieldCheck, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Car,
+  ChevronRight,
+  Loader2,
+  Pause,
+  PawPrint,
+  Play,
+  ShieldCheck,
+  Sparkles,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import openingVideo from "@/assets/gopet-pwa-opening.mp4.asset.json";
 import { useAuth } from "@/hooks/useAuth";
 import { homeForRole } from "@/hooks/useRoleGuard";
 
