@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Car, ChevronRight, Loader2, PawPrint, ShieldCheck, Sparkles } from "lucide-react";
-import { BrandLogo } from "@/components/BrandLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { homeForRole } from "@/hooks/useRoleGuard";
 
@@ -72,7 +71,15 @@ function Splash() {
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-md flex-col items-center justify-center px-4 py-10">
-      <BrandLogo size={128} withWordmark={false} />
+      <img
+        src="/gopet-opening.png"
+        alt="GoPet — Seu pet em boas patas!"
+        width={1024}
+        height={936}
+        className="h-auto w-64 max-w-full shrink-0 object-contain"
+        loading="eager"
+        fetchPriority="high"
+      />
       <h1 className="mt-6 text-center text-3xl font-semibold leading-tight">
         Go<span className="text-primary-ink">Pet</span>
       </h1>
