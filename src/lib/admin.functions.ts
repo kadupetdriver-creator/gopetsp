@@ -269,7 +269,7 @@ export const adminRemoveAdmin = createServerFn({ method: "POST" })
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: targetUser } = await supabaseAdmin.auth.admin.getUserById(data.userId);
-    if (targetUser.user?.email?.toLowerCase() === "kadupetdriver@gmail.com") {
+    if (["gopetsp@gopetsp.com.br", "kadupetdriver@gmail.com"].includes(targetUser.user?.email?.toLowerCase() ?? "")) {
       throw new Error("Este administrador é protegido e não pode ser removido.");
     }
     const { count } = await supabaseAdmin
