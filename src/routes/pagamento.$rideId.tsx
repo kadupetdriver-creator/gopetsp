@@ -285,9 +285,9 @@ function PagamentoCorrida() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><MessageCircle className="size-5 text-primary"/> Confirme sua corrida</DialogTitle>
-            <DialogDescription>Envie o resumo da corrida para a central GoPet no WhatsApp para confirmar seu pedido.</DialogDescription>
+            <DialogDescription>Para melhor localização do motorista, clique em "Confirmar via WhatsApp" e envie o resumo da corrida para a central GoPet.</DialogDescription>
           </DialogHeader>
-          <Button asChild className="w-full"><a href={rideWhatsAppUrl(ride)} target="_blank" rel="noopener noreferrer" onClick={() => setWhatsappOpen(false)}><MessageCircle className="size-4"/> Confirmar no WhatsApp</a></Button>
+          <Button asChild className="w-full"><a href={rideWhatsAppUrl(ride)} target="_blank" rel="noopener noreferrer" onClick={() => setWhatsappOpen(false)}><MessageCircle className="size-4"/> Confirmar via WhatsApp</a></Button>
           <Button variant="ghost" className="w-full" onClick={() => setWhatsappOpen(false)}>Agora não</Button>
         </DialogContent>
       </Dialog>}
