@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { LogOut, Menu } from "lucide-react";
+import { Home, LogOut, Menu } from "lucide-react";
 import { useState } from "react";
-import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -25,7 +24,6 @@ export function SiteHeader() {
           { to: "/perfil", label: "Meu perfil" },
         ]
     : [
-        { to: "/", label: "Início" },
         { to: "/auth", label: "Entrar" },
       ];
   if (user && isAdmin) links.push({ to: "/admin/motoristas", label: "Administração" });
@@ -33,7 +31,9 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <BrandLogo asLink size={40} />
+        <Button asChild variant="ghost" size="sm" className="gap-2 rounded-full">
+          <Link to="/"><Home className="size-4" /> Início</Link>
+        </Button>
 
         <nav className="hidden items-center gap-1 md:flex">
           {links.map((l) => (
