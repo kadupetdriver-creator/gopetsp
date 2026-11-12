@@ -247,6 +247,7 @@ function Splash() {
           </p>
         </>
       )}
-    </div>
+      </div>
+    </>
   );
 }
