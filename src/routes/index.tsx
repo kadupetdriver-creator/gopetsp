@@ -68,9 +68,15 @@ const options = [
   },
 ];
 
+const OPENING_VIDEO_STORAGE_KEY = "gopet-opening-video-seen";
+
 function Splash() {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [showOpening, setShowOpening] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true);
 
   // Sessão ativa: pula a escolha e vai direto para a tela do papel atual.
   useEffect(() => {
@@ -79,10 +85,117 @@ function Splash() {
     }
   }, [loading, user, profile, navigate]);
 
+  useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem(OPENING_VIDEO_STORAGE_KEY) === "1") {
+        setShowOpening(false);
+      }
+    } catch {
+      // A apresentação continua disponível quando o navegador bloqueia o armazenamento.
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!showOpening) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showOpening]);
+
+  const dismissOpening = () => {
+    try {
+      window.sessionStorage.setItem(OPENING_VIDEO_STORAGE_KEY, "1");
+    } catch {
+      // O acesso ao app não depende do armazenamento do navegador.
+    }
+    setShowOpening(false);
+  };
+
+  const togglePlayback = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      void video.play().catch(() => setIsPlaying(false));
+    } else {
+      video.pause();
+    }
+  };
+
+  const toggleSound = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+    if (!video.muted && video.paused) {
+      void video.play().catch(() => setIsPlaying(false));
+    }
+  };
+
   const deciding = loading || (!!user && !profile) || (!!user && !!profile);
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-md flex-col items-center justify-center px-4 py-10">
+    <>
+      {showOpening && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Apresentação GoPet"
+          className="fixed inset-0 z-[100] bg-accent text-accent-foreground"
+        >
+          <video
+            ref={videoRef}
+            className="size-full object-contain"
+            autoPlay
+            muted
+            playsInline
+            preload="auto"
+            poster="/gopet-opening.png"
+            aria-label="Vídeo de apresentação da GoPet"
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onEnded={dismissOpening}
+            onError={dismissOpening}
+          >
+            <source src={openingVideo.url} type="video/mp4" />
+          </video>
+
+          <button
+            type="button"
+            onClick={toggleSound}
+            className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] inline-flex min-h-11 items-center gap-2 rounded-full bg-accent-foreground/10 px-4 text-sm font-semibold text-accent-foreground ring-1 ring-accent-foreground/20 transition-colors hover:bg-accent-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            {isMuted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
+            {isMuted ? "Ativar som" : "Desativar som"}
+          </button>
+
+          <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            <button
+              type="button"
+              onClick={togglePlayback}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-accent-foreground/10 px-5 text-sm font-semibold text-accent-foreground ring-1 ring-accent-foreground/20 transition-colors hover:bg-accent-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {isPlaying ? <Pause className="size-5" /> : <Play className="size-5" />}
+              {isPlaying ? "Pausar vídeo" : "Continuar vídeo"}
+            </button>
+            <button
+              type="button"
+              onClick={dismissOpening}
+              autoFocus
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-bold text-primary-foreground shadow-soft transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground"
+            >
+              Entrar no app
+              <ChevronRight className="size-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-md flex-col items-center justify-center px-4 py-10">
       <img
         src="/gopet-opening.png"
         alt="GoPet — Seu pet em boas patas!"
