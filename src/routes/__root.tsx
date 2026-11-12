@@ -90,6 +90,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Marketplace de transporte de pets em São Paulo: peça uma corrida para o seu animal e acompanhe motoristas parceiros verificados.",
       },
       { name: "author", content: "GoPet" },
+      { name: "theme-color", content: "#000000" },
+      { name: "application-name", content: "GoPet" },
+      { name: "apple-mobile-web-app-title", content: "GoPet" },
       { property: "og:title", content: "GoPet — Transporte de pets em São Paulo" },
       {
         property: "og:description",
@@ -107,6 +110,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
     ],
   }),
   shellComponent: RootShell,
