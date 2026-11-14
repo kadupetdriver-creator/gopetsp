@@ -1,10 +1,9 @@
-/// <reference types="bun" />
 import { afterEach, expect, mock, test } from "bun:test";
 
 let failPayment = false;
 let failRide = false;
 const writes: string[] = [];
-mock.module("./mercadopago.server", () => ({
+mock.module("../src/lib/mercadopago.server", () => ({
   mercadoPagoRequest: async () => ({ id: "order", external_reference: "ride", total_amount: "98.39", status: "processed", status_detail: "accredited" }),
   normalizeOrderStatus: () => "approved",
   orderAmountCents: () => 9839,
@@ -26,7 +25,7 @@ mock.module("@/integrations/supabase/client.server", () => ({
     },
   },
 }));
-const { settleMercadoPagoOrder } = await import("./mercadopago-settle.server");
+const { settleMercadoPagoOrder } = await import("../src/lib/mercadopago-settle.server");
 afterEach(() => { failPayment = false; failRide = false; writes.length = 0; });
 
 test("confirma R$ 98,39 sem liberar motorista automaticamente", async () => {
