@@ -38,7 +38,7 @@ export async function settleMercadoPagoOrder(orderId: string): Promise<{ status:
   const qr = orderPixData(order);
 
   if (row.status !== status) {
-    await supabaseAdmin
+    const { error: paymentError } = await supabaseAdmin
       .from("mercadopago_payments")
       .update({
         status,
@@ -46,20 +46,23 @@ export async function settleMercadoPagoOrder(orderId: string): Promise<{ status:
         ...(qr.qrCode ? { qr_code: qr.qrCode, qr_code_base64: qr.qrCodeBase64 } : {}),
       })
       .eq("id", row.id);
+    if (paymentError) throw new Error("Não foi possível atualizar o pagamento.");
   }
 
   if (status === "approved") {
-    await supabaseAdmin
+    const { error: rideError } = await supabaseAdmin
       .from("rides")
       .update({ paid_at: new Date().toISOString() })
       .eq("id", row.ride_id)
       .is("paid_at", null);
+    if (rideError) throw new Error("Não foi possível confirmar o pagamento da corrida.");
     if (row.coupon_id) {
-      await supabaseAdmin
+      const { error: couponError } = await supabaseAdmin
         .from("referral_coupons")
         .update({ status: "used", used_ride_id: row.ride_id, used_at: new Date().toISOString() })
         .eq("id", row.coupon_id)
         .eq("status", "available");
+      if (couponError) throw new Error("Não foi possível confirmar o uso do cupom.");
     }
   }
   if (["refunded", "cancelled", "expired", "rejected"].includes(status)) {

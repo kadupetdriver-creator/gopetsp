@@ -13,6 +13,7 @@ async function processOrder(orderId: string) {
     console.info("Mercado Pago webhook processed order", orderId, result?.status ?? "ignored");
   } catch (error) {
     console.error("Mercado Pago order webhook processing failed", error);
+    throw error;
   }
 }
 
@@ -29,7 +30,12 @@ export const Route = createFileRoute("/api/public/mp-webhook")({
     const { verifyMercadoPagoSignature } = await import("@/lib/mercadopago.server");
     if (!dataId || !verifyMercadoPagoSignature({ signature, requestId, dataId, secret })) return new Response("Invalid signature", { status: 401 });
     if ((body.type ?? url.searchParams.get("type")) !== "order") return new Response("ok");
-    void processOrder(dataId);
-    return new Response("ok");
+    try {
+      await processOrder(dataId);
+      return new Response("ok");
+    } catch {
+      // Não confirmar entrega antes da persistência: o provedor poderá tentar novamente.
+      return new Response("Payment confirmation temporarily unavailable", { status: 503 });
+    }
   } } },
 });

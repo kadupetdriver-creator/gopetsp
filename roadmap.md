@@ -1,5 +1,10 @@
 # Roadmap — GoPet
 
+## Confirmação de pagamento
+- [ ] Verificar e reconciliar a última confirmação diretamente com o Mercado Pago, sem nova cobrança ou liberação automática
+- [ ] Garantir processamento do aviso antes de confirmar entrega e manter consulta durante a espera e retorno ao app
+- [ ] Testar confirmação e preservar Chamar motorista como liberação separada
+
 ## Concluído — orçamento do motorista
 - [x] Adicionar Criar orçamento no perfil, com pets por porte, endereços, paradas, retorno e espera
 - [x] Reutilizar tarifas e rota oficiais sem criar corrida, cobrar saldo ou acessar dados de tutores

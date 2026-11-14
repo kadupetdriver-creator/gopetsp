@@ -90,6 +90,7 @@ function PagamentoCorrida() {
   const [submitted, setSubmitted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [checkingPayment, setCheckingPayment] = useState(false);
 
   const { data: ride, isLoading } = useQuery({
     queryKey: ["ride-payment", rideId],
@@ -155,30 +156,56 @@ function PagamentoCorrida() {
     return () => window.clearInterval(timer);
   }, [payment?.expires_at]);
 
-  // Reforço: se o aviso do Mercado Pago demorar, consultamos o status a cada 5s por até 2 min.
+  // Reforço durante toda a espera, inclusive ao voltar do banco para o PWA.
   useEffect(() => {
     if (!user || !payment || ride?.paid_at) return;
     if (!["pending", "in_process", "approved"].includes(payment.status)) return;
-    let attempts = 0;
     let active = true;
+    let running = false;
     const tick = async () => {
-      if (!active) return;
-      attempts += 1;
+      if (!active || running || document.visibilityState === "hidden") return;
+      running = true;
       try {
         const result = await syncPayment({ data: { rideId } });
         if (!active) return;
         await qc.invalidateQueries({ queryKey: ["mercadopago-payment", rideId] });
         await qc.invalidateQueries({ queryKey: ["ride-payment", rideId] });
-        if (result.paid) { active = false; window.clearInterval(timer); }
+        if (result.paid || ["rejected", "cancelled", "expired", "refunded"].includes(result.status)) { active = false; window.clearInterval(timer); }
       } catch {
         // silencioso: nova tentativa no próximo intervalo
+      } finally {
+        running = false;
       }
-      if (attempts >= 24) { active = false; window.clearInterval(timer); }
     };
     const timer = window.setInterval(() => { void tick(); }, 5000);
+    const resume = () => { void tick(); };
+    window.addEventListener("focus", resume);
+    document.addEventListener("visibilitychange", resume);
     void tick();
-    return () => { active = false; window.clearInterval(timer); };
-  }, [user, rideId, payment?.status, payment?.id, ride?.paid_at, qc, syncPayment, payment]);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      window.removeEventListener("focus", resume);
+      document.removeEventListener("visibilitychange", resume);
+    };
+  }, [user, rideId, payment?.status, payment?.id, ride?.paid_at, qc, syncPayment]);
+
+  const checkPaymentNow = async () => {
+    if (checkingPayment) return;
+    setCheckingPayment(true);
+    try {
+      const result = await syncPayment({ data: { rideId } });
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["mercadopago-payment", rideId] }),
+        qc.invalidateQueries({ queryKey: ["ride-payment", rideId] }),
+        qc.invalidateQueries({ queryKey: ["rides"] }),
+      ]);
+      if (result.paid) toast.success("Pagamento confirmado. Agora você pode chamar o motorista.");
+      else toast.info("A confirmação ainda não foi recebida. Não faça outro pagamento.");
+    } catch {
+      toast.error("Não foi possível consultar a confirmação. Tente novamente.");
+    } finally { setCheckingPayment(false); }
+  };
 
 
   const countdown = useMemo(() => `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`, [secondsLeft]);
@@ -281,6 +308,7 @@ function PagamentoCorrida() {
       {approved ? <Card className="border-success/40 bg-success/10"><CardContent className="flex flex-col items-center gap-3 py-10 text-center"><CheckCircle2 className="size-9 text-success"/><p className="font-semibold">Pagamento confirmado</p><p className="text-sm text-muted-foreground">{released ? "Sua corrida foi liberada para os motoristas parceiros." : ride?.status === "cancelled" || ride?.status === "completed" ? "Esta corrida já foi encerrada." : "Sua corrida está paga e aguarda a chamada do motorista."}</p>{ride && canRequestRideDriver(ride) && <Button className="w-full sm:w-auto" disabled={requestingDriver} onClick={() => void submitDriverRequest()}>{requestingDriver ? <Loader2 className="size-4 animate-spin"/> : <Car className="size-4"/>}{requestingDriver ? "Chamando motorista…" : "Chamar motorista"}</Button>}{requestError && <p role="alert" className="text-sm text-destructive">{requestError}</p>}<div className="flex flex-wrap justify-center gap-2">{returnRide && <Button asChild><Link to="/pagamento/$rideId" params={{ rideId: returnRide.id }}>Pagar corrida de volta</Link></Button>}<Button asChild variant="secondary"><Link to="/minhas-corridas/$rideId" params={{ rideId }}>{released ? "Acompanhar corrida" : "Ver corrida"}</Link></Button></div></CardContent></Card>
       : showPix ? <Card><CardHeader><CardTitle>Pix gerado</CardTitle><CardDescription>Escaneie ou copie o código. Aguarde a confirmação do pagamento para chamar o motorista.</CardDescription></CardHeader><CardContent className="space-y-4 text-center">{payment?.qr_code_base64 && <img className="mx-auto size-60" src={`data:image/png;base64,${payment.qr_code_base64}`} alt="QR Code Pix"/>}<div className="flex items-center justify-center gap-2 font-semibold"><Clock3 className="size-4"/> Expira em {countdown}</div><div className="flex gap-2"><Input readOnly value={payment?.qr_code ?? ""} aria-label="Código Pix copia e cola"/><Button size="icon" variant="outline" title="Copiar código Pix" onClick={async () => { await navigator.clipboard.writeText(payment?.qr_code ?? ""); toast.success("Código Pix copiado."); }}><Copy className="size-4"/></Button></div></CardContent></Card>
       : <Card><CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className="size-5 text-primary"/> Mercado Pago</CardTitle><CardDescription>Informe um CPF válido. Ele é obrigatório para pagamentos via Pix.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="space-y-2"><Label htmlFor="cpf-pagador">CPF do pagador</Label><Input id="cpf-pagador" inputMode="numeric" maxLength={14} value={cpf} onChange={(event) => setCpf(maskCPF(event.target.value))} placeholder="000.000.000-00"/><p className="text-xs text-muted-foreground">Obrigatório para Pix e validação do pagamento.</p></div>{payment && statusMessage[payment.status] && <p className={payment.status === "rejected" ? "text-sm text-destructive" : "text-sm text-muted-foreground"}>{statusMessage[payment.status]}</p>}{configurationError && <p className="text-sm text-destructive">{configurationError}</p>}{publicKey && ride && isValidCPF(cpf) && canTryAgain && !payingBalance && <Suspense fallback={<Skeleton className="h-80 w-full"/>}><MercadoPagoPaymentBrick publicKey={publicKey} amountCents={payAmount} {...(user?.email ? { email: user.email } : {})} cpf={cpf.replace(/\D/g, "")} onSubmit={submitPayment} onError={(message) => { setSubmitted(false); setFormError(message); toast.error(message); }}/></Suspense>}{formError && <p className="text-sm text-destructive">{formError}</p>}{submitted && <p className="flex items-center justify-center gap-2 text-sm"><Loader2 className="size-4 animate-spin"/> Processando pagamento…</p>}{!isValidCPF(cpf) && <p className="text-sm text-muted-foreground">Digite o CPF para liberar as formas de pagamento.</p>}</CardContent></Card>}
+      {!approved && payment && ["pending", "in_process", "approved"].includes(payment.status) && <Button variant="outline" className="w-full" disabled={checkingPayment} onClick={() => void checkPaymentNow()}>{checkingPayment ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}{checkingPayment ? "Verificando pagamento…" : "Já paguei — verificar confirmação"}</Button>}
       {ride && <Dialog open={whatsappOpen} onOpenChange={setWhatsappOpen}>
         <DialogContent>
           <DialogHeader>
