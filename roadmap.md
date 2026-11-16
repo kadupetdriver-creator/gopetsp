@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Em andamento — pagamento externo
+- [ ] Permitir administrador confirmar Pix externo com histórico e proteção contra duplicidade
+- [ ] Conferir o orçamento do Flávio e validar a confirmação na tela
+
 ## Concluído — confirmação de pagamento
 - [x] Confirmado R$ 98,39 diretamente no Mercado Pago e reconciliado sem nova cobrança ou liberação automática
 - [x] Aviso aguarda persistência antes de confirmar entrega; consulta continua durante espera e retorno ao app, com verificação manual
