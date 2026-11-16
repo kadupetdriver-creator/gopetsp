@@ -21,7 +21,7 @@ export const adminConfirmExternalRidePayment = createServerFn({ method: "POST" }
       _ride_id: data.rideId, _admin_id: context.userId, _expected_updated_at: data.expectedUpdatedAt, _note: note,
     });
     if (error) throw new Error(error.message);
-    if (!result || typeof result !== "object" || Array.isArray(result) || result.ok !== true) {
+    if (!result || typeof result !== "object" || Array.isArray(result) || result["ok"] !== true) {
       throw new Error("Não foi possível confirmar o pagamento externo.");
     }
     return { ok: true };
