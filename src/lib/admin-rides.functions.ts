@@ -24,7 +24,8 @@ export const adminConfirmExternalRidePayment = createServerFn({ method: "POST" }
       const { settleMercadoPagoOrder } = await import("./mercadopago-settle.server");
       for (const attempt of attempts) {
         if (!attempt.mp_order_id) throw new Error("Há um pagamento sendo iniciado. Aguarde e tente novamente.");
-        await settleMercadoPagoOrder(attempt.mp_order_id);
+        const settled = await settleMercadoPagoOrder(attempt.mp_order_id);
+        if (settled?.paid) return { ok: true, source: "mercadopago" as const };
       }
     }
     const { data: result, error } = await supabaseAdmin.rpc("confirm_external_ride_payment", {
@@ -34,7 +35,7 @@ export const adminConfirmExternalRidePayment = createServerFn({ method: "POST" }
     if (!result || typeof result !== "object" || Array.isArray(result) || result["ok"] !== true) {
       throw new Error("Não foi possível confirmar o pagamento externo.");
     }
-    return { ok: true };
+    return { ok: true, source: "external" as const };
   });
 
 export const adminForwardRide = createServerFn({ method: "POST" })

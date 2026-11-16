@@ -20,7 +20,7 @@ export function AdminExternalPaymentDialog({ ride, tutorName, onClose, onSaved }
   const [confirmed, setConfirmed] = useState(false);
   const save = useMutation({
     mutationFn: () => confirmPayment({ data: { rideId: ride.id, expectedUpdatedAt: ride.updated_at, note, confirmed } }),
-    onSuccess: () => { toast.success("Pagamento externo confirmado. Corrida marcada como paga."); onSaved(); },
+    onSuccess: (result) => { toast.success(result.source === "mercadopago" ? "Pagamento já aprovado no Mercado Pago. Corrida marcada como paga, sem registro duplicado." : "Pagamento externo confirmado. Corrida marcada como paga."); onSaved(); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível confirmar o pagamento."),
   });
   return <Dialog open onOpenChange={(open) => { if (!open && !save.isPending) onClose(); }}>

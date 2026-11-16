@@ -2,10 +2,12 @@ import { afterEach, expect, mock, test } from "bun:test";
 
 let failPayment = false;
 let failRide = false;
+let orderStatus = "approved";
+let externalPaid = false;
 const writes: string[] = [];
 mock.module("../src/lib/mercadopago.server", () => ({
   mercadoPagoRequest: async () => ({ id: "order", external_reference: "ride", total_amount: "98.39", status: "processed", status_detail: "accredited" }),
-  normalizeOrderStatus: () => "approved",
+  normalizeOrderStatus: () => orderStatus,
   orderAmountCents: () => 9839,
   orderPayment: () => undefined,
   orderPixData: () => ({}),
@@ -18,7 +20,7 @@ mock.module("@/integrations/supabase/client.server", () => ({
         eq: () => chain,
         is: () => chain,
         update: () => { writes.push(table); return chain; },
-        maybeSingle: async () => ({ data: { id: "payment", ride_id: "ride", amount_cents: 9839, status: "in_process", coupon_id: null } }),
+        maybeSingle: async () => ({ data: table === "external_ride_payments" ? (externalPaid ? { id: "external" } : null) : table === "credit_transactions" ? null : { id: "payment", ride_id: "ride", amount_cents: 9839, status: "in_process", coupon_id: null } }),
         then: (resolve: (value: unknown) => unknown) => Promise.resolve({ error: (table === "rides" ? failRide : failPayment) ? { message: "unavailable" } : null }).then(resolve),
       };
       return chain;
@@ -26,7 +28,7 @@ mock.module("@/integrations/supabase/client.server", () => ({
   },
 }));
 const { settleMercadoPagoOrder } = await import("../src/lib/mercadopago-settle.server");
-afterEach(() => { failPayment = false; failRide = false; writes.length = 0; });
+afterEach(() => { failPayment = false; failRide = false; orderStatus = "approved"; externalPaid = false; writes.length = 0; });
 
 test("confirma R$ 98,39 sem liberar motorista automaticamente", async () => {
   expect(await settleMercadoPagoOrder("order")).toEqual({ status: "approved", paid: true });
@@ -40,4 +42,10 @@ test("falha de persistência do pagamento permite nova tentativa", async () => {
 test("não anuncia confirmação quando a corrida não foi atualizada", async () => {
   failRide = true;
   await expect(settleMercadoPagoOrder("order")).rejects.toThrow("confirmar o pagamento da corrida");
+});
+test("Pix expirado da plataforma não apaga confirmação de Pix externo", async () => {
+  orderStatus = "expired";
+  externalPaid = true;
+  await settleMercadoPagoOrder("order");
+  expect(writes).toEqual(["mercadopago_payments"]);
 });
