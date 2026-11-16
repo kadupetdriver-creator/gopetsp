@@ -69,7 +69,10 @@ export async function settleMercadoPagoOrder(orderId: string): Promise<{ status:
     const { data: creditPayment, error: creditError } = await supabaseAdmin.from("credit_transactions")
       .select("id").eq("ride_id", row.ride_id).eq("kind", "spend").eq("payment_method", "credits").eq("status", "completed").maybeSingle();
     if (creditError) throw new Error("Não foi possível verificar o pagamento da corrida.");
-    if (!creditPayment) await supabaseAdmin.from("rides").update({ paid_at: null }).eq("id", row.ride_id);
+    const { data: externalPayment, error: externalError } = await supabaseAdmin.from("external_ride_payments")
+      .select("id").eq("ride_id", row.ride_id).maybeSingle();
+    if (externalError) throw new Error("Não foi possível verificar o pagamento externo.");
+    if (!creditPayment && !externalPayment) await supabaseAdmin.from("rides").update({ paid_at: null }).eq("id", row.ride_id);
   }
 
   return { status, paid: status === "approved" };

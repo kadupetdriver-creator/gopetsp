@@ -17,6 +17,16 @@ export const adminConfirmExternalRidePayment = createServerFn({ method: "POST" }
     });
     const note = validateExternalPaymentConfirmation(!roleError && isAdmin === true, data.confirmed, data.note);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: attempts, error: attemptsError } = await supabaseAdmin.from("mercadopago_payments")
+      .select("mp_order_id").eq("ride_id", data.rideId).in("status", ["pending", "in_process"]);
+    if (attemptsError) throw new Error("Não foi possível verificar pagamentos pela plataforma.");
+    if (attempts?.length) {
+      const { settleMercadoPagoOrder } = await import("./mercadopago-settle.server");
+      for (const attempt of attempts) {
+        if (!attempt.mp_order_id) throw new Error("Há um pagamento sendo iniciado. Aguarde e tente novamente.");
+        await settleMercadoPagoOrder(attempt.mp_order_id);
+      }
+    }
     const { data: result, error } = await supabaseAdmin.rpc("confirm_external_ride_payment", {
       _ride_id: data.rideId, _admin_id: context.userId, _expected_updated_at: data.expectedUpdatedAt, _note: note,
     });
