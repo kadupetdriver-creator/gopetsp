@@ -134,6 +134,13 @@
       "when": 1794405401445,
       "tag": "0018_cancellation_partial_refunds",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794819912924,
+      "tag": "0019_external_pix_ride_confirmation",
+      "breakpoints": true
     }
   ]
 }
