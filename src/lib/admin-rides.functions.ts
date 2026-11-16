@@ -3,6 +3,40 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { adminRidePhaseUpdate, canAdminCompleteRide, canAdminForwardRide } from "./admin-rides";
 import { canAdminRescheduleRide, parseRescheduleInput } from "./ride-reschedule";
+import { validateExternalPaymentConfirmation } from "./external-ride-payment";
+
+export const adminConfirmExternalRidePayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({
+    rideId: z.string().uuid(), expectedUpdatedAt: z.string().datetime({ offset: true }),
+    confirmed: z.boolean(), note: z.string().max(500),
+  }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "admin",
+    });
+    const note = validateExternalPaymentConfirmation(!roleError && isAdmin === true, data.confirmed, data.note);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: attempts, error: attemptsError } = await supabaseAdmin.from("mercadopago_payments")
+      .select("mp_order_id").eq("ride_id", data.rideId).in("status", ["pending", "in_process"]);
+    if (attemptsError) throw new Error("Não foi possível verificar pagamentos pela plataforma.");
+    if (attempts?.length) {
+      const { settleMercadoPagoOrder } = await import("./mercadopago-settle.server");
+      for (const attempt of attempts) {
+        if (!attempt.mp_order_id) throw new Error("Há um pagamento sendo iniciado. Aguarde e tente novamente.");
+        const settled = await settleMercadoPagoOrder(attempt.mp_order_id);
+        if (settled?.paid) return { ok: true, source: "mercadopago" as const };
+      }
+    }
+    const { data: result, error } = await supabaseAdmin.rpc("confirm_external_ride_payment", {
+      _ride_id: data.rideId, _admin_id: context.userId, _expected_updated_at: data.expectedUpdatedAt, _note: note,
+    });
+    if (error) throw new Error(error.message);
+    if (!result || typeof result !== "object" || Array.isArray(result) || result["ok"] !== true) {
+      throw new Error("Não foi possível confirmar o pagamento externo.");
+    }
+    return { ok: true, source: "external" as const };
+  });
 
 export const adminForwardRide = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

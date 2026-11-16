@@ -283,6 +283,51 @@ export type Database = {
         }
         Relationships: []
       }
+      external_ride_payments: {
+        Row: {
+          amount_cents: number
+          confirmed_at: string
+          confirmed_by: string
+          id: string
+          note: string
+          payment_method: string
+          ride_id: string
+        }
+        Insert: {
+          amount_cents: number
+          confirmed_at?: string
+          confirmed_by: string
+          id?: string
+          note: string
+          payment_method?: string
+          ride_id: string
+        }
+        Update: {
+          amount_cents?: number
+          confirmed_at?: string
+          confirmed_by?: string
+          id?: string
+          note?: string
+          payment_method?: string
+          ride_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_ride_payments_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "external_ride_payments_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: true
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorite_addresses: {
         Row: {
           address: string
@@ -1268,6 +1313,15 @@ export type Database = {
         Returns: Json
       }
       apply_referral_code: { Args: { _code: string }; Returns: undefined }
+      confirm_external_ride_payment: {
+        Args: {
+          _admin_id: string
+          _expected_updated_at: string
+          _note: string
+          _ride_id: string
+        }
+        Returns: Json
+      }
       coupon_amount_cents: {
         Args: { _cents: number; _percent: number; _price: number }
         Returns: number

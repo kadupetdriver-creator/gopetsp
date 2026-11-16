@@ -3,7 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, ListOrdered, Download, Loader2, Pencil, Plus, Search, Send, XCircle } from "lucide-react";
+import { BadgeCheck, CalendarClock, ListOrdered, Download, Loader2, Pencil, Plus, Search, Send, XCircle } from "lucide-react";
+import { AdminExternalPaymentDialog } from "@/components/AdminExternalPaymentDialog";
+import { canConfirmExternalRidePayment } from "@/lib/external-ride-payment";
 import { AdminRidePhaseDialog } from "@/components/AdminRidePhaseDialog";
 import { AdminFixedRideDialog } from "@/components/AdminFixedRideDialog";
 import { AdminRescheduleDialog } from "@/components/AdminRescheduleDialog";
@@ -171,6 +173,7 @@ function AdminCorridasPage() {
   const [editing, setEditing] = useState<Ride | null>(null);
   const [forwarding, setForwarding] = useState<Ride | null>(null);
   const [creatingFixed, setCreatingFixed] = useState(false);
+  const [confirmingPayment, setConfirmingPayment] = useState<Ride | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-rides"],
@@ -183,18 +186,21 @@ function AdminCorridasPage() {
         )
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
-      const [{ data: people }, { data: emails }, { data: drv }] = await Promise.all([
+      const [{ data: people }, { data: emails }, { data: drv }, { data: externalPayments, error: externalError }] = await Promise.all([
         supabase.from("profiles").select("id, full_name, role, phone, cpf, city, address, is_active, created_at"),
         supabase.rpc("admin_user_emails"),
         supabase
           .from("drivers")
           .select("id, user_id, full_name, cpf, birth_date, phone, email, city, neighborhood, pix_key, status, vehicles(plate, model, brand, color, year, vehicle_type, is_active)"),
+        supabase.from("external_ride_payments").select("ride_id, amount_cents, confirmed_at, confirmed_by, note"),
       ]);
+      if (externalError) throw externalError;
       return {
         rides: sortAdminRides((rides ?? []) as unknown as Ride[]),
         people: (people ?? []) as unknown as (Person & PersonDetails)[],
         emails: (emails ?? []) as { user_id: string; email: string }[],
         drivers: (drv ?? []) as unknown as DriverDetails[],
+        externalPayments: externalPayments ?? [],
       };
     },
   });
@@ -203,6 +209,7 @@ function AdminCorridasPage() {
   const peopleById = useMemo(() => new Map((data?.people ?? []).map((p) => [p.id, p])), [data]);
   const emailById = useMemo(() => new Map((data?.emails ?? []).map((e) => [e.user_id, e.email])), [data]);
   const driverByUser = useMemo(() => new Map((data?.drivers ?? []).map((d) => [d.user_id, d])), [data]);
+  const externalByRide = useMemo(() => new Map((data?.externalPayments ?? []).map((p) => [p.ride_id, p])), [data]);
 
   const counts = useMemo(() => {
     const rides = data?.rides ?? [];
@@ -356,6 +363,10 @@ function AdminCorridasPage() {
                   <span className="ml-2 text-xs text-muted-foreground">{pay}</span>
                 </p>
                 <p className="text-xs text-muted-foreground">Criada em {formatSaoPauloSchedule(r.created_at)}</p>
+                {externalByRide.has(r.id) && <div className="text-xs text-muted-foreground">
+                  <p className="font-semibold text-primary-ink">Pago via Pix externo · {formatSaoPauloSchedule(externalByRide.get(r.id)?.confirmed_at ?? r.paid_at ?? r.created_at)}</p>
+                  <p>Confirmado por {names.get(externalByRide.get(r.id)?.confirmed_by ?? "") ?? "administrador"} · {externalByRide.get(r.id)?.note}</p>
+                </div>}
                 {r.arrived_at && <p className="text-xs text-muted-foreground">Chegada em {formatSaoPauloSchedule(r.arrived_at)}</p>}
                 <RidePeopleDetails
                   tutor={peopleById.get(r.tutor_id)}
@@ -370,6 +381,7 @@ function AdminCorridasPage() {
                   </p>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">
+                  {canConfirmExternalRidePayment(r) && <Button size="sm" onClick={() => setConfirmingPayment(r)}><BadgeCheck className="mr-2 size-4" /> Marcar como pago</Button>}
                   {canAdminRescheduleRide(r.status) && <Button size="sm" variant="outline" onClick={() => setRescheduling(r)}><CalendarClock className="mr-2 size-4" /> Alterar data</Button>}
                   {canAdminCompleteRide(r) && (
                     <Button size="sm" variant="outline" onClick={() => setChangingPhase(r)}>
@@ -412,6 +424,11 @@ function AdminCorridasPage() {
       }} />}
 
       {changingPhase && <AdminRidePhaseDialog ride={changingPhase} onClose={() => setChangingPhase(null)} />}
+      {confirmingPayment && <AdminExternalPaymentDialog ride={confirmingPayment} tutorName={names.get(confirmingPayment.tutor_id) ?? "Tutor"} onClose={() => setConfirmingPayment(null)} onSaved={() => {
+        setConfirmingPayment(null);
+        setFilter("disponiveis");
+        for (const key of ["admin-rides", "rides", "ride", "ride-payment", "driver-rides", "admin-report", "my-rides"]) void qc.invalidateQueries({ queryKey: [key] });
+      }} />}
 
       {rescheduling && <AdminRescheduleDialog ride={rescheduling} onClose={() => setRescheduling(null)} onSaved={() => {
         setRescheduling(null);
