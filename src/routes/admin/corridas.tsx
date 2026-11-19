@@ -8,6 +8,8 @@ import { AdminExternalPaymentDialog } from "@/components/AdminExternalPaymentDia
 import { canConfirmExternalRidePayment } from "@/lib/external-ride-payment";
 import { AdminRidePhaseDialog } from "@/components/AdminRidePhaseDialog";
 import { AdminFixedRideDialog } from "@/components/AdminFixedRideDialog";
+import { loadRideTemplate, type RideTemplate } from "@/lib/ride-duplicate";
+import { Copy } from "lucide-react";
 import { AdminRescheduleDialog } from "@/components/AdminRescheduleDialog";
 import { canAdminRescheduleRide, formatSaoPauloSchedule } from "@/lib/ride-reschedule";
 import { downloadCsvFile } from "@/lib/csv";
@@ -173,6 +175,11 @@ function AdminCorridasPage() {
   const [editing, setEditing] = useState<Ride | null>(null);
   const [forwarding, setForwarding] = useState<Ride | null>(null);
   const [creatingFixed, setCreatingFixed] = useState(false);
+  const [template, setTemplate] = useState<RideTemplate | null>(null);
+  const duplicate = async (id: string) => {
+    try { setTemplate(await loadRideTemplate(id)); setCreatingFixed(true); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Não foi possível duplicar."); }
+  };
   const [confirmingPayment, setConfirmingPayment] = useState<Ride | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -381,6 +388,7 @@ function AdminCorridasPage() {
                   </p>
                 )}
                 <div className="flex flex-wrap gap-2 pt-1">
+                  <Button size="sm" variant="outline" onClick={() => void duplicate(r.id)}><Copy className="mr-2 size-4" /> Duplicar</Button>
                   {canConfirmExternalRidePayment(r) && <Button size="sm" onClick={() => setConfirmingPayment(r)}><BadgeCheck className="mr-2 size-4" /> Marcar como pago</Button>}
                   {canAdminRescheduleRide(r.status) && <Button size="sm" variant="outline" onClick={() => setRescheduling(r)}><CalendarClock className="mr-2 size-4" /> Alterar data</Button>}
                   {canAdminCompleteRide(r) && (
@@ -416,8 +424,8 @@ function AdminCorridasPage() {
         })}
       </div>
 
-      {creatingFixed && <AdminFixedRideDialog tutors={(data?.people ?? []).filter((p) => p.role === "tutor" && p.is_active).sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR"))} onClose={() => setCreatingFixed(false)} onSaved={() => {
-        setCreatingFixed(false);
+      {creatingFixed && <AdminFixedRideDialog template={template} tutors={(data?.people ?? []).filter((p) => p.role === "tutor" && p.is_active).sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR"))} onClose={() => { setCreatingFixed(false); setTemplate(null); }} onSaved={() => {
+        setCreatingFixed(false); setTemplate(null);
         setFilter("orcamentos");
         setSearch("");
         for (const key of ["admin-rides", "rides", "my-rides"]) void qc.invalidateQueries({ queryKey: [key] });

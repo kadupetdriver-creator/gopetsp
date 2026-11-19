@@ -15,25 +15,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Textarea } from "./ui/textarea";
 import { Switch } from "./ui/switch";
 import { Checkbox } from "./ui/checkbox";
+import type { RideTemplate } from "@/lib/ride-duplicate";
 
-export function AdminFixedRideDialog({ tutors, onClose, onSaved }: {
-  tutors: { id: string; full_name: string }[]; onClose: () => void; onSaved: () => void;
+export function AdminFixedRideDialog({ tutors, onClose, onSaved, template }: {
+  tutors: { id: string; full_name: string }[]; onClose: () => void; onSaved: () => void; template?: RideTemplate | null;
 }) {
   const create = useServerFn(adminCreateFixedRide);
   const [requestId] = useState(() => crypto.randomUUID());
-  const [tutorId, setTutorId] = useState("");
-  const [petIds, setPetIds] = useState<string[]>([]);
-  const [stops, setStops] = useState<{ id: string; text: string; place: SelectedPlace | null }[]>([]);
+  const [tutorId, setTutorId] = useState(template?.tutorId ?? "");
+  const [petIds, setPetIds] = useState<string[]>(template?.petIds.slice(0, 3) ?? []);
+  const [stops, setStops] = useState<{ id: string; text: string; place: SelectedPlace | null }[]>(() => (template?.stops ?? []).slice(0, 3).map((p) => ({ id: crypto.randomUUID(), text: p.address, place: p })));
   const [price, setPrice] = useState("");
   const [driverPrice, setDriverPrice] = useState("");
   const [scheduledAt, setScheduledAt] = useState(() => saoPauloScheduleInput(new Date(Date.now() + 3600000).toISOString()));
-  const [originText, setOriginText] = useState("");
-  const [destinationText, setDestinationText] = useState("");
-  const [origin, setOrigin] = useState<SelectedPlace | null>(null);
-  const [destination, setDestination] = useState<SelectedPlace | null>(null);
-  const [accompanies, setAccompanies] = useState(false);
-  const [people, setPeople] = useState("1");
-  const [notes, setNotes] = useState("");
+  const [originText, setOriginText] = useState(template?.origin?.address ?? "");
+  const [destinationText, setDestinationText] = useState(template?.destination?.address ?? "");
+  const [origin, setOrigin] = useState<SelectedPlace | null>(template?.origin ?? null);
+  const [destination, setDestination] = useState<SelectedPlace | null>(template?.destination ?? null);
+  const [accompanies, setAccompanies] = useState(template?.accompanies === true);
+  const [people, setPeople] = useState(String(template?.peopleCount ?? 1));
+  const [notes, setNotes] = useState(template?.notes ?? "");
   const moveStop = (index: number, delta: number) => setStops((items) => {
     const next = [...items];
     const current = next[index];
@@ -65,7 +66,7 @@ export function AdminFixedRideDialog({ tutors, onClose, onSaved }: {
   });
   return <Dialog open onOpenChange={(open) => { if (!open && !save.isPending) onClose(); }}>
     <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
-      <DialogHeader><DialogTitle>Corrida fixa</DialogTitle><DialogDescription>Preço definido pela administração · descontado automaticamente do Saldo GoPet do tutor</DialogDescription></DialogHeader>
+      <DialogHeader><DialogTitle>{template ? "Duplicar corrida (corrida fixa)" : "Corrida fixa"}</DialogTitle><DialogDescription>Preço definido pela administração · descontado automaticamente do Saldo GoPet do tutor</DialogDescription></DialogHeader>
       <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); save.mutate(); }}>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2"><Label htmlFor="fixed-tutor">Tutor</Label><Select value={tutorId} onValueChange={(value) => { setTutorId(value); setPetIds([]); }}><SelectTrigger id="fixed-tutor"><SelectValue placeholder="Selecionar tutor" /></SelectTrigger><SelectContent>{tutors.map((t) => <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>)}</SelectContent></Select></div>

@@ -30,6 +30,8 @@ import { RideDriverIdentity } from "@/components/RideDriverIdentity";
 import { cn } from "@/lib/utils";
 import { paymentStatusLabels, paymentStatusStyles, ridePaymentState } from "@/lib/payments";
 import { TutorCancelRideButton } from "@/components/TutorCancelRideButton";
+import { loadRideTemplate, writeTutorDraft } from "@/lib/ride-duplicate";
+import { Copy } from "lucide-react";
 import { canTutorCancel } from "@/lib/cancellation-policy";
 
 export const Route = createFileRoute("/minhas-corridas/")({
@@ -312,6 +314,13 @@ function MinhasCorridas() {
                     </a>
                   </Button>
                 )}
+                <Button variant="outline" size="sm" className="rounded-full" onClick={async () => {
+                  if (!user) return;
+                  try { writeTutorDraft(user.id, await loadRideTemplate(ride.id)); void navigate({ to: "/solicitar" }); }
+                  catch (e) { toast.error(e instanceof Error ? e.message : "Não foi possível duplicar."); }
+                }}>
+                  <Copy className="mr-2 size-4" /> Duplicar
+                </Button>
                 {canTutorCancel(ride.status) && (
                   <TutorCancelRideButton rideId={ride.id} size="sm" onDone={() => void qc.invalidateQueries({ queryKey: ["rides"] })} />
                 )}
