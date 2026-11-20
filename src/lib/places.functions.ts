@@ -3,9 +3,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { hasNationwideMap } from "./service-area";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function callerHasNationwideMap(context: { supabase: any; userId: string }) {
+async function callerHasNationwideMap(context: { supabase: any; userId: string; claims?: { email?: unknown } }) {
   const { data } = await context.supabase.from("profiles").select("role, cpf").eq("id", context.userId).maybeSingle();
-  return hasNationwideMap(data);
+  const email = typeof context.claims?.email === "string" ? context.claims.email : null;
+  return hasNationwideMap({ ...data, email });
 }
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";

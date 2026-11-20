@@ -11,7 +11,8 @@ export const quoteDriverRide = createServerFn({ method: "POST" })
       .select("role, is_active, cpf").eq("id", context.userId).maybeSingle();
     if (error || !canCreateDriverQuote(profile)) throw new Error("Orçamento disponível apenas para motoristas com conta ativa.");
     const points = [data.origin, data.destination, ...data.stops];
-    if (!hasNationwideMap(profile) && points.some((p) => !isInSaoPaulo(p.lat, p.lng))) {
+    const email = typeof context.claims.email === "string" ? context.claims.email : null;
+    if (!hasNationwideMap({ ...profile, email }) && points.some((p) => !isInSaoPaulo(p.lat, p.lng))) {
       throw new Error("No momento, o GoPet atende apenas endereços em São Paulo e na região metropolitana.");
     }
     const { drivingDistance } = await import("./routing.server");

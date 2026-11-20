@@ -32,10 +32,13 @@ test("Orçamento mantém até três pets e paradas em São Paulo", () => {
   assert.equal(driverQuoteSchema.safeParse({ ...input, stops: Array(4).fill(input.origin) }).success, false);
   assert.equal(driverQuoteSchema.safeParse({ ...input, origin: { ...input.origin, lat: 10 } }).success, false);
 });
-test("Mapa nacional liberado apenas para o motorista do CPF 39729627894", async () => {
+test("Mapa nacional respeita as exceções por CPF de motorista e e-mail do usuário", async () => {
   const { hasNationwideMap, isInSaoPaulo } = await import("./service-area");
   assert.equal(hasNationwideMap({ role: "driver", cpf: "397.296.278-94" }), true);
   assert.equal(hasNationwideMap({ role: "tutor", cpf: "39729627894" }), false);
   assert.equal(hasNationwideMap({ role: "driver", cpf: "11144477735" }), false);
+  assert.equal(hasNationwideMap({ role: "tutor", email: " KADUPETDRIVER@GMAIL.COM " }), true);
+  assert.equal(hasNationwideMap({ role: "driver", email: "kadupetdriver@gmail.com" }), true);
+  assert.equal(hasNationwideMap({ role: "driver", email: "outro@gmail.com" }), false);
   assert.equal(isInSaoPaulo(-22.9, -43.2), false);
 });
