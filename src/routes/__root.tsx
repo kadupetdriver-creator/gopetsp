@@ -18,6 +18,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { DriverLocationSync } from "@/components/DriverLocationSync";
 import { RegistrationGate } from "@/components/RegistrationGate";
 import { PendingRideReviews } from "@/components/PendingRideReviews";
+import { InstallAppProvider } from "@/components/InstallAppPrompt";
 
 function NotFoundComponent() {
   return (
@@ -141,6 +142,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <InstallAppProvider>
         <RegistrationGate>
         <DriverLocationSync />
         <PendingRideReviews />
@@ -163,6 +165,7 @@ function RootComponent() {
           </footer>
         </div>
         </RegistrationGate>
+        </InstallAppProvider>
         <Toaster position="top-center" richColors />
       </AuthProvider>
     </QueryClientProvider>

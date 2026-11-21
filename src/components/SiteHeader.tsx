@@ -1,14 +1,16 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Home, LogOut, Menu } from "lucide-react";
+import { Download, Home, LogOut, Menu } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/BrandLogo";
+import { useInstallApp } from "@/components/InstallAppPrompt";
 
 export function SiteHeader() {
   const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  const { installed, openInstallPrompt } = useInstallApp();
   const [open, setOpen] = useState(false);
 
   const links = user
@@ -50,6 +52,16 @@ export function SiteHeader() {
               {l.label}
             </Link>
           ))}
+          {!installed && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2 rounded-full text-muted-foreground"
+              onClick={openInstallPrompt}
+            >
+              <Download className="size-4" /> Instalar aplicativo
+            </Button>
+          )}
           {user ? (
             <Button
               variant="ghost"
@@ -93,6 +105,17 @@ export function SiteHeader() {
               {l.label}
             </Link>
           ))}
+          {!installed && (
+            <button
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
+              onClick={() => {
+                setOpen(false);
+                openInstallPrompt();
+              }}
+            >
+              <Download className="size-4" /> Instalar aplicativo
+            </button>
+          )}
           {user && (
             <button
               className="rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-secondary"

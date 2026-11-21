@@ -1,5 +1,11 @@
 # Roadmap — GoPet SP
 
+## Concluído — convite de instalação do PWA
+- [x] Janela preta e dourada com logotipo oficial, mensagem, instalação direta via beforeinstallprompt e botões Instalar aplicativo/Agora não
+- [x] Instruções pelo menu do Chrome no Android e Compartilhar/Adicionar à Tela de Início no Safari do iPhone; recusa pausa o convite automático por 24 horas
+- [x] Opção permanente no menu para quem ainda não instalou; convite e atalho ocultos no modo instalado
+- [x] Cinco testes passaram; computador, Android, iPhone e modo instalado conferidos no navegador, sem erros. Instalação em aparelhos físicos não verificada
+
 ## Concluído — nome GoPet SP
 - [x] Projeto renomeado para GoPet SP; manifesto PWA (name/short_name), application-name, apple-mobile-web-app-title, títulos/og:title de todas as páginas, rodapé, cabeçalho administrativo, tela de acesso e marca escrita passam a usar GoPet SP
 - [x] "Saldo GoPet" mantido como nome da funcionalidade de créditos; verificações no navegador confirmaram títulos, manifesto e texto da tela de acesso
