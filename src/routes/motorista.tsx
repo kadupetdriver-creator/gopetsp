@@ -319,6 +319,9 @@ function MotoristaPage() {
         variables.status === "accepted" ? "Corrida sua! Já está em Minhas corridas." : "Corrida atualizada.",
       );
       void qc.invalidateQueries({ queryKey: ["rides"] });
+      if (variables.status === "completed") {
+        void qc.invalidateQueries({ queryKey: ["pending-ride-reviews"] });
+      }
     },
     onError: (error) => {
       toast.error(

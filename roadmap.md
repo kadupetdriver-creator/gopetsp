@@ -1,5 +1,10 @@
 # Roadmap — GoPet
 
+## Concluído — avaliações automáticas
+- [x] Janelas globais para tutor/motorista após conclusão, atualizadas em tempo real e recuperadas ao acessar; Avaliar depois não remove a pendência
+- [x] Notas individuais privadas entre as partes; histórico preservado, médias agregadas e aviso privado sem dados sensíveis; unicidade e limites no banco
+- [x] Três testes passaram; conta real avaliou corrida temporária com foto do motorista, adiamento, reabertura e 4 patinhas/comentário. Banco confirmou persistência, ausência da pendência, bloqueio de duplicidade e nota 6. Fluxo de finalização ao vivo por motorista não verificado nesta sessão
+
 ## Concluído — abertura minimalista
 - [x] Remover vídeo, áudio e controles da abertura; somente logotipo centralizado em preto durante o carregamento, com transição suave sem temporizador
 - [x] Conferir proporções e fundo preto no computador/celular, acesso à escolha de perfil e cadastro, zero pedidos de vídeo e zero erros; compilação OK. Android/iOS físicos não verificados. Redirecionamento autenticado não confirmado nesta sessão; lógica existente preservada

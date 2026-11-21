@@ -93,14 +93,22 @@ export function RideReview({ rideId, reviewerId, revieweeId, revieweeName }: Pro
       const { data, error } = await supabase
         .from("ride_reviews")
         .select("id, reviewer_id, reviewee_id, rating, comment, created_at")
-        .eq("ride_id", rideId);
+        .eq("ride_id", rideId)
+        .eq("reviewer_id", reviewerId);
       if (error) throw error;
       return data;
     },
   });
 
   const mine = reviews?.find((r) => r.reviewer_id === reviewerId);
-  const received = reviews?.find((r) => r.reviewee_id === reviewerId);
+  const { data: summary } = useQuery({
+    queryKey: ["rating-summary", reviewerId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("my_rating_summary");
+      if (error) throw error;
+      return data?.[0] ?? null;
+    },
+  });
 
   const submit = useMutation({
     mutationFn: async () => {
@@ -119,6 +127,8 @@ export function RideReview({ rideId, reviewerId, revieweeId, revieweeName }: Pro
       setComment("");
       void qc.invalidateQueries({ queryKey: ["ride-reviews", rideId] });
       void qc.invalidateQueries({ queryKey: ["reviews"] });
+      void qc.invalidateQueries({ queryKey: ["pending-ride-reviews"] });
+      void qc.invalidateQueries({ queryKey: ["rating-summary"] });
     },
     onError: () => toast.error("Não foi possível enviar a avaliação."),
   });
@@ -131,9 +141,7 @@ export function RideReview({ rideId, reviewerId, revieweeId, revieweeName }: Pro
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {mine
-            ? received
-              ? "As duas avaliações foram concluídas."
-              : `Sua avaliação foi enviada. A nota de ${revieweeName} será revelada quando a outra pessoa também avaliar.`
+            ? "Sua avaliação foi enviada e permanece confidencial."
             : `Como foi sua experiência com ${revieweeName}?`}
         </p>
       </div>
@@ -175,28 +183,16 @@ export function RideReview({ rideId, reviewerId, revieweeId, revieweeName }: Pro
               Enviar avaliação
             </Button>
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <LockKeyhole className="size-3.5" /> A outra pessoa não verá sua nota antes de avaliar.
+              <LockKeyhole className="size-3.5" /> Sua nota e comentário são confidenciais.
             </p>
           </div>
         </form>
       )}
 
-      {mine && !received && (
-        <div className="flex items-start gap-2 rounded-lg border border-border p-4 text-sm text-muted-foreground">
-          <LockKeyhole className="mt-0.5 size-4 shrink-0" />
-          <p>A avaliação recebida está protegida até que as duas pessoas participem.</p>
-        </div>
-      )}
-
-      {received && (
-        <div className="rounded-lg border border-primary/40 bg-primary/10 p-4">
-          <p className="text-sm font-semibold">A avaliação que você recebeu</p>
-          <div className="mt-2">
-            <PawRating value={received.rating} size="size-5" />
-          </div>
-          {received.comment && (
-            <p className="mt-2 text-sm text-muted-foreground">“{received.comment}”</p>
-          )}
+      {summary && summary.rating_count > 0 && (
+        <div className="border-t border-border pt-4">
+          <p className="text-sm font-semibold">Sua média de avaliações</p>
+          <p className="mt-1 text-sm text-primary-ink">{Number(summary.average_rating).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} / 5 · {summary.rating_count} avaliações</p>
         </div>
       )}
     </section>

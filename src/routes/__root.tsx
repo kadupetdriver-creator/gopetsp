@@ -17,6 +17,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { DriverLocationSync } from "@/components/DriverLocationSync";
 import { RegistrationGate } from "@/components/RegistrationGate";
+import { PendingRideReviews } from "@/components/PendingRideReviews";
 
 function NotFoundComponent() {
   return (
@@ -142,6 +143,7 @@ function RootComponent() {
       <AuthProvider>
         <RegistrationGate>
         <DriverLocationSync />
+        <PendingRideReviews />
         <div className="flex min-h-screen flex-col">
           <SiteHeader />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}

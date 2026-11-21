@@ -1419,9 +1419,27 @@ export type Database = {
         }
       }
       my_credit_balance_cents: { Args: never; Returns: number }
+      my_rating_summary: {
+        Args: never
+        Returns: {
+          average_rating: number
+          rating_count: number
+        }[]
+      }
       pay_ride_with_gopet_balance: {
         Args: { _coupon_id?: string; _ride_id: string; _user_id: string }
         Returns: Json
+      }
+      pending_ride_reviews: {
+        Args: never
+        Returns: {
+          average_rating: number
+          rating_count: number
+          reviewee_id: string
+          reviewee_name: string
+          reviewer_role: string
+          ride_id: string
+        }[]
       }
       pet_photo_readable: { Args: { _name: string }; Returns: boolean }
       referral_code_valid: { Args: { _code: string }; Returns: boolean }
