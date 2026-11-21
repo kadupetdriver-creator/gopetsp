@@ -45,7 +45,7 @@ import { Field } from "./tutores";
 export const Route = createFileRoute("/admin/motoristas")({
   head: () => ({
     meta: [
-      { title: "Motoristas | GoPet Admin" },
+      { title: "Motoristas | GoPet SP Admin" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/admin/motoristas")({
         name: "description",
         content: "Painel interno para revisar documentos, editar e aprovar motoristas parceiros da GoPet.",
       },
-      { property: "og:title", content: "Motoristas | GoPet Admin" },
+      { property: "og:title", content: "Motoristas | GoPet SP Admin" },
       { property: "og:description", content: "Revisão e gestão de motoristas parceiros." },
     ],
   }),

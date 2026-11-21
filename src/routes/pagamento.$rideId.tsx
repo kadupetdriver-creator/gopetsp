@@ -48,9 +48,9 @@ const statusMessage: Record<string, string> = {
 export const Route = createFileRoute("/pagamento/$rideId")({
   head: () => ({
     meta: [
-      { title: "Pagamento da corrida | GoPet" },
+      { title: "Pagamento da corrida | GoPet SP" },
       { name: "description", content: "Pague sua corrida com saldo GoPet, cartão ou Pix pelo Mercado Pago." },
-      { property: "og:title", content: "Pagamento da corrida | GoPet" },
+      { property: "og:title", content: "Pagamento da corrida | GoPet SP" },
       { property: "og:description", content: "Pagamento seguro com saldo GoPet, cartão ou Pix pelo Mercado Pago." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

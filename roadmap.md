@@ -1,4 +1,8 @@
-# Roadmap — GoPet
+# Roadmap — GoPet SP
+
+## Concluído — nome GoPet SP
+- [x] Projeto renomeado para GoPet SP; manifesto PWA (name/short_name), application-name, apple-mobile-web-app-title, títulos/og:title de todas as páginas, rodapé, cabeçalho administrativo, tela de acesso e marca escrita passam a usar GoPet SP
+- [x] "Saldo GoPet" mantido como nome da funcionalidade de créditos; verificações no navegador confirmaram títulos, manifesto e texto da tela de acesso
 
 ## Concluído — avaliações automáticas
 - [x] Janelas globais para tutor/motorista após conclusão, atualizadas em tempo real e recuperadas ao acessar; Avaliar depois não remove a pendência

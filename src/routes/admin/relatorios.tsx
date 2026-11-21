@@ -24,10 +24,10 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/admin/relatorios")({
   head: () => ({
     meta: [
-      { title: "Relatórios | GoPet Admin" },
+      { title: "Relatórios | GoPet SP Admin" },
       { name: "robots", content: "noindex" },
       { name: "description", content: "Relatório de corridas, bônus e descontos da GoPet." },
-      { property: "og:title", content: "Relatórios | GoPet Admin" },
+      { property: "og:title", content: "Relatórios | GoPet SP Admin" },
       { property: "og:description", content: "Relatório de corridas, bônus e descontos da GoPet." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

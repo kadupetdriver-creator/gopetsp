@@ -47,10 +47,10 @@ import { Field } from "./tutores";
 export const Route = createFileRoute("/admin/corridas")({
   head: () => ({
     meta: [
-      { title: "Corridas | GoPet Admin" },
+      { title: "Corridas | GoPet SP Admin" },
       { name: "robots", content: "noindex" },
       { name: "description", content: "Acompanhe corridas com pagamento aprovado e orçamentos pendentes da GoPet." },
-      { property: "og:title", content: "Corridas | GoPet Admin" },
+      { property: "og:title", content: "Corridas | GoPet SP Admin" },
       { property: "og:description", content: "Acompanhe corridas com pagamento aprovado e orçamentos pendentes da GoPet." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

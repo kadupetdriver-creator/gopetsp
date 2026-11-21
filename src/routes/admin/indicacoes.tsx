@@ -10,11 +10,11 @@ import { formatBRL, formatDateTime } from "@/lib/rides";
 export const Route = createFileRoute("/admin/indicacoes")({
   head: () => ({
     meta: [
-      { title: "Indicações | Admin GoPet" },
+      { title: "Indicações | Admin GoPet SP" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "description", content: "Acompanhe indicações, cupons e bônus do programa de indicação GoPet." },
-      { property: "og:title", content: "Indicações | Admin GoPet" },
+      { property: "og:title", content: "Indicações | Admin GoPet SP" },
       { property: "og:description", content: "Painel do programa de indicação GoPet." },
     ],
   }),

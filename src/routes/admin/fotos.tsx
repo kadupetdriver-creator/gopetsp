@@ -11,11 +11,11 @@ import { formatDateTime } from "@/lib/rides";
 export const Route = createFileRoute("/admin/fotos")({
   head: () => ({
     meta: [
-      { title: "Aprovação de fotos | Admin GoPet" },
+      { title: "Aprovação de fotos | Admin GoPet SP" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "description", content: "Aprove ou recuse as novas fotos de tutores e motoristas da GoPet." },
-      { property: "og:title", content: "Aprovação de fotos | Admin GoPet" },
+      { property: "og:title", content: "Aprovação de fotos | Admin GoPet SP" },
       { property: "og:description", content: "Fila de fotos aguardando aprovação." },
     ],
   }),

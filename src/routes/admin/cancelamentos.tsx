@@ -41,9 +41,9 @@ function RefundSimulation({ id }: { id: string }) {
 export const Route = createFileRoute("/admin/cancelamentos")({
   head: () => ({
     meta: [
-      { title: "Cancelamentos | GoPet Admin" },
+      { title: "Cancelamentos | GoPet SP Admin" },
       { name: "description", content: "Cancelamentos de corridas, taxas e exceções." },
-      { property: "og:title", content: "Cancelamentos | GoPet Admin" },
+      { property: "og:title", content: "Cancelamentos | GoPet SP Admin" },
       { property: "og:description", content: "Cancelamentos de corridas, taxas e exceções." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

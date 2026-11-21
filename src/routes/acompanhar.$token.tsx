@@ -17,13 +17,13 @@ import {
 export const Route = createFileRoute("/acompanhar/$token")({
   head: () => ({
     meta: [
-      { title: "Acompanhar corrida do pet | GoPet" },
+      { title: "Acompanhar corrida do pet | GoPet SP" },
       {
         name: "description",
         content:
           "Acompanhe em tempo real o transporte do pet em São Paulo: status da corrida, trajeto e posição do motorista.",
       },
-      { property: "og:title", content: "Acompanhar corrida do pet | GoPet" },
+      { property: "og:title", content: "Acompanhar corrida do pet | GoPet SP" },
       {
         property: "og:description",
         content: "Status e posição do motorista durante o transporte do pet.",

@@ -44,13 +44,13 @@ import type { DriverStatus } from "@/lib/drivers";
 export const Route = createFileRoute("/motorista")({
   head: () => ({
     meta: [
-      { title: "Painel do motorista parceiro | GoPet" },
+      { title: "Painel do motorista parceiro | GoPet SP" },
       {
         name: "description",
         content:
           "Veja chamadas abertas de transporte de pets em São Paulo, aceite corridas e atualize o status da viagem em tempo real.",
       },
-      { property: "og:title", content: "Painel do motorista parceiro | GoPet" },
+      { property: "og:title", content: "Painel do motorista parceiro | GoPet SP" },
       {
         property: "og:description",
         content: "Chamadas abertas e corridas aceitas para motoristas parceiros GoPet.",

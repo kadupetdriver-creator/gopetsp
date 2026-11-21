@@ -24,13 +24,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/rastreio")({
   head: () => ({
     meta: [
-      { title: "Rastreio ao vivo por GPS | GoPet" },
+      { title: "Rastreio ao vivo por GPS | GoPet SP" },
       {
         name: "description",
         content:
           "Acompanhe em tempo real, pelo GPS, onde está o motorista que transporta o seu pet em São Paulo.",
       },
-      { property: "og:title", content: "Rastreio ao vivo por GPS | GoPet" },
+      { property: "og:title", content: "Rastreio ao vivo por GPS | GoPet SP" },
       {
         property: "og:description",
         content: "Mapa ao vivo com a posição do motorista durante o transporte do pet.",

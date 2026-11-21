@@ -38,13 +38,13 @@ import { canTutorCancel } from "@/lib/cancellation-policy";
 export const Route = createFileRoute("/minhas-corridas/")({
   head: () => ({
     meta: [
-      { title: "Minhas corridas pet | GoPet" },
+      { title: "Minhas corridas pet | GoPet SP" },
       {
         name: "description",
         content:
           "Acompanhe em tempo real o status das corridas do seu pet em São Paulo: motorista a caminho, em transporte e concluída.",
       },
-      { property: "og:title", content: "Minhas corridas pet | GoPet" },
+      { property: "og:title", content: "Minhas corridas pet | GoPet SP" },
       {
         property: "og:description",
         content: "Status ao vivo das viagens do seu pet com a GoPet.",

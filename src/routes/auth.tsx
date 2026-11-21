@@ -26,15 +26,15 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Entrar ou criar conta | GoPet" },
+      { title: "Entrar ou criar conta | GoPet SP" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "description",
         content:
-          "Acesse a GoPet para pedir transporte do seu pet em São Paulo com motoristas parceiros verificados.",
+          "Acesse a GoPet SP para pedir transporte do seu pet em São Paulo com motoristas parceiros verificados.",
       },
-      { property: "og:title", content: "Entrar ou criar conta | GoPet" },
+      { property: "og:title", content: "Entrar ou criar conta | GoPet SP" },
       {
         property: "og:description",
         content: "Conta de tutor para transporte de pets em São Paulo.",
@@ -175,7 +175,7 @@ function AuthPage() {
 
       <Card className="shadow-soft">
         <CardHeader>
-          <CardTitle>{driverMode ? "Acesso do motorista" : "Acesse a GoPet"}</CardTitle>
+          <CardTitle>{driverMode ? "Acesso do motorista" : "Acesse a GoPet SP"}</CardTitle>
           <CardDescription>
             {driverSignup
               ? "Crie sua conta de motorista parceiro. Depois enviaremos seus documentos para análise."

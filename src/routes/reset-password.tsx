@@ -13,7 +13,7 @@ import { PasswordInput } from "@/components/PasswordInput";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Redefinir senha | GoPet" },
+      { title: "Redefinir senha | GoPet SP" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       {
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/reset-password")({
         content:
           "Recupere o acesso à sua conta GoPet: receba um link por e-mail e defina uma nova senha.",
       },
-      { property: "og:title", content: "Redefinir senha | GoPet" },
+      { property: "og:title", content: "Redefinir senha | GoPet SP" },
       {
         property: "og:description",
         content: "Recupere o acesso à sua conta GoPet com um link enviado por e-mail.",

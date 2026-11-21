@@ -15,12 +15,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 export const Route = createFileRoute("/admin/administradores")({
   head: () => ({
     meta: [
-      { title: "Administradores | GoPet Admin" },
+      { title: "Administradores | GoPet SP Admin" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
       { name: "description", content: "Gerencie quem tem acesso de administração na GoPet." },
-      { property: "og:title", content: "Administradores | GoPet Admin" },
+      { property: "og:title", content: "Administradores | GoPet SP Admin" },
       { property: "og:description", content: "Gerencie quem tem acesso de administração na GoPet." },
     ],
   }),

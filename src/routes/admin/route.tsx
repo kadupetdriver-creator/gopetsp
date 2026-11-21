@@ -7,12 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Administração | GoPet" },
+      { title: "Administração | GoPet SP" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
       { name: "description", content: "Painel interno de administração da GoPet." },
-      { property: "og:title", content: "Administração | GoPet" },
+      { property: "og:title", content: "Administração | GoPet SP" },
       { property: "og:description", content: "Painel interno de administração da GoPet." },
     ],
   }),
@@ -63,7 +63,7 @@ function AdminLayout() {
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary-ink">GoPet Admin</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary-ink">GoPet SP Admin</p>
           <h1 className="text-3xl font-semibold">Administração</h1>
         </div>
       </div>

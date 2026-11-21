@@ -49,12 +49,12 @@ import { getRideDriverDetails } from "@/lib/rides.functions";
 export const Route = createFileRoute("/minhas-corridas/$rideId")({
   head: () => ({
     meta: [
-      { title: "Detalhes da corrida | GoPet" },
+      { title: "Detalhes da corrida | GoPet SP" },
       {
         name: "description",
         content: "Acompanhe todos os detalhes e a localização ao vivo da corrida do seu pet.",
       },
-      { property: "og:title", content: "Detalhes da corrida | GoPet" },
+      { property: "og:title", content: "Detalhes da corrida | GoPet SP" },
       { property: "og:description", content: "Detalhes e localização ao vivo da corrida do seu pet." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

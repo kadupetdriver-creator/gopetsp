@@ -84,17 +84,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "GoPet — Transporte de pets em São Paulo" },
+      { title: "GoPet SP — Transporte de pets em São Paulo" },
       {
         name: "description",
         content:
           "Marketplace de transporte de pets em São Paulo: peça uma corrida para o seu animal e acompanhe motoristas parceiros verificados.",
       },
-      { name: "author", content: "GoPet" },
+      { name: "author", content: "GoPet SP" },
       { name: "theme-color", content: "#000000" },
-      { name: "application-name", content: "GoPet" },
-      { name: "apple-mobile-web-app-title", content: "GoPet" },
-      { property: "og:title", content: "GoPet — Transporte de pets em São Paulo" },
+      { name: "application-name", content: "GoPet SP" },
+      { name: "apple-mobile-web-app-title", content: "GoPet SP" },
+      { property: "og:title", content: "GoPet SP — Transporte de pets em São Paulo" },
       {
         property: "og:description",
         content: "Corridas seguras para o seu pet, com motoristas parceiros verificados.",
@@ -151,7 +151,7 @@ function RootComponent() {
             <Outlet />
           </main>
           <footer className="border-t border-border/70 py-6 text-center text-xs text-muted-foreground">
-            <p>GoPet · Transporte de pets com carinho em São Paulo</p>
+            <p>GoPet SP · Transporte de pets com carinho em São Paulo</p>
             <a
               href="https://wa.me/5511985125238"
               target="_blank"

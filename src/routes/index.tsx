@@ -14,7 +14,7 @@ import { homeForRole } from "@/hooks/useRoleGuard";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "GoPet — Transporte de pets em São Paulo" },
+      { title: "GoPet SP — Transporte de pets em São Paulo" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       {
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
         content:
           "Peça uma corrida para o seu pet em São Paulo: motoristas parceiros verificados, acompanhamento em tempo real e preço definido antes de confirmar.",
       },
-      { property: "og:title", content: "GoPet — Transporte de pets em São Paulo" },
+      { property: "og:title", content: "GoPet SP — Transporte de pets em São Paulo" },
       {
         property: "og:description",
         content:

@@ -11,10 +11,10 @@ import { activeStatuses, formatDateTime, statusLabels, type RideStatus } from "@
 export const Route = createFileRoute("/admin/mapa")({
   head: () => ({
     meta: [
-      { title: "Mapa ao vivo dos motoristas | GoPet Admin" },
+      { title: "Mapa ao vivo dos motoristas | GoPet SP Admin" },
       { name: "robots", content: "noindex" },
       { name: "description", content: "Posição em tempo real dos motoristas em corrida." },
-      { property: "og:title", content: "Mapa ao vivo dos motoristas | GoPet Admin" },
+      { property: "og:title", content: "Mapa ao vivo dos motoristas | GoPet SP Admin" },
       { property: "og:description", content: "Posição em tempo real dos motoristas em corrida." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

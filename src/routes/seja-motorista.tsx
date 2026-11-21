@@ -46,7 +46,7 @@ import { PhoneValidityWarning } from "@/components/PhoneValidityWarning";
 export const Route = createFileRoute("/seja-motorista")({
   head: () => ({
     meta: [
-      { title: "Seja motorista parceiro | GoPet" },
+      { title: "Seja motorista parceiro | GoPet SP" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       {
@@ -54,7 +54,7 @@ export const Route = createFileRoute("/seja-motorista")({
         content:
           "Cadastre-se como motorista parceiro da GoPet em São Paulo: dados pessoais, veículo e documentos em três etapas simples.",
       },
-      { property: "og:title", content: "Seja motorista parceiro | GoPet" },
+      { property: "og:title", content: "Seja motorista parceiro | GoPet SP" },
       {
         property: "og:description",
         content: "Cadastro de motoristas parceiros para transporte de pets em São Paulo.",
