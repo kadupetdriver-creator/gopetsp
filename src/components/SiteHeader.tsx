@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function SiteHeader() {
   const { user, profile, isAdmin, signOut } = useAuth();
@@ -31,9 +32,12 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Button asChild variant="ghost" size="sm" className="gap-2 rounded-full">
-          <Link to="/"><Home className="size-4" /> Início</Link>
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <BrandLogo size={40} withWordmark={false} />
+          <Button asChild variant="ghost" size="sm" className="gap-2 rounded-full">
+            <Link to="/"><Home className="size-4" /> Início</Link>
+          </Button>
+        </div>
 
         <nav className="hidden items-center gap-1 md:flex">
           {links.map((l) => (

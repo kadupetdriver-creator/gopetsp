@@ -12,7 +12,8 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import openingVideo from "@/assets/gopet-pwa-opening.mp4.asset.json";
+import openingVideo from "@/assets/gopet-sp-opening.mp4.asset.json";
+import { goPetLogoUrl } from "@/components/BrandLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { homeForRole } from "@/hooks/useRoleGuard";
 
@@ -154,7 +155,7 @@ function Splash() {
             muted
             playsInline
             preload="auto"
-            poster="/gopet-opening.png"
+            poster={goPetLogoUrl}
             aria-label="Vídeo de apresentação da GoPet"
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
@@ -197,10 +198,10 @@ function Splash() {
 
       <div className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-md flex-col items-center justify-center px-4 py-10">
       <img
-        src="/gopet-opening.png"
-        alt="GoPet — Seu pet em boas patas!"
-        width={1024}
-        height={936}
+        src={goPetLogoUrl}
+        alt="Logotipo oficial GoPet SP"
+        width={1254}
+        height={1254}
         className="h-auto w-64 max-w-full shrink-0 object-contain"
         loading="eager"
         fetchPriority="high"

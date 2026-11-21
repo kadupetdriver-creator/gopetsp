@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import logoAsset from "@/assets/gopet-logo.png.asset.json";
+import logoAsset from "@/assets/gopet-sp-logo.png.asset.json";
 import { cn } from "@/lib/utils";
 
 export const goPetLogoUrl = logoAsset.url;
@@ -22,12 +22,12 @@ export function BrandLogo({
 }: BrandLogoProps) {
   const mark = (
     <span
-      className="flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-canvas ring-1 ring-border"
+      className="flex shrink-0 items-center justify-center bg-brand-canvas"
       style={{ width: size, height: size }}
     >
       <img
         src={goPetLogoUrl}
-        alt="GoPet — transporte de pets em São Paulo"
+        alt="GoPet SP — transporte de pets em São Paulo"
         width={size}
         height={size}
         className="size-full object-contain"

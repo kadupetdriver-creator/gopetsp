@@ -117,6 +117,11 @@
 ## Concluído — classificação dos pets
 - [x] Classificar pets nas cinco faixas da imagem e abrir o guia pelo símbolo de ajuda
 
+## Concluído — nova identidade GoPet SP
+- [x] Substituir logotipo em abertura, login, cadastro e cabeçalho compartilhado dos painéis; preservar áudio e controles da apresentação
+- [x] Atualizar favicon, ícones Android/iOS e manifesto com margens seguras e URLs novas para não reutilizar imagens antigas em cache; sem introduzir service worker
+- [x] Conferir abertura/cadastro em computador e celular, painel administrativo autenticado, ícones com corte circular e manifesto HTTP 200; compilação sem erros. Instalação em aparelhos físicos não verificada; ícones já instalados podem exigir reinstalação após publicação
+
 ## Concluído
 - [x] Marketplace com cadastro, pets, corridas e perfis de tutor/motorista
 - [x] Chat, avaliações, mapas, rastreamento e compartilhamento seguro
