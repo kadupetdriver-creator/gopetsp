@@ -23,6 +23,7 @@ import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as AcompanharTokenRouteImport } from './routes/acompanhar.$token'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAdministradoresRouteImport } from './routes/admin/administradores'
+import { Route as AdminAvaliacoesRouteImport } from './routes/admin/avaliacoes'
 import { Route as AdminCancelamentosRouteImport } from './routes/admin/cancelamentos'
 import { Route as AdminCorridasRouteImport } from './routes/admin/corridas'
 import { Route as AdminFotosRouteImport } from './routes/admin/fotos'
@@ -106,6 +107,11 @@ const AdminAdministradoresRoute = AdminAdministradoresRouteImport.update({
   path: '/administradores',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminAvaliacoesRoute = AdminAvaliacoesRouteImport.update({
+  id: '/avaliacoes',
+  path: '/avaliacoes',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminCancelamentosRoute = AdminCancelamentosRouteImport.update({
   id: '/cancelamentos',
   path: '/cancelamentos',
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/administradores': typeof AdminAdministradoresRoute
+  '/admin/avaliacoes': typeof AdminAvaliacoesRoute
   '/admin/cancelamentos': typeof AdminCancelamentosRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/fotos': typeof AdminFotosRoute
@@ -207,6 +214,7 @@ export interface FileRoutesByTo {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/administradores': typeof AdminAdministradoresRoute
+  '/admin/avaliacoes': typeof AdminAvaliacoesRoute
   '/admin/cancelamentos': typeof AdminCancelamentosRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/fotos': typeof AdminFotosRoute
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/solicitar': typeof SolicitarRoute
   '/acompanhar/$token': typeof AcompanharTokenRoute
   '/admin/administradores': typeof AdminAdministradoresRoute
+  '/admin/avaliacoes': typeof AdminAvaliacoesRoute
   '/admin/cancelamentos': typeof AdminCancelamentosRoute
   '/admin/corridas': typeof AdminCorridasRoute
   '/admin/fotos': typeof AdminFotosRoute
@@ -266,6 +275,7 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/admin/administradores'
+    | '/admin/avaliacoes'
     | '/admin/cancelamentos'
     | '/admin/corridas'
     | '/admin/fotos'
@@ -292,6 +302,7 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/admin/administradores'
+    | '/admin/avaliacoes'
     | '/admin/cancelamentos'
     | '/admin/corridas'
     | '/admin/fotos'
@@ -320,6 +331,7 @@ export interface FileRouteTypes {
     | '/solicitar'
     | '/acompanhar/$token'
     | '/admin/administradores'
+    | '/admin/avaliacoes'
     | '/admin/cancelamentos'
     | '/admin/corridas'
     | '/admin/fotos'
@@ -452,6 +464,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdministradoresRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/avaliacoes': {
+      id: '/admin/avaliacoes'
+      path: '/avaliacoes'
+      fullPath: '/admin/avaliacoes'
+      preLoaderRoute: typeof AdminAvaliacoesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/cancelamentos': {
       id: '/admin/cancelamentos'
       path: '/cancelamentos'
@@ -541,6 +560,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteRouteChildren {
   AdminAdministradoresRoute: typeof AdminAdministradoresRoute
+  AdminAvaliacoesRoute: typeof AdminAvaliacoesRoute
   AdminCancelamentosRoute: typeof AdminCancelamentosRoute
   AdminCorridasRoute: typeof AdminCorridasRoute
   AdminFotosRoute: typeof AdminFotosRoute
@@ -554,6 +574,7 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAdministradoresRoute: AdminAdministradoresRoute,
+  AdminAvaliacoesRoute: AdminAvaliacoesRoute,
   AdminCancelamentosRoute: AdminCancelamentosRoute,
   AdminCorridasRoute: AdminCorridasRoute,
   AdminFotosRoute: AdminFotosRoute,

@@ -1300,6 +1300,19 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_rating_summaries: {
+        Args: never
+        Returns: {
+          avatar_path: string
+          average_rating: number
+          full_name: string
+          last_review_at: string
+          low_rating_count: number
+          rating_count: number
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }[]
+      }
       admin_user_emails: {
         Args: never
         Returns: {
@@ -1442,6 +1455,7 @@ export type Database = {
         }[]
       }
       pet_photo_readable: { Args: { _name: string }; Returns: boolean }
+      recent_rating_average: { Args: { _user_id: string }; Returns: number }
       referral_code_valid: { Args: { _code: string }; Returns: boolean }
       refresh_eta_calibration: { Args: { _days?: number }; Returns: number }
       refund_ride_gopet_balance: { Args: { _ride_id: string }; Returns: Json }

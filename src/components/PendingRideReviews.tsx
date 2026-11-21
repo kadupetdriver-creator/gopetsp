@@ -4,6 +4,7 @@ import { LockKeyhole, Loader2, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { formatRatingAverage } from "@/lib/review-stats";
 import { getRideDriverDetails } from "@/lib/rides.functions";
 import { nextPendingReview, validPawRating } from "@/lib/review-flow";
 import { PawRating } from "@/components/RideReview";
@@ -74,7 +75,7 @@ function ReviewDialog({ pending, reviewerId, onLater }: { pending: Pending; revi
       <div className="flex flex-col items-center gap-3 pt-3">
         {driver?.avatarUrl ? <img src={driver.avatarUrl} alt={`Foto de ${pending.reviewee_name}`} className="size-20 rounded-full object-cover" /> : <span className="flex size-20 items-center justify-center rounded-full bg-primary/15 text-primary"><UserRound className="size-9" /></span>}
         <p className="text-center font-semibold">{pending.reviewee_name}</p>
-        {pending.rating_count > 0 && <p className="text-sm text-primary">{Number(pending.average_rating).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} / 5 · {pending.rating_count} avaliações</p>}
+        <p className="text-sm text-primary">{pending.rating_count > 0 ? `${formatRatingAverage(pending.average_rating, pending.rating_count)} / 5 · ${pending.rating_count} avaliações` : "Sem avaliações"}</p>
       </div>
       <DialogTitle className="text-center text-xl leading-snug">{isTutor ? "Como foi o transporte do seu pet?" : "Como foi sua experiência com este tutor?"}</DialogTitle>
       <DialogDescription className="sr-only">Avaliação da corrida concluída, de 1 a 5 patinhas.</DialogDescription>

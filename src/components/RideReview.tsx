@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Loader2, LockKeyhole, PawPrint } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { formatRatingAverage } from "@/lib/review-stats";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -189,10 +190,10 @@ export function RideReview({ rideId, reviewerId, revieweeId, revieweeName }: Pro
         </form>
       )}
 
-      {summary && summary.rating_count > 0 && (
+      {summary && (
         <div className="border-t border-border pt-4">
           <p className="text-sm font-semibold">Sua média de avaliações</p>
-          <p className="mt-1 text-sm text-primary-ink">{Number(summary.average_rating).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} / 5 · {summary.rating_count} avaliações</p>
+          <p className="mt-1 text-sm text-primary-ink">{summary.rating_count > 0 ? `${formatRatingAverage(summary.average_rating, summary.rating_count)} / 5 · ${summary.rating_count} avaliações` : "Sem avaliações"}</p>
         </div>
       )}
     </section>

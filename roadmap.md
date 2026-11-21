@@ -170,3 +170,4 @@
 - [x] Filtros "Corridas disponíveis" e "Corridas aceitas" na tela de corridas da administração
 - [x] Separar Em andamento de disponíveis e apenas aceitas; iniciar após A caminho
 - [x] Painel de recarga de saldo GoPet (valor livre, Pix ou cartão via Mercado Pago)
+- [x] Área de avaliações no admin (média das últimas 100, filtros, notas ≤ 2 destacadas)
