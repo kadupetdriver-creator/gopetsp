@@ -1,5 +1,10 @@
 # Roadmap — GoPet
 
+## Concluído — tela ativa
+- [x] Tela ativa por padrão no painel do motorista e acompanhamento ao vivo, com opção individual
+- [x] Liberar ao minimizar/sair e solicitar novamente no retorno, sem interferir em GPS ou corridas
+- [x] Oito testes passaram; controle real no navegador solicitou/liberou três vezes ao alternar, minimizar, retornar e desmontar, sem erros; conta real sem acompanhamento ativo confirmou ausência do controle fora dessas funções. Validação em Android físico e corrida ativa real não disponível nesta sessão.
+
 ## Concluído — pagamento externo
 - [x] Administrador confirma Pix externo com recibo único, histórico e proteção contra pagamento simultâneo; preserva status e despacho
 - [x] Orçamento real do Flávio reconciliado como pago após consulta confirmar aprovação no Mercado Pago; sem Pix externo duplicado nem nova cobrança

@@ -1,4 +1,5 @@
 import { WaitingItinerary } from "@/components/WaitingItinerary";
+import { ScreenWakeLockSetting } from "@/components/ScreenWakeLockSetting";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -529,6 +530,7 @@ function MotoristaPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Chamadas de transporte de pets em São Paulo, atualizadas em tempo real.
       </p>
+      <ScreenWakeLockSetting active userId={user.id} />
 
       {upcoming.length > 0 && (
         <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900">

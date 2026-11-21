@@ -20,6 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { RideMap } from "@/components/RideMap";
+import { ScreenWakeLockSetting } from "@/components/ScreenWakeLockSetting";
 import { RideChat } from "@/components/RideChat";
 import { RideReview } from "@/components/RideReview";
 import {
@@ -256,6 +257,7 @@ function RideDetails() {
 
       {canTrackRide(ride.status) && <Card className="mt-6 shadow-soft">
         <CardContent className="space-y-4 py-6">
+          <ScreenWakeLockSetting active={Boolean(user)} {...(user ? { userId: user.id } : {})} />
           <div className="flex items-center justify-between gap-2">
             <p className="flex items-center gap-2 text-sm font-medium">
               <Navigation className="size-4 text-primary-ink" />

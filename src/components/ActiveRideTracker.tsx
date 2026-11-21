@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { RideMap } from "@/components/RideMap";
+import { ScreenWakeLockSetting } from "@/components/ScreenWakeLockSetting";
 import { RideDriverIdentity } from "@/components/RideDriverIdentity";
 import {
   activeStatuses,
@@ -81,6 +82,7 @@ export function ActiveRideTracker() {
 
   return (
     <div className="space-y-4">
+      <ScreenWakeLockSetting active={Boolean(user && list.some((ride) => canTrackRide(ride.status)))} {...(user ? { userId: user.id } : {})} />
       {list.map((ride) => (
         <Card key={ride.id} className="border-primary/50 bg-primary/10 shadow-soft">
           <CardContent className="space-y-3 py-5">

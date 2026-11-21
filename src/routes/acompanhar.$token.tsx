@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { RideMap } from "@/components/RideMap";
+import { ScreenWakeLockSetting } from "@/components/ScreenWakeLockSetting";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSharedRide } from "@/lib/tracking.functions";
 import {
@@ -92,6 +93,7 @@ function AcompanharPage() {
         {statusLabels[status]}
       </span>
 
+      <ScreenWakeLockSetting active={canTrackRide(status)} />
       {canTrackRide(status) && <RideMap origin={origin} destination={destination} driver={driver} />}
 
       <Card className="shadow-soft">

@@ -26,6 +26,7 @@ import {
   waitingTimeLabel,
 } from "@/lib/rides";
 import { RideMap } from "@/components/RideMap";
+import { ScreenWakeLockSetting } from "@/components/ScreenWakeLockSetting";
 import { RideDriverIdentity } from "@/components/RideDriverIdentity";
 import { cn } from "@/lib/utils";
 import { paymentStatusLabels, paymentStatusStyles, ridePaymentState } from "@/lib/payments";
@@ -137,6 +138,7 @@ function MinhasCorridas() {
       </div>
 
       <div className="mt-6 space-y-4">
+        <ScreenWakeLockSetting active={Boolean(user && rides?.some((ride) => canTrackRide(ride.status)))} {...(user ? { userId: user.id } : {})} />
         {isLoading && [1, 2].map((i) => <Skeleton key={i} className="h-40 w-full rounded-2xl" />)}
 
         {!isLoading && rides?.length === 0 && (
