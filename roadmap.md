@@ -1,5 +1,9 @@
 # Roadmap — GoPet
 
+## Concluído — abertura minimalista
+- [x] Remover vídeo, áudio e controles da abertura; somente logotipo centralizado em preto durante o carregamento, com transição suave sem temporizador
+- [x] Conferir proporções e fundo preto no computador/celular, acesso à escolha de perfil e cadastro, zero pedidos de vídeo e zero erros; compilação OK. Android/iOS físicos não verificados. Redirecionamento autenticado não confirmado nesta sessão; lógica existente preservada
+
 ## Concluído — tela ativa
 - [x] Tela ativa por padrão no painel do motorista e acompanhamento ao vivo, com opção individual
 - [x] Liberar ao minimizar/sair e solicitar novamente no retorno, sem interferir em GPS ou corridas
